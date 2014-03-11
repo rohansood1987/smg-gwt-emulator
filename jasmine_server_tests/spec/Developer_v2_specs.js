@@ -2,7 +2,10 @@
 describe("Developer tests for ServerV2 - ", function(){
 
 	var gameApiUrl = "http://2.smg-server.appspot.com/games";
-	var gameFaq = "{...}"
+	var gameFaq = "{...}";
+	var defaultTime = '{"accessSignature":"....", "gameId":"....","time": "30"}';
+	var gameFaq = '{"accessSignature":"....", "gameId":"....","faq": "...."}';
+
 
 	it("Specify default time per turn", function(){
 		var request = new XMLHttpRequest();
@@ -11,10 +14,10 @@ describe("Developer tests for ServerV2 - ", function(){
 			expect(request.status).toEqual(200);
 			expect(request.response.has("success")).toBe(true);				
 		};
-		request.open("PUT", gameApiUrl + "timeout?accessSignature=....?gameId={gameId}?time=30", true);
+		request.open("PUT", gameApiUrl + "/timeout", true);
 		request.responseType = "json";
 		request.setRequestHeader("Content-type", "application/json");
-		request.send();
+		request.send(defaultTime);
 	});
 	
 	it("Add Game FAQ", function(){
@@ -24,7 +27,7 @@ describe("Developer tests for ServerV2 - ", function(){
 			expect(request.status).toEqual(200);
 			expect(request.response.has("success")).toBe(true);				
 		};
-		request.open("PUT", gameApiUrl + "setFaq?accessSignature=....?gameId={gameId}", true);
+		request.open("PUT", gameApiUrl + "/setFaq", true);
 		request.responseType = "json";
 		request.setRequestHeader("Content-type", "application/json");
 		request.send(gameFaq);

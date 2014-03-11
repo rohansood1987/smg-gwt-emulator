@@ -23,7 +23,7 @@ describe("Container tests for ServerV2 - ", function(){
 		request.onreadystatechange = function() {
 			expect(request.readyState).toEqual(4);
 			expect(request.status).toEqual(200);
-			expect(request.response.has("syncPlay")).toBe(true);				
+			expect(request.response.has("success")).toBe(true);				
 		};
 		request.open("PUT", matchApiUrl + "/syncPlay", true);
 		request.responseType = "json";
