@@ -1,5 +1,5 @@
-var playerApiUrl = 'http://1.smg-server.appspot.com/players'
-var gameApiUrl = 'http://1.smg-server.appspot.com/games'
+var playerApiUrl = 'http://2.smg-server.appspot.com/players'
+var gameApiUrl = 'http://2.smg-server.appspot.com/games'
 
 var error_emailExists = "EMAIL_EXISTS"
 var success_updatedPlayer = "UPDATED_PLAYER"
@@ -16,7 +16,7 @@ var updatePlayerInfoRequest = '{"accessSignature":"correct","email":"newPlayer12
 var updatePlayerInfoWrongSigRequest = '{"accessSignature":"wrong","email":"newPlayer123@gmail.com","password":"12345","firstName":"New1",lastName:"Player1"}'
 
 
-describe("Player V2", function() {
+describe("Player tests for ServerV2", function() {
 
 	it("Get Game History of player", function() {
 		var request = new XMLHttpRequest();

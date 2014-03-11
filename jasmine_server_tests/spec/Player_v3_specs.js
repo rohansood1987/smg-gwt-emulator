@@ -1,5 +1,5 @@
-var playerApiUrl = 'http://1.smg-server.appspot.com/players'
-var gameApiUrl = 'http://1.smg-server.appspot.com/games'
+var playerApiUrl = 'http://3.smg-server.appspot.com/players'
+var gameApiUrl = 'http://3.smg-server.appspot.com/games'
 
 var error_emailExists = "EMAIL_EXISTS"
 var success_updatedPlayer = "UPDATED_PLAYER"
@@ -12,7 +12,7 @@ var playerId_friend = "43";
 var playerId_friend_wrong = "51";
 
 
-describe("Player V3", function() {
+describe("Player tests for ServerV3", function() {
 
 	it("Send a friend request", function() {
 		var request = new XMLHttpRequest();

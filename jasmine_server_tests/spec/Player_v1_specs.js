@@ -15,7 +15,7 @@ var updatePlayerInfoRequest = '{"accessSignature":"correct","email":"newPlayer12
 var updatePlayerInfoWrongSigRequest = '{"accessSignature":"wrong","email":"newPlayer123@gmail.com","password":"12345","firstName":"New1",lastName:"Player1"}'
 
 
-describe("Player V1", function() {
+describe("Player tests for ServerV1", function() {
 
 	it("Connectivity test", function() {
 		var request = new XMLHttpRequest();
