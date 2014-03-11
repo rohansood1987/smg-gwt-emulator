@@ -15,9 +15,9 @@ var updatePlayerInfoRequest = '{"accessSignature":"correct","email":"newPlayer12
 var updatePlayerInfoWrongSigRequest = '{"accessSignature":"wrong","email":"newPlayer123@gmail.com","password":"12345","firstName":"New1",lastName:"Player1"}'
 
 
-describe("Player", function() {
+describe("Player V1", function() {
 
-	it("Basic test", function() {
+	it("Connectivity test", function() {
 		var request = new XMLHttpRequest();
 		request.onload = function() {
 			expect(request.status).toEqual(200)
@@ -87,7 +87,7 @@ describe("Player", function() {
 		request.send(updatePlayerInfoWrongSigRequest);
 	})
 
-	it("Update player information with wrong Player ID", function() {
+	it("Update player information with wrong PlayerID", function() {
 		var request = new XMLHttpRequest();
 		request.onreadystatechange = function() {
 			expect(request.status).toEqual(200);
