@@ -1,60 +1,55 @@
-// some random tests that ServerV1 should support for Container
-describe("Container tests for ServerV1 - ", function(){
+// some random tests that ServerV3 should support for Container
+describe("Container tests for ServerV3 - ", function(){
 
-	var matchApiUrl = "http://1.smg-server.appspot.com/matches";
-	var startMatch = '{"accessSignature": "....", "playerIds": "[42,43]", "gameId": "1"}';
-	var makeMove = '{"accessSignature": "....", "operation":["...."]}';
+	var matchApiUrl = "http://3.smg-server.appspot.com/matches";
 	
-	it("Start a new game/match", function(){
+	it("Save a match", function(){
 		var request = new XMLHttpRequest();
 		request.onreadystatechange = function() {
 			expect(request.readyState).toEqual(4);
 			expect(request.status).toEqual(200);
 			expect(request.response.has("matchId")).toBe(true);				
 		};
-		request.open("PUT", matchApiUrl, true);
-		request.responseType = "json";
-		request.setRequestHeader("Content-type", "application/json");
-		request.send(startMatch);
-	});
-
-	it("Make a move", function(){
-		var request = new XMLHttpRequest();
-		request.onreadystatechange = function() {
-			expect(request.readyState).toEqual(4);
-			expect(request.status).toEqual(200);
-			expect(request.response.has("matchId")).toBe(true);
-			expect(request.response.has("gameState")).toBe(true);						
-		};
-		request.open("PUT", matchApiUrl, true);
-		request.responseType = "json";
-		request.setRequestHeader("Content-type", "application/json");
-		request.send(makeMove);
-	});
-
-	it("Get game/match info", function(){
-		var request = new XMLHttpRequest();
-		request.onreadystatechange = function() {
-			expect(request.readyState).toEqual(4);
-			expect(request.status).toEqual(200);
-			expect(request.response.has("matchId")).toBe(true);
-			expect(request.response.has("gameState")).toBe(true);
-			expect(request.response.has("playerIds")).toBe(true);					
-		};
-		request.open("GET", matchApiUrl + "/info?accessSignature=....?matchId={matchId}", true);
+		request.open("GET", matchApiUrl + "/save?accessSignature=....?matchId:{matchId}?playerId:{playerId}", true);
 		request.responseType = "json";
 		request.setRequestHeader("Content-type", "application/json");
 		request.send();
 	});
 
-	it("Get playerId who has current turn", function(){
+	it("Load a match", function(){
 		var request = new XMLHttpRequest();
 		request.onreadystatechange = function() {
 			expect(request.readyState).toEqual(4);
 			expect(request.status).toEqual(200);
-			expect(request.response.has("playerId")).toBe(true);					
+			expect(request.response.has("matchId")).toBe(true);
 		};
-		request.open("GET", matchApiUrl + "/info/turn?accessSignature=....?matchId={matchId}", true);
+		request.open("GET", matchApiUrl + "/load?accessSignature=....?matchId:{matchId}?playerId:{playerId}", true);
+		request.responseType = "json";
+		request.setRequestHeader("Content-type", "application/json");
+		request.send();
+	});
+
+	it("Get match view on iphone", function(){
+		var request = new XMLHttpRequest();
+		request.onreadystatechange = function() {
+			expect(request.readyState).toEqual(4);
+			expect(request.status).toEqual(200);
+			expect(request.response.has("view")).toBe(true);
+		};
+		request.open("GET", matchApiUrl + "/view?accessSignature=....?iphone=true?matchId:{matchId}?playerId:{playerId}", true);
+		request.responseType = "json";
+		request.setRequestHeader("Content-type", "application/json");
+		request.send();
+	});
+
+	it("Enable pass & play mode", function(){
+		var request = new XMLHttpRequest();
+		request.onreadystatechange = function() {
+			expect(request.readyState).toEqual(4);
+			expect(request.status).toEqual(200);
+			expect(request.response.has("passPlay")).toBe(true);
+		};
+		request.open("GET", matchApiUrl + "/pass-play?accessSignature=....?matchId={matchId}", true);
 		request.responseType = "json";
 		request.setRequestHeader("Content-type", "application/json");
 		request.send();
