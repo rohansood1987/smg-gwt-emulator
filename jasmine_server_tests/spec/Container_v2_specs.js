@@ -38,7 +38,7 @@ describe("Container tests for ServerV2 - ", function(){
 			expect(request.status).toEqual(200);
 			expect(request.response.has("time")).toBe(true);
 		};
-		request.open("GET", matchApiUrl + "/info/timeleft?accessSignature=....?matchId:{matchId}?playerId:{playerId}", true);
+		request.open("GET", matchApiUrl + "/info/timeleft?accessSignature=....?matchId={matchId}?playerId={playerId}", true);
 		request.responseType = "json";
 		request.setRequestHeader("Content-type", "application/json");
 		request.send();

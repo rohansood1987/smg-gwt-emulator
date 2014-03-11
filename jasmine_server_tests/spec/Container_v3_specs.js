@@ -10,7 +10,7 @@ describe("Container tests for ServerV3 - ", function(){
 			expect(request.status).toEqual(200);
 			expect(request.response.has("matchId")).toBe(true);				
 		};
-		request.open("GET", matchApiUrl + "/save?accessSignature=....?matchId:{matchId}?playerId:{playerId}", true);
+		request.open("GET", matchApiUrl + "/save?accessSignature=....?matchId={matchId}?playerId={playerId}", true);
 		request.responseType = "json";
 		request.setRequestHeader("Content-type", "application/json");
 		request.send();
@@ -23,7 +23,7 @@ describe("Container tests for ServerV3 - ", function(){
 			expect(request.status).toEqual(200);
 			expect(request.response.has("matchId")).toBe(true);
 		};
-		request.open("GET", matchApiUrl + "/load?accessSignature=....?matchId:{matchId}?playerId:{playerId}", true);
+		request.open("GET", matchApiUrl + "/load?accessSignature=....?matchId={matchId}?playerId={playerId}", true);
 		request.responseType = "json";
 		request.setRequestHeader("Content-type", "application/json");
 		request.send();
@@ -34,9 +34,9 @@ describe("Container tests for ServerV3 - ", function(){
 		request.onreadystatechange = function() {
 			expect(request.readyState).toEqual(4);
 			expect(request.status).toEqual(200);
-			expect(request.response.has("view")).toBe(true);
+			expect(request.response.has("success")).toBe(true);
 		};
-		request.open("GET", matchApiUrl + "/view?accessSignature=....?iphone=true?matchId:{matchId}?playerId:{playerId}", true);
+		request.open("GET", matchApiUrl + "/view?accessSignature=....?iphone=true?matchId={matchId}?playerId={playerId}", true);
 		request.responseType = "json";
 		request.setRequestHeader("Content-type", "application/json");
 		request.send();
@@ -47,7 +47,7 @@ describe("Container tests for ServerV3 - ", function(){
 		request.onreadystatechange = function() {
 			expect(request.readyState).toEqual(4);
 			expect(request.status).toEqual(200);
-			expect(request.response.has("passPlay")).toBe(true);
+			expect(request.response.has("success")).toBe(true);
 		};
 		request.open("GET", matchApiUrl + "/pass-play?accessSignature=....?matchId={matchId}", true);
 		request.responseType = "json";
