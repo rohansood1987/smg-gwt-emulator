@@ -28,7 +28,7 @@ describe("Player V2", function() {
 			expect(response.has("gameHistoryList")).toBe(true);
 			
 		}
-		request.open("GET", playerApiUrl + "/GameHistory?playerId=" + playerId_correct, true);
+		request.open("GET", playerApiUrl + "/" + playerId_correct + "/GameHistory", true);
 		request.responseType = "json";
 		request.setRequestHeader("Content-type", "application/json");
 		request.send();
@@ -60,10 +60,9 @@ describe("Player V2", function() {
 			expect(response.has("viewableGames")).toBe(true);
 			
 		}
-		request.open("GET", gameApiUrl + "/viewableGames?playerId=" + playerId_correct, true);
+		request.open("GET", gameApiUrl + "/" + playerId_correct +  "/viewableGames", true);
 		request.responseType = "json";
 		request.setRequestHeader("Content-type", "application/json");
 		request.send();
 	})
-
 })

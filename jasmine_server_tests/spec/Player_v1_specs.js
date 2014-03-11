@@ -36,7 +36,7 @@ describe("Player V1", function() {
 			expect(request.response.has("playerId")).toBe(true);
 			
 		}
-		request.open("PUT", playerApiUrl, true);
+		request.open("POST", playerApiUrl, true);
 		request.responseType = "json";
 		request.setRequestHeader("Content-type", "application/json");
 		request.send(addNewPlayerRequest);
@@ -51,7 +51,7 @@ describe("Player V1", function() {
 			// Check return params
 			expect(request.response.get("error")).toEqual(emailExistsError);
 		}
-		request.open("PUT", playerApiUrl, true);
+		request.open("POST", playerApiUrl, true);
 		request.responseType = "json";
 		request.setRequestHeader("Content-type", "application/json");
 		request.send(addNewPlayerRequest);
