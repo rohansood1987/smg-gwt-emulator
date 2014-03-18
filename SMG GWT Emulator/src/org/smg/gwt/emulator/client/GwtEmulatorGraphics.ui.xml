@@ -1,0 +1,31 @@
+<!DOCTYPE ui:UiBinder SYSTEM "http://dl.google.com/gwt/DTD/xhtml.ent">
+<ui:UiBinder xmlns:ui="urn:ui:com.google.gwt.uibinder"
+  xmlns:g="urn:import:com.google.gwt.user.client.ui">
+  
+  <g:VerticalPanel>
+  
+    <g:AbsolutePanel ui:field="mainConfigPanel"><g:Label text="Please enter the game URL"/>
+      <g:TextBox width="100" ui:field="txtGameUrl"/>
+      <g:Button text="Start Game" ui:field="btnStart"/>
+    </g:AbsolutePanel>
+  
+  	<g:HorizontalPanel  ui:field="gamePanel">
+  	  <g:Frame height="400px" width="800px" ui:field="gameFrame"/>
+  	  <g:TextArea height="400px" width="400px" ui:field="console"/>
+  	</g:HorizontalPanel>
+  
+  </g:VerticalPanel>
+  
+  <!-- g:VerticalPanel>
+    <g:HorizontalPanel height="100px" ui:field="opponentArea"/>
+    <g:HorizontalPanel height="100px" ui:field="middleArea"/>
+    <g:HorizontalPanel height="100px">
+      <g:HorizontalPanel ui:field="playerArea"/>
+    </g:HorizontalPanel>
+    <g:HorizontalPanel height="100px">
+      <g:HorizontalPanel width="120" height="100px" ui:field="selectedArea"/>
+      <g:Button ui:field="claimBtn" text="Finish selecting cards"/>
+    </g:HorizontalPanel>
+  </g:VerticalPanel-->
+  
+</ui:UiBinder> 
