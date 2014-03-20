@@ -4,12 +4,12 @@ import org.smg.gwt.emulator.data.GameApi.Message;
 
 public class GameApiJsonHelper {
   
-  static String getJsonString(Message messageObject) {
+  public static String getJsonString(Message messageObject) {
     //TODO
     return null;
   }
   
-  static Message getJsonString(String jsonString) {
+  public static Message getMessageObject(String jsonString) {
     //TODO
     return null;
   }
