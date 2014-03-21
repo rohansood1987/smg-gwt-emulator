@@ -9,7 +9,7 @@
   <!-- Inherit the core Web Toolkit stuff.                        -->
   <inherits name='com.google.gwt.user.User'/>
   <inherits name='com.google.common.collect.Collect'/>
-
+  
   <!-- Inherit the default GWT style sheet.  You can change       -->
   <!-- the theme of your GWT application by uncommenting          -->
   <!-- any one of the following lines.                            -->
@@ -24,8 +24,13 @@
   <entry-point class='org.smg.gwt.emulator.client.GwtEmulatorEntryPoint'/>
 
   <!-- Specify the paths for translatable code                    -->
+  <source path='backend'/>
   <source path='client'/>
-  <source path='shared'/>
+  <source path='data'/>
+  
+  <!-- Add an offline linker                                      -->
+  <!-- define-linker class="org.smg.gwt.emulator.linker.OfflineLinker" name="offline" />
+  <add-linker name="offline" /-->
 
   <!-- allow Super Dev Mode -->
   <add-linker name="xsiframe"/>

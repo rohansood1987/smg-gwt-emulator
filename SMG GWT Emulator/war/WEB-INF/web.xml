@@ -5,6 +5,11 @@
          version="2.5"
          xmlns="http://java.sun.com/xml/ns/javaee">
 
+  <mime-mapping>
+      <extension>appcache</extension>
+      <mime-type>text/cache-manifest</mime-type>
+  </mime-mapping>
+  
   <!-- Default page to serve -->
   <welcome-file-list>
     <welcome-file>SMG_GWT_Emulator.html</welcome-file>

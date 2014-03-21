@@ -4,13 +4,26 @@
   
   <g:VerticalPanel>
   
-    <g:AbsolutePanel ui:field="mainConfigPanel"><g:Label text="Please enter the game URL"/>
+    <g:AbsolutePanel ui:field="mainConfigPanel">
+      <g:Label text="Number of players:"/>
+      <g:ListBox width="20" ui:field="listNumPlayers">
+        <g:item value='2'>2 players</g:item>
+        <g:item value='3'>3 players</g:item>
+        <g:item value='4'>4 players</g:item>
+        <g:item value='5'>5 players</g:item>
+        <g:item value='6'>6 players</g:item>
+        <g:item value='7'>7 players</g:item>
+        <g:item value='8'>8 players</g:item>
+        <g:item value='9'>9 players</g:item>
+      </g:ListBox>
+      <g:Label text="Game URL"/>
       <g:TextBox width="100" ui:field="txtGameUrl"/>
       <g:Button text="Start Game" ui:field="btnStart"/>
     </g:AbsolutePanel>
   
   	<g:HorizontalPanel  ui:field="gamePanel">
-  	  <g:Frame height="400px" width="800px" ui:field="gameFrame"/>
+  	  <g:AbsolutePanel height="400px" width="800px" ui:field="gameTabsPanel"/>
+  	  <!--g:Frame height="400px" width="800px" ui:field="gameFrame"/-->
   	  <g:TextArea height="400px" width="400px" ui:field="console"/>
   	</g:HorizontalPanel>
   
