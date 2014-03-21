@@ -3,7 +3,6 @@ package org.smg.gwt.emulator.backend;
 import java.util.List;
 import java.util.Map;
 
-import org.json.JSONException;
 import org.smg.gwt.emulator.client.GwtEmulatorGraphics;
 import org.smg.gwt.emulator.data.GameApi.GameReady;
 import org.smg.gwt.emulator.data.GameApi.MakeMove;
@@ -68,14 +67,7 @@ public class ServerEmulator {
     int playerId = playerIds.get(playerIndex);
     graphics.logToConsole("Message from [" + playerId + "]: " + message);
     
-    Message messageObj = null;
-    try {
-      messageObj = GameApiJsonHelper.getMessageObject(message);
-    } catch (JSONException e) {
-      //TODO: Add error handling
-      graphics.logToConsole(e.getMessage());
-      return;
-    }
+    Message messageObj = GameApiJsonHelper.getMessageObject(message);
     
     if (messageObj instanceof GameReady) {
       handleGameReady((GameReady)messageObj, playerId);
