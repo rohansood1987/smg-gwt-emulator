@@ -77,7 +77,7 @@ public class GwtEmulatorGraphics extends Composite {
         
         if(e.source == frame.contentWindow) {
           //$wnd.alert(frameName + " attached!");
-          emulator.@org.smg.gwt.emulator.backend.ServerEmulator::eventListner(Ljava/lang/String;Ljava/lang/Integer;)(e.data, i);
+          emulator.@org.smg.gwt.emulator.backend.ServerEmulator::eventListner(Ljava/lang/String;Ljava/lang/Integer;)(JSON.stringify(e.data), i);
         }
       }
     }
@@ -89,7 +89,7 @@ public class GwtEmulatorGraphics extends Composite {
   }
   
   private static native void postMessageToFrame(String frameName, String message) /*-{
-    $doc.getElementById(frameName).postMessage(message, "*");
+    $doc.getElementById(frameName).postMessage(JSON.parse(message), "*");
   }-*/;
   
   public void logToConsole(String msg) {
