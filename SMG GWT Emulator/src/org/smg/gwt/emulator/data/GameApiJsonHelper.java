@@ -105,7 +105,7 @@ public class GameApiJsonHelper {
         map.put(key, new Integer((int)((JSONNumber)jsonVal).doubleValue()));
       }
       else if (jsonVal instanceof JSONString) {
-        map.put(key, ((JSONString)jsonVal).toString());
+        map.put(key, ((JSONString)jsonVal).stringValue());
       }
       else if (jsonVal instanceof JSONArray) {
         map.put(key, getListFromJsonArray((JSONArray)jsonVal));
@@ -134,7 +134,7 @@ public class GameApiJsonHelper {
         list.add(new Integer((int)((JSONNumber)jsonVal).doubleValue()));
       }
       else if (jsonVal instanceof JSONString) {
-        list.add(((JSONString)jsonVal).toString());
+        list.add(((JSONString)jsonVal).stringValue());
       }
       else if (jsonVal instanceof JSONArray) {
         list.add(getListFromJsonArray((JSONArray)jsonVal));

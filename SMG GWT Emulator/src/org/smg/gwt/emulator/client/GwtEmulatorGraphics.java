@@ -74,10 +74,10 @@ public class GwtEmulatorGraphics extends Composite {
         var frame = $doc.getElementById(frameName);
         //if(frame) { $wnd.alert(frameName + " exists");}
         //else {$wnd.alert(frameName + " doesnt exist");}
-        
         if(e.source == frame.contentWindow) {
           //$wnd.alert(frameName + " attached!");
-          emulator.@org.smg.gwt.emulator.backend.ServerEmulator::eventListner(Ljava/lang/String;Ljava/lang/Integer;)(JSON.stringify(e.data), i);
+          //$wnd.alert(JSON.stringify(e.data));
+          emulator.@org.smg.gwt.emulator.backend.ServerEmulator::eventListner(Ljava/lang/String;I)(JSON.stringify(e.data), i);
         }
       }
     }
@@ -85,7 +85,9 @@ public class GwtEmulatorGraphics extends Composite {
   }-*/;
   
   public void sendMessage(int playerIndex, Message message) {
-    postMessageToFrame("frame"+playerIndex, GameApiJsonHelper.getJsonString(message));
+    String jsonStr = GameApiJsonHelper.getJsonString(message);
+    logToConsole("Sending message: " + jsonStr);
+    postMessageToFrame("frame"+playerIndex, jsonStr);
   }
   
   private static native void postMessageToFrame(String frameName, String message) /*-{

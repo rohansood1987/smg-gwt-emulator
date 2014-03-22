@@ -52,6 +52,7 @@ public class ServerEmulator {
       playerIds.add(playerId);
       playersInfo.add(ImmutableMap.<String, Object>of(PLAYER_ID, playerId));
     }
+    graphics.logToConsole("Setup done for " + numberOfPlayers + " players.");
   }
   
   public List<Integer> getPlayerIds() {
@@ -62,12 +63,18 @@ public class ServerEmulator {
     return playerIds.indexOf(playerId);
   }
   
-  public void eventListner(String message, Integer playerIndex) {
+  public void eventListner(String message, int playerIndex) {
     
     int playerId = playerIds.get(playerIndex);
     graphics.logToConsole("Message from [" + playerId + "]: " + message);
     
-    Message messageObj = GameApiJsonHelper.getMessageObject(message);
+    Message messageObj = null;
+    try {
+      messageObj = GameApiJsonHelper.getMessageObject(message);
+    }
+    catch(Exception ex) {
+      graphics.logToConsole("<err> cant parse json. " + ex.getMessage());
+    }
     
     if (messageObj instanceof GameReady) {
       handleGameReady((GameReady)messageObj, playerId);
@@ -78,10 +85,14 @@ public class ServerEmulator {
     else if (messageObj instanceof VerifyMoveDone) {
       handleVerifyMoveDone((VerifyMoveDone)messageObj, playerId);
     }
+    else {
+      graphics.logToConsole("<err> no instance found");
+    }
   }
 
   private void handleGameReady(GameReady gameReady, int playerId) {
     // Send initial UpdateUI message
+    graphics.logToConsole("handling game ready");
     int playerIndex = getPlayerIndex(playerId);
     graphics.sendMessage(playerIndex, new UpdateUI(playerId, playersInfo,
           gameState.getStateForPlayerId(playerId),
@@ -89,7 +100,7 @@ public class ServerEmulator {
   }
   
   private void handleMakeMove(MakeMove makeMove, int playerId) {
-    
+    graphics.logToConsole("handling make move");
     if (moveInProgress) {
       //TODO:Handle the case where previous move was in progress and a new move was sent.
       throw new IllegalStateException("Previous move in progress!");
@@ -114,6 +125,7 @@ public class ServerEmulator {
   }
   
   private void handleVerifyMoveDone(VerifyMoveDone verifyMoveDone, int verifyingPlayerId) {
+    graphics.logToConsole("handling verify move done");
     if(verifyMoveDone.getHackerPlayerId() == 0) {
       verifiers.remove(new Integer(verifyingPlayerId));
       //TODO: make this condition lenient?
