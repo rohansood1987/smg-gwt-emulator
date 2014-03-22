@@ -20,7 +20,11 @@ public class GameApiJsonHelper {
   
   public static String getJsonString(Message messageObject) {
     Map<String, Object> messageMap = messageObject.toMessage();
-    return getJsonObject(messageMap).toString();
+    return getJsonStringFromMap(messageMap);
+  }
+  
+  public static String getJsonStringFromMap(Map<String, Object> map) {
+    return getJsonObject(map).toString();
   }
   
   private static JSONObject getJsonObject(Map<String, Object> messageMap) {
@@ -83,12 +87,16 @@ public class GameApiJsonHelper {
   }
   
   public static Message getMessageObject(String jsonString) {
+    return Message.messageToHasEquality(getMapObject(jsonString));
+  }
+  
+  public static Map<String, Object> getMapObject(String jsonString) {
     JSONValue jsonVal = JSONParser.parseStrict(jsonString);
     JSONObject jsonObj = jsonVal.isObject();
     if (jsonObj == null) {
       throw new IllegalStateException("JSONObject expected");
     }
-    return Message.messageToHasEquality(getMapFromJsonObject(jsonObj));
+    return getMapFromJsonObject(jsonObj);
   }
   
   private static Map<String, Object> getMapFromJsonObject(JSONObject jsonObj) {

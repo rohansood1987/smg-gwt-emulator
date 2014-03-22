@@ -51,6 +51,14 @@ public class GameState {
     }
     return result;
   }
+  
+  public Map<String, Object> getMasterState() {
+    return state;
+  }
+  
+  public Map<String, Object> getMasterVisibilityMap() {
+    return visibleTo;
+  }
 
   public void makeMove(List<Operation> operations) {
     for (Operation operation : operations) {
@@ -108,6 +116,17 @@ public class GameState {
       res.add(listCopy.remove(index));
     }
     return res;
+  }
+
+  public void setManualState(Map<String, Object> manualState, Map<String, Object> manualVisibilityMap) {
+    state.clear();
+    for(Map.Entry<String, Object>entry : manualState.entrySet()) {
+      state.put(entry.getKey(), entry.getValue());
+    }
+    visibleTo.clear();
+    for(Map.Entry<String, Object>entry : manualVisibilityMap.entrySet()) {
+      visibleTo.put(entry.getKey(), entry.getValue());
+    }
   }
 
 }

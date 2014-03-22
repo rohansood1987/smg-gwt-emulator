@@ -1,5 +1,7 @@
 package org.smg.gwt.emulator.client;
 
+import java.util.Map;
+
 import org.smg.gwt.emulator.backend.ServerEmulator;
 import org.smg.gwt.emulator.data.GameApiJsonHelper;
 import org.smg.gwt.emulator.data.GameApi.Message;
@@ -37,6 +39,9 @@ public class GwtEmulatorGraphics extends Composite {
   TextArea console;
   
   @UiField
+  Button btnEditState;
+  
+  @UiField
   ListBox listNumPlayers;
   
   private TabLayoutPanel gameTabs;
@@ -60,11 +65,22 @@ public class GwtEmulatorGraphics extends Composite {
       //TODO: Add actual player name as tab name here
       Frame frame = new Frame(url);
       frame.getElement().setId("frame" + i);
-      frame.setSize("750px", "350px");
+      frame.setSize("795px", "375px");
       gameTabs.add(frame, "Player " + (i + 1));
     }
     gameTabsPanel.add(gameTabs);
     injectEventListener(serverEmulator, numberOfPlayers);
+  }
+  
+  @UiHandler("btnEditState")
+  void onClickEditStateButton(ClickEvent e) {
+    new PopupEditState(serverEmulator.getStateAsString(), serverEmulator.getVisibilityMapAsString(),
+        new PopupEditState.StateEntered() {      
+          @Override
+          public void setUpdatedStateInfo(Map<String, Object> updatedState, Map<String, Object> updatedVisibilityMap) {
+            serverEmulator.updateStateManually(updatedState, updatedVisibilityMap);
+          }
+    }).center();
   }
   
   private native void injectEventListener(ServerEmulator emulator, int numberOfPlayers) /*-{

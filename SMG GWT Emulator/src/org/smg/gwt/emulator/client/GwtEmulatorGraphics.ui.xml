@@ -24,7 +24,10 @@
   	<g:HorizontalPanel  ui:field="gamePanel">
   	  <g:AbsolutePanel height="400px" width="800px" ui:field="gameTabsPanel"/>
   	  <!--g:Frame height="400px" width="800px" ui:field="gameFrame"/-->
-  	  <g:TextArea height="400px" width="400px" ui:field="console"/>
+  	  <g:VerticalPanel>
+  	   <g:TextArea height="400px" width="400px" ui:field="console"/>
+  	   <g:Button text="Edit State" ui:field="btnEditState" />
+  	  </g:VerticalPanel>
   	</g:HorizontalPanel>
   
   </g:VerticalPanel>

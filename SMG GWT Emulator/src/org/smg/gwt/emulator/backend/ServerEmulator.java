@@ -133,13 +133,7 @@ public class ServerEmulator {
       //TODO: make this condition lenient?
       if(verifiers.size() == 0) {
         // Verified by all
-        for(int playerId : playerIds) {
-          int playerIndex = getPlayerIndex(playerId);
-          graphics.sendMessage(playerIndex, new UpdateUI(playerId, playersInfo,
-              gameState.getStateForPlayerId(playerId),
-              lastGameState.getStateForPlayerId(playerId),
-              lastMove, lastMovePlayerId, gameState.getPlayerIdToNumberOfTokensInPot()));
-        }
+        sendUpdateStateToAllPlayers();
         moveInProgress = false;
       }
     }
@@ -147,6 +141,32 @@ public class ServerEmulator {
       //TODO: Handle hacker!
       graphics.logToConsole("Hacker detected! -- " + lastMovePlayerId);
     }
+  }
+  
+  private void sendUpdateStateToAllPlayers() {
+    for(int playerId : playerIds) {
+      int playerIndex = getPlayerIndex(playerId);
+      graphics.sendMessage(playerIndex, new UpdateUI(playerId, playersInfo,
+          gameState.getStateForPlayerId(playerId),
+          lastGameState.getStateForPlayerId(playerId),
+          lastMove, lastMovePlayerId, gameState.getPlayerIdToNumberOfTokensInPot()));
+    }
+  }
+
+  public String getStateAsString() {
+    return GameApiJsonHelper.getJsonStringFromMap(gameState.getMasterState());
+  }
+  
+  public String getVisibilityMapAsString() {
+    return GameApiJsonHelper.getJsonStringFromMap(gameState.getMasterVisibilityMap());
+  }
+
+  public void updateStateManually(Map<String, Object> state, Map<String, Object> visibilityMap) {
+    graphics.logToConsole("Updating state manually: " + state.toString());
+    lastGameState = gameState.copy();
+    lastMove = Lists.newArrayList();
+    gameState.setManualState(state, visibilityMap);
+    sendUpdateStateToAllPlayers();
   }
 
 }
