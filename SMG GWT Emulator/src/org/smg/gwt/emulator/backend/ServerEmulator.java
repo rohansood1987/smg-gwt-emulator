@@ -1,5 +1,6 @@
 package org.smg.gwt.emulator.backend;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
@@ -33,7 +34,7 @@ public class ServerEmulator {
   private GwtEmulatorGraphics graphics;
   
   public static final String PLAYER_ID = "playerId";
-  private static final int firstPlayerId = 42;
+  private static final int firstPlayerId = 0;
   
   private boolean moveInProgress;
   private List<Integer> verifiers = Lists.newArrayList();
@@ -96,7 +97,8 @@ public class ServerEmulator {
     int playerIndex = getPlayerIndex(playerId);
     graphics.sendMessage(playerIndex, new UpdateUI(playerId, playersInfo,
           gameState.getStateForPlayerId(playerId),
-          null, null, playerId, gameState.getPlayerIdToNumberOfTokensInPot()));
+          null, new ArrayList<Operation>(), playerId,
+          gameState.getPlayerIdToNumberOfTokensInPot()));
   }
   
   private void handleMakeMove(MakeMove makeMove, int playerId) {

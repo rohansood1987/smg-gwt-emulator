@@ -72,11 +72,11 @@ public class GwtEmulatorGraphics extends Composite {
       for(var i = 0; i < numberOfPlayers; i++) {
         var frameName = "frame"+i;
         var frame = $doc.getElementById(frameName);
-        //if(frame) { $wnd.alert(frameName + " exists");}
-        //else {$wnd.alert(frameName + " doesnt exist");}
-        if(e.source == frame.contentWindow) {
-          //$wnd.alert(frameName + " attached!");
-          //$wnd.alert(JSON.stringify(e.data));
+        if(frame) { $wnd.alert(frameName + " exists");}
+        else {$wnd.alert(frameName + " doesnt exist");}
+        if(e.source == frame.contentWindow || e.source.parent == frame.contentWindow) {
+          $wnd.alert(frameName + " attached!");
+          $wnd.alert(JSON.stringify(e.data));
           emulator.@org.smg.gwt.emulator.backend.ServerEmulator::eventListner(Ljava/lang/String;I)(JSON.stringify(e.data), i);
         }
       }
@@ -91,7 +91,7 @@ public class GwtEmulatorGraphics extends Composite {
   }
   
   private static native void postMessageToFrame(String frameName, String message) /*-{
-    $doc.getElementById(frameName).postMessage(JSON.parse(message), "*");
+    $doc.getElementById(frameName).contentWindow.postMessage(JSON.parse(message), "*");
   }-*/;
   
   public void logToConsole(String msg) {
