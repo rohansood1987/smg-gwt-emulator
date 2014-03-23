@@ -3,12 +3,19 @@ package org.smg.gwt.emulator.client;
 import java.util.Map;
 
 import org.smg.gwt.emulator.backend.ServerEmulator;
-import org.smg.gwt.emulator.data.GameApiJsonHelper;
 import org.smg.gwt.emulator.data.GameApi.Message;
+import org.smg.gwt.emulator.data.GameApiJsonHelper;
 
+import com.emitrom.flash4j.clientio.client.ClientIO;
+import com.emitrom.flash4j.core.client.events.Event;
+import com.emitrom.flash4j.core.client.events.handlers.EventHandler;
+import com.emitrom.flash4j.core.client.net.FileFilter;
+import com.emitrom.flash4j.core.client.net.FileReference;
+import com.emitrom.flash4j.core.client.utils.ByteArray;
 import com.google.gwt.core.shared.GWT;
 import com.google.gwt.dom.client.Style.Unit;
 import com.google.gwt.event.dom.client.ClickEvent;
+import com.google.gwt.json.client.JSONParser;
 import com.google.gwt.uibinder.client.UiBinder;
 import com.google.gwt.uibinder.client.UiField;
 import com.google.gwt.uibinder.client.UiHandler;
@@ -43,6 +50,12 @@ public class GwtEmulatorGraphics extends Composite {
   
   @UiField
   ListBox listNumPlayers;
+  
+  @UiField
+  Button btnLoadState;
+  
+  @UiField
+  Button btnSaveState;
   
   private TabLayoutPanel gameTabs;
   private ServerEmulator serverEmulator;
@@ -83,16 +96,41 @@ public class GwtEmulatorGraphics extends Composite {
     }).center();
   }
   
+  @UiHandler("btnSaveState")
+  void onClickSaveStateButton(ClickEvent e) {
+    String data = serverEmulator.saveGameStateJSONAsString();
+    ClientIO.saveFile(data, "SaveState.txt");
+  }
+  
+  @UiHandler("btnLoadState")
+  void onClickLoadStateButton(ClickEvent e) {
+    final FileReference fileReference = ClientIO.browse(new FileFilter("LoadState", ".txt"));
+    fileReference.addEventHandler(Event.SELECT, new EventHandler() {
+        @Override
+        public void onEvent(Event event) {
+            fileReference.load();
+            fileReference.addEventHandler(Event.COMPLETE, new EventHandler() {
+                @Override
+                public void onEvent(Event event) {
+                    ByteArray data = fileReference.getData();
+                    String content = data.readUTFBytes(data.getBytesAvailable());
+                    serverEmulator.loadGameStateFromJSON(JSONParser.parseStrict(content).isObject());
+                }
+            });
+        }
+    });
+  }
+  
   private native void injectEventListener(ServerEmulator emulator, int numberOfPlayers) /*-{
     function postMessageListener(e) {
       for(var i = 0; i < numberOfPlayers; i++) {
         var frameName = "frame"+i;
         var frame = $doc.getElementById(frameName);
-        if(frame) { $wnd.alert(frameName + " exists");}
-        else {$wnd.alert(frameName + " doesnt exist");}
+        //if(frame) { $wnd.alert(frameName + " exists");}
+        //else {$wnd.alert(frameName + " doesnt exist");}
         if(e.source == frame.contentWindow || e.source.parent == frame.contentWindow) {
-          $wnd.alert(frameName + " attached!");
-          $wnd.alert(JSON.stringify(e.data));
+          //$wnd.alert(frameName + " attached!");
+          //$wnd.alert(JSON.stringify(e.data));
           emulator.@org.smg.gwt.emulator.backend.ServerEmulator::eventListner(Ljava/lang/String;I)(JSON.stringify(e.data), i);
         }
       }

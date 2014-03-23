@@ -26,7 +26,11 @@
   	  <!--g:Frame height="400px" width="800px" ui:field="gameFrame"/-->
   	  <g:VerticalPanel>
   	   <g:TextArea height="400px" width="400px" ui:field="console"/>
-  	   <g:Button text="Edit State" ui:field="btnEditState" />
+  	   <g:HorizontalPanel>
+	  	   <g:Button text="Edit State" ui:field="btnEditState" />
+	       <g:Button text="Save State" ui:field="btnSaveState" />
+	       <g:Button text="Load State" ui:field="btnLoadState" />
+  	   </g:HorizontalPanel>
   	  </g:VerticalPanel>
   	</g:HorizontalPanel>
   

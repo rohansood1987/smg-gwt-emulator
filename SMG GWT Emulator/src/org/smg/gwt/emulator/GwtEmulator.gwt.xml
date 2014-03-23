@@ -10,6 +10,7 @@
   <inherits name='com.google.gwt.user.User'/>
   <inherits name='com.google.gwt.json.JSON'/>
   <inherits name='com.google.common.collect.Collect'/>
+  <inherits name='com.emitrom.flash4j.clientio.ClientIO'/>
   
   <!-- Inherit the default GWT style sheet.  You can change       -->
   <!-- the theme of your GWT application by uncommenting          -->
@@ -34,5 +35,5 @@
   <add-linker name="offline" /-->
 
   <!-- allow Super Dev Mode -->
-  <add-linker name="xsiframe"/>
+  
 </module>

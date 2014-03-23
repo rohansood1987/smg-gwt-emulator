@@ -27,7 +27,7 @@ public class GameApiJsonHelper {
     return getJsonObject(map).toString();
   }
   
-  private static JSONObject getJsonObject(Map<String, Object> messageMap) {
+  public static JSONObject getJsonObject(Map<String, Object> messageMap) {
     JSONObject jsonObj = new JSONObject(); 
     for (Map.Entry<String, Object> entry: messageMap.entrySet()) {
       JSONValue jsonVal = null;
@@ -99,7 +99,7 @@ public class GameApiJsonHelper {
     return getMapFromJsonObject(jsonObj);
   }
   
-  private static Map<String, Object> getMapFromJsonObject(JSONObject jsonObj) {
+  public static Map<String, Object> getMapFromJsonObject(JSONObject jsonObj) {
     Map<String, Object> map = new HashMap<String, Object>();
     for (String key : jsonObj.keySet()) {
       JSONValue jsonVal = jsonObj.get(key); 
