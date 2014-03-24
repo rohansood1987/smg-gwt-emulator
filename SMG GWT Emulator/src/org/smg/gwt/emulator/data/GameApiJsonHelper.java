@@ -15,8 +15,12 @@ import com.google.gwt.json.client.JSONObject;
 import com.google.gwt.json.client.JSONParser;
 import com.google.gwt.json.client.JSONString;
 import com.google.gwt.json.client.JSONValue;
+import com.google.gwt.thirdparty.guava.common.collect.ImmutableList;
 
 public class GameApiJsonHelper {
+  
+  private static final List<String> integerMapNames = ImmutableList.<String>of(
+      "playerIdToNumberOfTokensInPot", "playerIdToTokenChange", "playerIdToScore");
   
   public static String getJsonString(Message messageObject) {
     Map<String, Object> messageMap = messageObject.toMessage();
@@ -47,12 +51,25 @@ public class GameApiJsonHelper {
         jsonVal = getJsonArray((List<Object>)entry.getValue());
       }
       else if (entry.getValue() instanceof Map) {
-        jsonVal = getJsonObject((Map<String, Object>)entry.getValue());
+        if (integerMapNames.contains(entry.getKey())) {
+          jsonVal = getJsonObjectFromIntegerMap((Map<Integer, Integer>)entry.getValue());
+        }
+        else {
+          jsonVal = getJsonObject((Map<String, Object>)entry.getValue());
+        }
       }
       else {
         throw new IllegalStateException("Invalid object encountered");
       }
       jsonObj.put(entry.getKey(), jsonVal);
+    }
+    return jsonObj;
+  }
+  
+  public static JSONObject getJsonObjectFromIntegerMap(Map<Integer, Integer> messageMap) {
+    JSONObject jsonObj = new JSONObject();
+    for (Map.Entry<Integer, Integer> entry: messageMap.entrySet()) {
+      jsonObj.put(entry.getKey().toString(), new JSONNumber(entry.getValue()));
     }
     return jsonObj;
   }
@@ -119,11 +136,25 @@ public class GameApiJsonHelper {
         map.put(key, getListFromJsonArray((JSONArray)jsonVal));
       }
       else if (jsonVal instanceof JSONObject) {
-        map.put(key, getMapFromJsonObject((JSONObject)jsonVal));
+        if (integerMapNames.contains(key)) {
+          map.put(key, getIntegerMapFromJsonObject((JSONObject)jsonVal));
+        }
+        else {
+          map.put(key, getMapFromJsonObject((JSONObject)jsonVal));
+        }
       }
       else {
         throw new IllegalStateException("Invalid JSONValue encountered");
       }
+    }
+    return map;
+  }
+  
+  public static Map<Integer, Integer> getIntegerMapFromJsonObject(JSONObject jsonObj) {
+    Map<Integer, Integer> map = new HashMap<Integer, Integer>();
+    for (String key : jsonObj.keySet()) {
+      JSONValue jsonVal = jsonObj.get(key); 
+      map.put(Integer.parseInt(key), new Integer((int)((JSONNumber)jsonVal).doubleValue()));
     }
     return map;
   }
