@@ -25,6 +25,10 @@
   <!-- Specify the app entry point class.                         -->
   <entry-point class='org.smg.gwt.emulator.client.GwtEmulatorEntryPoint'/>
 
+
+  <set-property name="compiler.stackMode" value="emulated" />
+  <set-configuration-property name="compiler.emulatedStack.recordLineNumbers" value="true" />
+
   <!-- Specify the paths for translatable code                    -->
   <source path='backend'/>
   <source path='client'/>

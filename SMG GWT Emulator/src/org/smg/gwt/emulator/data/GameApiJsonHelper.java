@@ -7,6 +7,7 @@ import java.util.Map;
 
 import org.smg.gwt.emulator.data.GameApi.Message;
 
+import com.google.common.collect.ImmutableList;
 import com.google.gwt.json.client.JSONArray;
 import com.google.gwt.json.client.JSONBoolean;
 import com.google.gwt.json.client.JSONNull;
@@ -15,7 +16,7 @@ import com.google.gwt.json.client.JSONObject;
 import com.google.gwt.json.client.JSONParser;
 import com.google.gwt.json.client.JSONString;
 import com.google.gwt.json.client.JSONValue;
-import com.google.gwt.thirdparty.guava.common.collect.ImmutableList;
+
 
 public class GameApiJsonHelper {
   
