@@ -20,6 +20,7 @@ import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Lists;
 import com.google.gwt.json.client.JSONNumber;
 import com.google.gwt.json.client.JSONObject;
+import com.google.gwt.json.client.JSONValue;
 
 /**
  * This class emulates all the functionalities of the server.
@@ -198,8 +199,10 @@ public class ServerEmulator {
     JSONObject json = new JSONObject();
     json.put("currentState", GameApiJsonHelper.getJsonObject(gameState.getMasterState()));
     json.put("currentVisibilityInfo", GameApiJsonHelper.getJsonObject(gameState.getMasterVisibilityMap()));
-    json.put("lastState",  GameApiJsonHelper.getJsonObject(lastGameState.getMasterState()));
-    json.put("lastVisibilityInfo", GameApiJsonHelper.getJsonObject(lastGameState.getMasterVisibilityMap()));
+    if (lastGameState != null) {
+      json.put("lastState",  GameApiJsonHelper.getJsonObject(lastGameState.getMasterState()));
+      json.put("lastVisibilityInfo", GameApiJsonHelper.getJsonObject(lastGameState.getMasterVisibilityMap()));
+    }
     json.put("lastMovePlayerId", new JSONNumber(lastMovePlayerId));
     json.put("currentMovePlayerId", new JSONNumber(getTurnPlayer(lastMove)));
     return json.toString();
@@ -207,15 +210,29 @@ public class ServerEmulator {
   
   public void loadGameStateFromJSON(JSONObject json) {
     graphics.logToConsole("Loading Game State");
-    lastGameState.setManualState(
-        GameApiJsonHelper.getMapFromJsonObject(json.get("lastState").isObject()), 
-        GameApiJsonHelper.getMapFromJsonObject(json.get("lastVisibilityInfo").isObject()));
-    lastMovePlayerId = (int)((JSONNumber)json.get("lastMovePlayerId")).doubleValue();
-    int currentMovePlayerId = (int)((JSONNumber)json.get("currentMovePlayerId")).doubleValue();
+    JSONValue jsonLastState = json.get("lastState");
+    JSONValue jsonLastVisibilityInfo = json.get("lastVisibilityInfo");
+    JSONValue jsonLastMovePlayerId = json.get("lastMovePlayerId");
+    JSONValue jsonCurrentMovePlayerId = json.get("currentMovePlayerId");
+    JSONValue jsonCurrentState = json.get("currentState");
+    JSONValue jsonCurrentVisibilityInfo = json.get("currentVisibilityInfo");
+    
+    if (jsonLastState != null && jsonLastVisibilityInfo != null) {
+      if (lastGameState == null) {
+        lastGameState = new GameState();
+      }
+      lastGameState.setManualState(
+          GameApiJsonHelper.getMapFromJsonObject(jsonLastState.isObject()), 
+          GameApiJsonHelper.getMapFromJsonObject(jsonLastVisibilityInfo.isObject()));
+    } else {
+      lastGameState = null;
+    }
+    lastMovePlayerId = (int)((JSONNumber)jsonLastMovePlayerId).doubleValue();
+    int currentMovePlayerId = (int)((JSONNumber)jsonCurrentMovePlayerId).doubleValue();
     lastMove = Lists.newArrayList((Operation)new SetTurn(currentMovePlayerId)); 
     gameState.setManualState(
-        GameApiJsonHelper.getMapFromJsonObject(json.get("currentState").isObject()), 
-        GameApiJsonHelper.getMapFromJsonObject(json.get("currentVisibilityInfo").isObject()));
+        GameApiJsonHelper.getMapFromJsonObject(jsonCurrentState.isObject()), 
+        GameApiJsonHelper.getMapFromJsonObject(jsonCurrentVisibilityInfo.isObject()));
     sendUpdateStateToAllPlayers();
   }
 
@@ -233,9 +250,11 @@ public class ServerEmulator {
    * @return id of player who has the turn
    */
   private int getTurnPlayer(List<Operation> operations) {
-    for (Operation operation : operations) {
-      if (operation instanceof SetTurn) {
-        return ((SetTurn) operation).getPlayerId();
+    if (operations != null && !operations.isEmpty()) {
+      for (Operation operation : operations) {
+        if (operation instanceof SetTurn) {
+          return ((SetTurn) operation).getPlayerId();
+        }
       }
     }
     return lastMovePlayerId; // If not found
