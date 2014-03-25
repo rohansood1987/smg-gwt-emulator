@@ -155,6 +155,7 @@ public class GwtEmulatorGraphics extends Composite {
                     ByteArray data = fileReference.getData();
                     String content = data.readUTFBytes(data.getBytesAvailable());
                     serverEmulator.loadGameStateFromJSON(JSONParser.parseStrict(content).isObject());
+                    serverEmulator.resetSliderState();
                 }
             });
         }

@@ -240,4 +240,11 @@ public class ServerEmulator {
     }
     return lastMovePlayerId; // If not found
   }
+  
+  public void resetSliderState() {
+    savedStates.clear();
+    savedStates.add(saveGameStateJSONAsString());
+    currentSliderIndex = savedStates.size() - 1;
+    graphics.incrementSliderMaxValue(currentSliderIndex);
+  }
 }
