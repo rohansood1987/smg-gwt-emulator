@@ -35,6 +35,8 @@ public class ServerEmulator {
   private List<Operation> lastMove;
   private int lastMovePlayerId;
   private GwtEmulatorGraphics graphics;
+  private List<String> savedStates = new ArrayList<String>();
+  public int currentSliderIndex = -1;
   
   public static final String PLAYER_ID = "playerId";
   private static final int firstPlayerId = 1;
@@ -123,10 +125,14 @@ public class ServerEmulator {
     gameState.makeMove(makeMove.getOperations());
     lastMovePlayerId = playerId;
     lastMove = ImmutableList.copyOf(makeMove.getOperations());
+    // Add all playerids to verifiers list before sending verifyMove message
+    for (int verifyingPlayerId : playerIds) { 
+      verifiers.add(verifyingPlayerId);
+    }
     // Verify the move by all players
     for (int verifyingPlayerId : playerIds) {
       //TODO: Should this be sent to player making the move as well?
-      verifiers.add(verifyingPlayerId);
+      //verifiers.add(verifyingPlayerId);
       int verifyingPlayerIndex = getPlayerIndex(verifyingPlayerId);
       graphics.sendMessage(verifyingPlayerIndex, new VerifyMove(playersInfo,
           gameState.getStateForPlayerId(playerId),
@@ -144,6 +150,12 @@ public class ServerEmulator {
       if(verifiers.size() == 0) {
         // Verified by all
         sendUpdateStateToAllPlayers();
+        while (currentSliderIndex < savedStates.size() - 1) {
+             savedStates.remove(currentSliderIndex + 1);
+        }
+        savedStates.add(saveGameStateJSONAsString());
+        currentSliderIndex = savedStates.size() - 1;
+        graphics.incrementSliderMaxValue(currentSliderIndex);
         moveInProgress = false;
       }
     }
@@ -176,7 +188,7 @@ public class ServerEmulator {
   public void updateStateManually(Map<String, Object> state, Map<String, Object> visibilityMap) {
     graphics.logToConsole("Updating state manually: " + state.toString());
     lastGameState = gameState.copy();
-    lastMove = Lists.newArrayList((Operation)new SetTurn(lastMovePlayerId));
+    lastMove = Lists.newArrayList((Operation)new SetTurn(getTurnPlayer(lastMove)));
     gameState.setManualState(state, visibilityMap);
     sendUpdateStateToAllPlayers();
   }
@@ -189,6 +201,7 @@ public class ServerEmulator {
     json.put("lastState",  GameApiJsonHelper.getJsonObject(lastGameState.getMasterState()));
     json.put("lastVisibilityInfo", GameApiJsonHelper.getJsonObject(lastGameState.getMasterVisibilityMap()));
     json.put("lastMovePlayerId", new JSONNumber(lastMovePlayerId));
+    json.put("currentMovePlayerId", new JSONNumber(getTurnPlayer(lastMove)));
     return json.toString();
   }
   
@@ -198,11 +211,33 @@ public class ServerEmulator {
         GameApiJsonHelper.getMapFromJsonObject(json.get("lastState").isObject()), 
         GameApiJsonHelper.getMapFromJsonObject(json.get("lastVisibilityInfo").isObject()));
     lastMovePlayerId = (int)((JSONNumber)json.get("lastMovePlayerId")).doubleValue();
-    lastMove = Lists.newArrayList((Operation)new SetTurn(lastMovePlayerId)); 
+    int currentMovePlayerId = (int)((JSONNumber)json.get("currentMovePlayerId")).doubleValue();
+    lastMove = Lists.newArrayList((Operation)new SetTurn(currentMovePlayerId)); 
     gameState.setManualState(
         GameApiJsonHelper.getMapFromJsonObject(json.get("currentState").isObject()), 
         GameApiJsonHelper.getMapFromJsonObject(json.get("currentVisibilityInfo").isObject()));
     sendUpdateStateToAllPlayers();
   }
 
+  public String getSavedStateAtIndex(int index) {
+    if (index >= 0 && index < savedStates.size()) {
+      currentSliderIndex = index;
+      return savedStates.get(index);
+    }
+    return null;
+  }
+  
+  /**
+   * Get the playerId who has the turn.
+   * @param operations
+   * @return id of player who has the turn
+   */
+  private int getTurnPlayer(List<Operation> operations) {
+    for (Operation operation : operations) {
+      if (operation instanceof SetTurn) {
+        return ((SetTurn) operation).getPlayerId();
+      }
+    }
+    return lastMovePlayerId; // If not found
+  }
 }

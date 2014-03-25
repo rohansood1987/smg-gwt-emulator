@@ -28,6 +28,8 @@ import com.google.gwt.user.client.ui.TabLayoutPanel;
 import com.google.gwt.user.client.ui.TextArea;
 import com.google.gwt.user.client.ui.TextBox;
 import com.google.gwt.user.client.ui.Widget;
+import com.kiouri.sliderbar.client.event.BarValueChangedEvent;
+import com.kiouri.sliderbar.client.event.BarValueChangedHandler;
 
 public class GwtEmulatorGraphics extends Composite {
   public interface GwtEmulatorGraphicsUiBinder extends UiBinder<Widget, GwtEmulatorGraphics> {
@@ -57,8 +59,13 @@ public class GwtEmulatorGraphics extends Composite {
   @UiField
   Button btnSaveState;
   
+  @UiField
+  AbsolutePanel consolePanel;
+  
   private TabLayoutPanel gameTabs;
   private ServerEmulator serverEmulator;
+  private SliderBar sliderBar;
+  private boolean change = false;
   
   public GwtEmulatorGraphics() {
     GwtEmulatorGraphicsUiBinder uiBinder = GWT.create(GwtEmulatorGraphicsUiBinder.class);
@@ -83,8 +90,41 @@ public class GwtEmulatorGraphics extends Composite {
     }
     gameTabsPanel.add(gameTabs);
     injectEventListener(serverEmulator, numberOfPlayers);
+    addSlider(0);
   }
   
+  private void addSlider(int maxValue) {
+    change = false;
+    sliderBar = new SliderBar(maxValue, "100%");
+    sliderBar.drawMarks("white", 10);
+    sliderBar.addBarValueChangedHandler(new BarValueChangedHandler() {
+      @Override
+      public void onBarValueChanged(BarValueChangedEvent event) {
+        if (getAndSetBooleanValue()) {
+          serverEmulator.currentSliderIndex = event.getValue();
+          String jsonState = serverEmulator.getSavedStateAtIndex(event.getValue());
+          if (jsonState != null) {
+            serverEmulator.loadGameStateFromJSON(JSONParser.parseStrict(jsonState).isObject());
+          }
+        }
+      }
+    });
+    consolePanel.add(sliderBar);
+  }
+  
+  private boolean getAndSetBooleanValue() {
+    boolean value = change;
+    change = true;
+    return value;
+  }
+  
+  public void incrementSliderMaxValue(int value) {
+    consolePanel.remove(sliderBar);
+    addSlider(value);
+    change = false;
+    sliderBar.setValue(value);
+  }
+
   @UiHandler("btnEditState")
   void onClickEditStateButton(ClickEvent e) {
     new PopupEditState(serverEmulator.getStateAsString(), serverEmulator.getVisibilityMapAsString(),

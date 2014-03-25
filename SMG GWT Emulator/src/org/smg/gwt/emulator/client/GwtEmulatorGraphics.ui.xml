@@ -31,6 +31,7 @@
 	       <g:Button text="Save State" ui:field="btnSaveState" />
 	       <g:Button text="Load State" ui:field="btnLoadState" />
   	   </g:HorizontalPanel>
+  	   <g:AbsolutePanel ui:field="consolePanel"></g:AbsolutePanel> 
   	  </g:VerticalPanel>
   	</g:HorizontalPanel>
   
