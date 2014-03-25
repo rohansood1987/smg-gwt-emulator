@@ -23,6 +23,7 @@ import com.google.gwt.user.client.ui.AbsolutePanel;
 import com.google.gwt.user.client.ui.Button;
 import com.google.gwt.user.client.ui.Composite;
 import com.google.gwt.user.client.ui.Frame;
+import com.google.gwt.user.client.ui.HorizontalPanel;
 import com.google.gwt.user.client.ui.ListBox;
 import com.google.gwt.user.client.ui.TabLayoutPanel;
 import com.google.gwt.user.client.ui.TextArea;
@@ -36,13 +37,16 @@ public class GwtEmulatorGraphics extends Composite {
   }
   
   @UiField
+  TextBox txtGameWidth;
+  
+  @UiField
+  TextBox txtGameHeight;
+  
+  @UiField
   TextBox txtGameUrl;
   
   @UiField
   Button btnStart;
-  
-  @UiField
-  AbsolutePanel gameTabsPanel;
   
   @UiField
   TextArea console;
@@ -60,39 +64,76 @@ public class GwtEmulatorGraphics extends Composite {
   Button btnSaveState;
   
   @UiField
-  AbsolutePanel consolePanel;
+  AbsolutePanel mainConfigPanel;
+
+  @UiField
+  HorizontalPanel gamePanel;
+
+  @UiField
+  AbsolutePanel gameTabsPanel;
+  
+  @UiField
+  AbsolutePanel sliderBarPanel;
+  
   
   private TabLayoutPanel gameTabs;
   private ServerEmulator serverEmulator;
   private SliderBar sliderBar;
   private boolean change = false;
+  private int gameFrameWidth, gameFrameHeight;
   
   public GwtEmulatorGraphics() {
     GwtEmulatorGraphicsUiBinder uiBinder = GWT.create(GwtEmulatorGraphicsUiBinder.class);
     initWidget(uiBinder.createAndBindUi(this));
+    gamePanel.setVisible(false);
   }
   
   @UiHandler("btnStart")
   void onClickStartButton(ClickEvent e) {
-    // initialize ServerEmulator
+    if (!validatateConfigInput()) {
+      return;
+    }
     int numberOfPlayers = Integer.parseInt(
         listNumPlayers.getValue(listNumPlayers.getSelectedIndex()));
+    // initialize ServerEmulator
     serverEmulator = new ServerEmulator(numberOfPlayers, this);
     gameTabs = new TabLayoutPanel(1.5, Unit.EM);
-    gameTabs.setSize("800px", "400px");
+    gameTabs.setSize(gameFrameWidth + "px", (gameFrameHeight + 25) + "px");
     String url = txtGameUrl.getText();
     for (int i = 0; i < numberOfPlayers; i++) {
       //TODO: Add actual player name as tab name here
       Frame frame = new Frame(url);
       frame.getElement().setId("frame" + i);
-      frame.setSize("795px", "375px");
+      frame.setSize("100%", "100%");
       gameTabs.add(frame, "Player " + (i + 1));
     }
     gameTabsPanel.add(gameTabs);
+    console.setSize("400px", "500px");
+    console.setEnabled(false);
     injectEventListener(serverEmulator, numberOfPlayers);
     addSlider(0);
+    mainConfigPanel.setVisible(false);
+    gamePanel.setVisible(true);
   }
   
+  private boolean validatateConfigInput() {
+    try {
+      gameFrameWidth = Integer.parseInt(txtGameWidth.getText());
+    }
+    catch(NumberFormatException ex) {
+      alert("Invalid width: " + txtGameWidth.getText());
+      return false;
+    }
+    try {
+      gameFrameHeight = Integer.parseInt(txtGameHeight.getText());
+    }
+    catch(NumberFormatException ex) {
+      alert("Invalid height: " + txtGameHeight.getText());
+      return false;
+    }
+    return true;
+  }
+
   private void addSlider(int maxValue) {
     change = false;
     sliderBar = new SliderBar(maxValue, "100%");
@@ -109,7 +150,7 @@ public class GwtEmulatorGraphics extends Composite {
         }
       }
     });
-    consolePanel.add(sliderBar);
+    sliderBarPanel.add(sliderBar);
   }
   
   private boolean getAndSetBooleanValue() {
@@ -119,7 +160,7 @@ public class GwtEmulatorGraphics extends Composite {
   }
   
   public void incrementSliderMaxValue(int value) {
-    consolePanel.remove(sliderBar);
+    sliderBarPanel.remove(sliderBar);
     addSlider(value);
     change = false;
     sliderBar.setValue(value);
@@ -187,6 +228,10 @@ public class GwtEmulatorGraphics extends Composite {
   
   private static native void postMessageToFrame(String frameName, String message) /*-{
     $doc.getElementById(frameName).contentWindow.postMessage(JSON.parse(message), "*");
+  }-*/;
+  
+  private native void alert(String message) /*-{
+    alert(message);
   }-*/;
   
   public void logToConsole(String msg) {

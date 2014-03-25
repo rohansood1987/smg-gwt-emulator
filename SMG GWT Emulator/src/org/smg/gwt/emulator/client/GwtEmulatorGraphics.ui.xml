@@ -5,33 +5,44 @@
   <g:VerticalPanel>
   
     <g:AbsolutePanel ui:field="mainConfigPanel">
-      <g:Label text="Number of players:"/>
-      <g:ListBox width="20" ui:field="listNumPlayers">
-        <g:item value='2'>2 players</g:item>
-        <g:item value='3'>3 players</g:item>
-        <g:item value='4'>4 players</g:item>
-        <g:item value='5'>5 players</g:item>
-        <g:item value='6'>6 players</g:item>
-        <g:item value='7'>7 players</g:item>
-        <g:item value='8'>8 players</g:item>
-        <g:item value='9'>9 players</g:item>
-      </g:ListBox>
-      <g:Label text="Game URL"/>
-      <g:TextBox width="100" ui:field="txtGameUrl"/>
+      <g:HorizontalPanel>
+        <g:Label text="Number of players:"/>
+	      <g:ListBox width="20" ui:field="listNumPlayers">
+	        <g:item value='2'>2 players</g:item>
+	        <g:item value='3'>3 players</g:item>
+	        <g:item value='4'>4 players</g:item>
+	        <g:item value='5'>5 players</g:item>
+	        <g:item value='6'>6 players</g:item>
+	        <g:item value='7'>7 players</g:item>
+	        <g:item value='8'>8 players</g:item>
+	        <g:item value='9'>9 players</g:item>
+	      </g:ListBox>
+	    </g:HorizontalPanel>
+	    <g:HorizontalPanel>
+        <g:Label text="Game size in pixels:"/>
+        <g:Label text="  Width:"/>
+        <g:TextBox width="20" ui:field="txtGameWidth"/>
+        <g:Label text="  Height:"/>
+        <g:TextBox width="20" ui:field="txtGameHeight"/>
+      </g:HorizontalPanel>
+	    <g:HorizontalPanel>
+	      <g:Label text="Game URL"/>
+	      <g:TextBox width="100" ui:field="txtGameUrl"/>
+      </g:HorizontalPanel>
       <g:Button text="Start Game" ui:field="btnStart"/>
     </g:AbsolutePanel>
   
   	<g:HorizontalPanel  ui:field="gamePanel">
-  	  <g:AbsolutePanel height="400px" width="800px" ui:field="gameTabsPanel"/>
+  	  <g:AbsolutePanel ui:field="gameTabsPanel"/>
   	  <!--g:Frame height="400px" width="800px" ui:field="gameFrame"/-->
   	  <g:VerticalPanel>
-  	   <g:TextArea height="400px" width="400px" ui:field="console"/>
+  	   <g:TextArea ui:field="console"/>
   	   <g:HorizontalPanel>
 	  	   <g:Button text="Edit State" ui:field="btnEditState" />
 	       <g:Button text="Save State" ui:field="btnSaveState" />
 	       <g:Button text="Load State" ui:field="btnLoadState" />
   	   </g:HorizontalPanel>
-  	   <g:AbsolutePanel ui:field="consolePanel"></g:AbsolutePanel> 
+  	   <g:AbsolutePanel ui:field="sliderBarPanel"></g:AbsolutePanel> 
   	  </g:VerticalPanel>
   	</g:HorizontalPanel>
   
