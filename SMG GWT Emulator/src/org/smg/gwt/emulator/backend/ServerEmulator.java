@@ -4,22 +4,23 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
+import org.game_api.GameApi.GameApiJsonHelper;
+import org.game_api.GameApi.GameReady;
+import org.game_api.GameApi.MakeMove;
+import org.game_api.GameApi.Message;
+import org.game_api.GameApi.Operation;
+import org.game_api.GameApi.SetTurn;
+import org.game_api.GameApi.UpdateUI;
+import org.game_api.GameApi.VerifyMove;
+import org.game_api.GameApi.VerifyMoveDone;
 import org.smg.gwt.emulator.client.GwtEmulatorGraphics;
-import org.smg.gwt.emulator.data.GameApi.GameReady;
-import org.smg.gwt.emulator.data.GameApi.MakeMove;
-import org.smg.gwt.emulator.data.GameApi.Message;
-import org.smg.gwt.emulator.data.GameApi.Operation;
-import org.smg.gwt.emulator.data.GameApi.SetTurn;
-import org.smg.gwt.emulator.data.GameApi.UpdateUI;
-import org.smg.gwt.emulator.data.GameApi.VerifyMove;
-import org.smg.gwt.emulator.data.GameApi.VerifyMoveDone;
-import org.smg.gwt.emulator.data.GameApiJsonHelper;
 
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Lists;
-import com.google.gwt.json.client.JSONNumber;
+import com.google.gwt.json.client.JSONNull;
 import com.google.gwt.json.client.JSONObject;
+import com.google.gwt.json.client.JSONString;
 import com.google.gwt.json.client.JSONValue;
 
 /**
@@ -29,21 +30,22 @@ import com.google.gwt.json.client.JSONValue;
 public class ServerEmulator {
   
   private int numberOfPlayers;
-  private List<Integer> playerIds;
+  private List<String> playerIds;
   private final List<Map<String, Object>> playersInfo = Lists.newArrayList();
   private GameState gameState;
   private GameState lastGameState;
   private List<Operation> lastMove;
-  private int lastMovePlayerId;
+  private String lastMovePlayerId;
   private GwtEmulatorGraphics graphics;
   private List<String> savedStates = new ArrayList<String>();
   public int currentSliderIndex = -1;
   
+  private static final JSONNull JSON_NULL = JSONNull.getInstance();
   public static final String PLAYER_ID = "playerId";
-  private static final int firstPlayerId = 1;
+  private static final String firstPlayerId = "42";
   
   private boolean moveInProgress;
-  private List<Integer> verifiers = Lists.newArrayList();
+  private List<String> verifiers = Lists.newArrayList();
   private int countGameReady = 0;
   
   public ServerEmulator(int numberOfPlayers, GwtEmulatorGraphics graphics) {
@@ -56,7 +58,7 @@ public class ServerEmulator {
   private void setupPlayers() {
     playerIds = Lists.newArrayList();
     for(int i = 0; i < numberOfPlayers; i++) {
-      int playerId = firstPlayerId + i;
+      String playerId = (Integer.parseInt(firstPlayerId) + i) + "";
       playerIds.add(playerId);
       playersInfo.add(ImmutableMap.<String, Object>of(PLAYER_ID, playerId));
     }
@@ -64,17 +66,17 @@ public class ServerEmulator {
     countGameReady = 0;
   }
   
-  public List<Integer> getPlayerIds() {
+  public List<String> getPlayerIds() {
     return playerIds;
   }
   
-  private int getPlayerIndex(int playerId) {
+  private int getPlayerIndex(String playerId) {
     return playerIds.indexOf(playerId);
   }
   
   public void eventListner(String message, int playerIndex) {
     
-    int playerId = playerIds.get(playerIndex);
+    String playerId = playerIds.get(playerIndex);
     graphics.logToConsole("Message from [" + playerId + "]: " + message);
     
     Message messageObj = null;
@@ -99,12 +101,13 @@ public class ServerEmulator {
     }
   }
 
-  private void handleGameReady(GameReady gameReady, int playerId1) {
+  private void handleGameReady(GameReady gameReady, String sendingPlayerId) {
     // Send initial UpdateUI message
     graphics.logToConsole("handling game ready");
+    //TODO: map PlayerId's here since some game can send GameReady twice
     countGameReady++;
     if (countGameReady == numberOfPlayers) {
-      for(int playerId : playerIds) {
+      for(String playerId : playerIds) {
       int playerIndex = getPlayerIndex(playerId);
       graphics.sendMessage(playerIndex, new UpdateUI(playerId, playersInfo,
             gameState.getStateForPlayerId(playerId),
@@ -114,7 +117,7 @@ public class ServerEmulator {
      }
   }
   
-  private void handleMakeMove(MakeMove makeMove, int playerId) {
+  private void handleMakeMove(MakeMove makeMove, String playerId) {
     graphics.logToConsole("handling make move");
     if (moveInProgress) {
       //TODO:Handle the case where previous move was in progress and a new move was sent.
@@ -127,11 +130,11 @@ public class ServerEmulator {
     lastMovePlayerId = playerId;
     lastMove = ImmutableList.copyOf(makeMove.getOperations());
     // Add all playerids to verifiers list before sending verifyMove message
-    for (int verifyingPlayerId : playerIds) { 
+    for (String verifyingPlayerId : playerIds) { 
       verifiers.add(verifyingPlayerId);
     }
     // Verify the move by all players
-    for (int verifyingPlayerId : playerIds) {
+    for (String verifyingPlayerId : playerIds) {
       //TODO: Should this be sent to player making the move as well?
       //verifiers.add(verifyingPlayerId);
       int verifyingPlayerIndex = getPlayerIndex(verifyingPlayerId);
@@ -143,10 +146,10 @@ public class ServerEmulator {
     }
   }
   
-  private void handleVerifyMoveDone(VerifyMoveDone verifyMoveDone, int verifyingPlayerId) {
+  private void handleVerifyMoveDone(VerifyMoveDone verifyMoveDone, String verifyingPlayerId) {
     graphics.logToConsole("handling verify move done");
-    if(verifyMoveDone.getHackerPlayerId() == 0) {
-      verifiers.remove(new Integer(verifyingPlayerId));
+    if(verifyMoveDone.getHackerPlayerId() == null) {
+      verifiers.remove(verifyingPlayerId);
       //TODO: make this condition lenient?
       if(verifiers.size() == 0) {
         // Verified by all
@@ -167,7 +170,7 @@ public class ServerEmulator {
   }
   
   private void sendUpdateStateToAllPlayers() {
-    for(int playerId : playerIds) {
+    for(String playerId : playerIds) {
       int playerIndex = getPlayerIndex(playerId);
       graphics.sendMessage(playerIndex, new UpdateUI(playerId, playersInfo,
           gameState.getStateForPlayerId(playerId),
@@ -184,8 +187,6 @@ public class ServerEmulator {
     return GameApiJsonHelper.getJsonStringFromMap(gameState.getMasterVisibilityMap());
   }
   
-  
-
   public void updateStateManually(Map<String, Object> state, Map<String, Object> visibilityMap) {
     graphics.logToConsole("Updating state manually: " + state.toString());
     lastGameState = gameState.copy();
@@ -200,11 +201,15 @@ public class ServerEmulator {
     json.put("currentState", GameApiJsonHelper.getJsonObject(gameState.getMasterState()));
     json.put("currentVisibilityInfo", GameApiJsonHelper.getJsonObject(gameState.getMasterVisibilityMap()));
     if (lastGameState != null) {
-      json.put("lastState",  GameApiJsonHelper.getJsonObject(lastGameState.getMasterState()));
+      json.put("lastState", GameApiJsonHelper.getJsonObject(lastGameState.getMasterState()));
       json.put("lastVisibilityInfo", GameApiJsonHelper.getJsonObject(lastGameState.getMasterVisibilityMap()));
     }
-    json.put("lastMovePlayerId", new JSONNumber(lastMovePlayerId));
-    json.put("currentMovePlayerId", new JSONNumber(getTurnPlayer(lastMove)));
+    else {
+      json.put("lastState", JSON_NULL);
+      json.put("lastVisibilityInfo", JSON_NULL);
+    }
+    json.put("lastMovePlayerId", new JSONString(lastMovePlayerId));
+    json.put("currentMovePlayerId", new JSONString(getTurnPlayer(lastMove)));
     return json.toString();
   }
   
@@ -217,7 +222,7 @@ public class ServerEmulator {
     JSONValue jsonCurrentState = json.get("currentState");
     JSONValue jsonCurrentVisibilityInfo = json.get("currentVisibilityInfo");
     
-    if (jsonLastState != null && jsonLastVisibilityInfo != null) {
+    if (!(jsonLastState instanceof JSONNull)) {
       if (lastGameState == null) {
         lastGameState = new GameState();
       }
@@ -227,8 +232,8 @@ public class ServerEmulator {
     } else {
       lastGameState = null;
     }
-    lastMovePlayerId = (int)((JSONNumber)jsonLastMovePlayerId).doubleValue();
-    int currentMovePlayerId = (int)((JSONNumber)jsonCurrentMovePlayerId).doubleValue();
+    lastMovePlayerId = ((JSONString)jsonLastMovePlayerId).stringValue();
+    String currentMovePlayerId = ((JSONString)jsonCurrentMovePlayerId).stringValue();
     lastMove = Lists.newArrayList((Operation)new SetTurn(currentMovePlayerId)); 
     gameState.setManualState(
         GameApiJsonHelper.getMapFromJsonObject(jsonCurrentState.isObject()), 
@@ -249,7 +254,7 @@ public class ServerEmulator {
    * @param operations
    * @return id of player who has the turn
    */
-  private int getTurnPlayer(List<Operation> operations) {
+  private String getTurnPlayer(List<Operation> operations) {
     if (operations != null && !operations.isEmpty()) {
       for (Operation operation : operations) {
         if (operation instanceof SetTurn) {
@@ -257,7 +262,7 @@ public class ServerEmulator {
         }
       }
     }
-    return lastMovePlayerId; // If not found
+    return lastMovePlayerId; // TODO: If not found?
   }
   
   public void resetSliderState() {

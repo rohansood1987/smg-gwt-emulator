@@ -29,12 +29,14 @@
 
   <set-property name="compiler.stackMode" value="emulated" />
   <set-configuration-property name="compiler.emulatedStack.recordLineNumbers" value="true" />
+  <set-configuration-property name='xsiframe.failIfScriptTag' value='FALSE'/>
 
   <!-- Specify the paths for translatable code                    -->
-  <source path='backend'/>
-  <source path='client'/>
-  <source path='data'/>
+  <source path='game_api'/>
+  <source path='smg/gwt/emulator/backend'/>
+  <source path='smg/gwt/emulator/client'/>
   
+  <add-linker name='xsiframe'/>
   <!-- Add an offline linker                                      -->
   <!-- define-linker class="org.smg.gwt.emulator.linker.OfflineLinker" name="offline" />
   <add-linker name="offline" /-->

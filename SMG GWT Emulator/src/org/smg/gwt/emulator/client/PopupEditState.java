@@ -2,8 +2,7 @@ package org.smg.gwt.emulator.client;
 
 import java.util.Map;
 
-import org.smg.gwt.emulator.data.GameApi.Game;
-import org.smg.gwt.emulator.data.GameApiJsonHelper;
+import org.game_api.GameApi.GameApiJsonHelper;
 
 import com.google.gwt.event.dom.client.ClickEvent;
 import com.google.gwt.event.dom.client.ClickHandler;

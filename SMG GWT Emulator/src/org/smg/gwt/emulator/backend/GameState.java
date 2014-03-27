@@ -4,13 +4,13 @@ import java.util.List;
 import java.util.Map;
 import java.util.Random;
 
-import org.smg.gwt.emulator.data.GameApi.AttemptChangeTokens;
-import org.smg.gwt.emulator.data.GameApi.Delete;
-import org.smg.gwt.emulator.data.GameApi.Operation;
-import org.smg.gwt.emulator.data.GameApi.Set;
-import org.smg.gwt.emulator.data.GameApi.SetRandomInteger;
-import org.smg.gwt.emulator.data.GameApi.SetVisibility;
-import org.smg.gwt.emulator.data.GameApi.Shuffle;
+import org.game_api.GameApi.AttemptChangeTokens;
+import org.game_api.GameApi.Delete;
+import org.game_api.GameApi.Operation;
+import org.game_api.GameApi.Set;
+import org.game_api.GameApi.SetRandomInteger;
+import org.game_api.GameApi.SetVisibility;
+import org.game_api.GameApi.Shuffle;
 
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Lists;
@@ -20,7 +20,7 @@ public class GameState {
 
   private final Map<String, Object> state = Maps.newHashMap();
   private final Map<String, Object> visibleTo = Maps.newHashMap();
-  private Map<Integer, Integer> playerIdToNumberOfTokensInPot = Maps.newHashMap();
+  private Map<String, Integer> playerIdToNumberOfTokensInPot = Maps.newHashMap();
   
   private static final String ALL = "ALL"; 
 
@@ -32,19 +32,18 @@ public class GameState {
     return result;
   }
   
-  public Map<Integer, Integer> getPlayerIdToNumberOfTokensInPot() {
+  public Map<String, Integer> getPlayerIdToNumberOfTokensInPot() {
     return playerIdToNumberOfTokensInPot;
   }
 
   @SuppressWarnings("unchecked")
-  public Map<String, Object> getStateForPlayerId(int playerId) {
+  public Map<String, Object> getStateForPlayerId(String playerId) {
     Map<String, Object> result = Maps.newHashMap();
-    Integer playerIdInteger = playerId;
     for (String key : state.keySet()) {
       Object visibleToPlayers = visibleTo.get(key);
       Object value = null;
       if (visibleToPlayers.equals(ALL)
-          || ((List<Integer>) visibleToPlayers).contains(playerIdInteger)) {
+          || ((List<String>) visibleToPlayers).contains(playerId)) {
         value = state.get(key);
       }
       result.put(key, value);

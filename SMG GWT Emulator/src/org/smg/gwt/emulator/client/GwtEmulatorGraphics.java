@@ -2,9 +2,9 @@ package org.smg.gwt.emulator.client;
 
 import java.util.Map;
 
+import org.game_api.GameApi.GameApiJsonHelper;
+import org.game_api.GameApi.Message;
 import org.smg.gwt.emulator.backend.ServerEmulator;
-import org.smg.gwt.emulator.data.GameApi.Message;
-import org.smg.gwt.emulator.data.GameApiJsonHelper;
 
 import com.emitrom.flash4j.clientio.client.ClientIO;
 import com.emitrom.flash4j.core.client.events.Event;
@@ -86,6 +86,8 @@ public class GwtEmulatorGraphics extends Composite {
     GwtEmulatorGraphicsUiBinder uiBinder = GWT.create(GwtEmulatorGraphicsUiBinder.class);
     initWidget(uiBinder.createAndBindUi(this));
     gamePanel.setVisible(false);
+    btnSaveState.setEnabled(false);
+    btnLoadState.setEnabled(false);
   }
   
   @UiHandler("btnStart")

@@ -4,13 +4,31 @@
   </head>
   <body>
     <h1>GWT Emulator</h1>
-    This GWT Emulator was designed for NYU course Social Multiplayer Games - Spring 2014.
+    This GWT Emulator was designed for NYU course Social Multiplayer Games - Spring 2014.<br><br>
+    <i><b>Update:</b></i> The emulator has been updated to use new GameApi, which uses String playerIDs.
     <h2>Demo</h2>
     You can demo this emulator online <a href="GwtEmulator.html">here</a>.
     The following links can be used as Game-URLs for the demo.
     <ul>
-      <li><a href="poker/PokerGame.html">Poker</a></li>
-      <li><a href="risk/RiskGame.html">Risk</a></li>
+      <li><a href="http://2-dot-cheat-game.appspot.com/CheatGame.html">Cheat</a></li>
+      <li><del>Poker</del> (not yet updated to use new GameApi)</li>
+      <li><del>Risk</del> (not yet updated to use new GameApi)</li>
+      <!--li><a href="poker/PokerGame.html">Poker</a></li-->
+      <!--li><a href="http://emulator-dot-risk-smg.appspot.com/RiskGame.html">Risk</a></li-->
+    </ul>
+    <h2>GWT Development Support</h2>
+    If you developed a game for this course using GWT, you can use this emulator after making
+    minimal changes in your game.<br>
+    <ul>
+    <li>Take
+    <a href="https://github.com/rohansood1987/smg-gwt-emulator/blob/master/SMG%20GWT%20Emulator/src/org/smg/gwt/emulator/data/ContainerConnector.java">ContainerConnector.java</a>
+    and 
+    <a href="https://github.com/rohansood1987/smg-gwt-emulator/blob/master/SMG%20GWT%20Emulator/src/org/smg/gwt/emulator/data/GameApiJsonHelper.java">GameApiJsonHelper.java</a>
+    from our GitHub project.</li>
+    <li>Include the following line in your GWT xml file:<br>
+    <code>&lt;inherits name='com.google.gwt.json.JSON'/&gt;</code></li>
+    <li>In your EntryPoint class, use ContainerConnector instead of IteratingPlayerContainer</li>
+    <li>You only need to call gameReady() method initially, and the rest will be handled by the emulator</li>
     </ul>
     <h2>Offline Usage Instructions</h2>
     For using this emulator with your game, you need to download the emulator to your 
