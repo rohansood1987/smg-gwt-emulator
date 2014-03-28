@@ -17,6 +17,7 @@ import com.google.gwt.storage.client.Storage;
 import com.google.gwt.uibinder.client.UiBinder;
 import com.google.gwt.uibinder.client.UiField;
 import com.google.gwt.uibinder.client.UiHandler;
+import com.google.gwt.user.client.Window;
 import com.google.gwt.user.client.ui.AbsolutePanel;
 import com.google.gwt.user.client.ui.Button;
 import com.google.gwt.user.client.ui.Composite;
@@ -260,6 +261,7 @@ public class GwtEmulatorGraphics extends Composite {
         addLoadClearButtonHandlers(load, clear, row + 1);
         flexTable.setWidget(row + 1, 1, load);
         flexTable.setWidget(row + 1, 2, clear);
+        Window.alert("State saved successfully. Press Load button to load any saved states");
       }
     }, keySet).center();
   }
