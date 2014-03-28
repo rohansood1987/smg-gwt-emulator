@@ -1,27 +1,26 @@
 package org.smg.gwt.emulator.client;
 
+import java.util.HashSet;
 import java.util.Map;
+import java.util.Set;
 
 import org.game_api.GameApi.GameApiJsonHelper;
 import org.game_api.GameApi.Message;
 import org.smg.gwt.emulator.backend.ServerEmulator;
 
-import com.emitrom.flash4j.clientio.client.ClientIO;
-import com.emitrom.flash4j.core.client.events.Event;
-import com.emitrom.flash4j.core.client.events.handlers.EventHandler;
-import com.emitrom.flash4j.core.client.net.FileFilter;
-import com.emitrom.flash4j.core.client.net.FileReference;
-import com.emitrom.flash4j.core.client.utils.ByteArray;
 import com.google.gwt.core.shared.GWT;
 import com.google.gwt.dom.client.Style.Unit;
 import com.google.gwt.event.dom.client.ClickEvent;
+import com.google.gwt.event.dom.client.ClickHandler;
 import com.google.gwt.json.client.JSONParser;
+import com.google.gwt.storage.client.Storage;
 import com.google.gwt.uibinder.client.UiBinder;
 import com.google.gwt.uibinder.client.UiField;
 import com.google.gwt.uibinder.client.UiHandler;
 import com.google.gwt.user.client.ui.AbsolutePanel;
 import com.google.gwt.user.client.ui.Button;
 import com.google.gwt.user.client.ui.Composite;
+import com.google.gwt.user.client.ui.FlexTable;
 import com.google.gwt.user.client.ui.Frame;
 import com.google.gwt.user.client.ui.HorizontalPanel;
 import com.google.gwt.user.client.ui.ListBox;
@@ -58,10 +57,10 @@ public class GwtEmulatorGraphics extends Composite {
   ListBox listNumPlayers;
   
   @UiField
-  Button btnLoadState;
+  Button btnSaveState;
   
   @UiField
-  Button btnSaveState;
+  Button btnLoadState;
   
   @UiField
   AbsolutePanel mainConfigPanel;
@@ -81,13 +80,15 @@ public class GwtEmulatorGraphics extends Composite {
   private SliderBar sliderBar;
   private boolean change = false;
   private int gameFrameWidth, gameFrameHeight;
-  
+  private Storage stateStore;
+  private FlexTable flexTable;
+  private ClickHandler clearAllButtonHandler;
+  private PopupLoadState displayLoadPopUp;
+
   public GwtEmulatorGraphics() {
     GwtEmulatorGraphicsUiBinder uiBinder = GWT.create(GwtEmulatorGraphicsUiBinder.class);
     initWidget(uiBinder.createAndBindUi(this));
     gamePanel.setVisible(false);
-    btnSaveState.setEnabled(false);
-    btnLoadState.setEnabled(false);
   }
   
   @UiHandler("btnStart")
@@ -116,6 +117,7 @@ public class GwtEmulatorGraphics extends Composite {
     addSlider(0);
     mainConfigPanel.setVisible(false);
     gamePanel.setVisible(true);
+    addSaveStateTable();
   }
   
   private boolean validatateConfigInput() {
@@ -179,30 +181,92 @@ public class GwtEmulatorGraphics extends Composite {
     }).center();
   }
   
-  @UiHandler("btnSaveState")
-  void onClickSaveStateButton(ClickEvent e) {
-    String data = serverEmulator.saveGameStateJSONAsString();
-    ClientIO.saveFile(data, "SaveState.txt");
+  private void addSaveStateTable() {
+    stateStore = Storage.getLocalStorageIfSupported();
+    if (stateStore == null) {
+      btnSaveState.setEnabled(false);
+      btnLoadState.setEnabled(false);
+      return;
+    }
+    flexTable = new FlexTable();
+    addHeaderToTable();
+    flexTable.setBorderWidth(2);
+    for (int i = 0; i < stateStore.getLength(); i++){
+      flexTable.setText(i + 1, 0, stateStore.key(i));
+      Button load = new Button("Load");
+      Button clear = new Button("Clear");
+      addLoadClearButtonHandlers(load, clear, i + 1);
+      flexTable.setWidget(i + 1, 1, load);
+      flexTable.setWidget(i + 1, 2, clear);
+    }
+    displayLoadPopUp = new PopupLoadState(flexTable);
+    displayLoadPopUp.hide();
   }
   
+  private void addHeaderToTable() {
+    flexTable.setText(0, 0, "Saved State Name");
+    flexTable.setText(0, 1, "Load Option");
+    Button clearAll = new Button("Clear All");
+    clearAll.addClickHandler(new ClickHandler() {
+      @Override
+      public void onClick(ClickEvent event) {
+        stateStore.clear();
+        flexTable.removeAllRows();
+        addHeaderToTable();
+        displayLoadPopUp.center();
+      }
+    });
+    flexTable.setWidget(0, 2, clearAll);
+  }
+  
+  private void addLoadClearButtonHandlers(Button load, Button clear, final int row) {
+    load.addClickHandler(new ClickHandler() {
+      @Override
+      public void onClick(ClickEvent event) {
+        String key = flexTable.getText(row, 0);
+        String content = stateStore.getItem(key);
+        serverEmulator.loadGameStateFromJSON(JSONParser.parseStrict(content).isObject());
+        serverEmulator.resetSliderState();
+        displayLoadPopUp.hide();
+      }
+    });
+    
+    clear.addClickHandler(new ClickHandler() {
+      @Override
+      public void onClick(ClickEvent event) {
+        String key = flexTable.getText(row, 0);
+        stateStore.removeItem(key);
+        flexTable.removeRow(row);
+        displayLoadPopUp.center();
+      }
+    });
+  }
+
+  @UiHandler("btnSaveState")
+  void onClickSaveStateButton(ClickEvent e) {
+    final String data = serverEmulator.saveGameStateJSONAsString();
+    Set<String> keySet = new HashSet<String>(); 
+    for (int i = 0; i < stateStore.getLength(); i++) {
+      keySet.add(stateStore.key(i));
+    }
+    new PopupSaveState(new PopupSaveState.NameEntered() {
+      @Override
+      public void setName(String name) {
+        stateStore.setItem(name, data);
+        int row  = flexTable.getRowCount();
+        flexTable.setText(row + 1, 0, name);
+        Button load = new Button("Load");
+        Button clear = new Button("Clear");
+        addLoadClearButtonHandlers(load, clear, row + 1);
+        flexTable.setWidget(row + 1, 1, load);
+        flexTable.setWidget(row + 1, 2, clear);
+      }
+    }, keySet).center();
+  }
+   
   @UiHandler("btnLoadState")
   void onClickLoadStateButton(ClickEvent e) {
-    final FileReference fileReference = ClientIO.browse(new FileFilter("LoadState", ".txt"));
-    fileReference.addEventHandler(Event.SELECT, new EventHandler() {
-        @Override
-        public void onEvent(Event event) {
-            fileReference.load();
-            fileReference.addEventHandler(Event.COMPLETE, new EventHandler() {
-                @Override
-                public void onEvent(Event event) {
-                    ByteArray data = fileReference.getData();
-                    String content = data.readUTFBytes(data.getBytesAvailable());
-                    serverEmulator.loadGameStateFromJSON(JSONParser.parseStrict(content).isObject());
-                    serverEmulator.resetSliderState();
-                }
-            });
-        }
-    });
+    displayLoadPopUp.center();
   }
   
   private native void injectEventListener(ServerEmulator emulator, int numberOfPlayers) /*-{

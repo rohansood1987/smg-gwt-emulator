@@ -6,7 +6,6 @@
 	<classpathentry kind="con" path="org.eclipse.jdt.launching.JRE_CONTAINER"/>
 	<classpathentry kind="lib" path="lib/guava-16.0.jar"/>
 	<classpathentry kind="lib" path="lib/guava-gwt-16.0.1.jar"/>
-	<classpathentry kind="lib" path="lib/flash4j_3.1.0.jar"/>
 	<classpathentry kind="lib" path="lib/gwt-slider-bar-1.0.jar"/>
 	<classpathentry kind="output" path="war/WEB-INF/classes"/>
 </classpath>

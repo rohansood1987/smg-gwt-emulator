@@ -10,7 +10,6 @@
   <inherits name='com.google.gwt.user.User'/>
   <inherits name='com.google.gwt.json.JSON'/>
   <inherits name='com.google.common.collect.Collect'/>
-  <inherits name='com.emitrom.flash4j.clientio.ClientIO'/>
   <inherits name="com.kiouri.sliderbar.SliderBarMVP"/>
   
   <!-- Inherit the default GWT style sheet.  You can change       -->
