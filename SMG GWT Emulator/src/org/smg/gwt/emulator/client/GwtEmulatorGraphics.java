@@ -1,6 +1,8 @@
 package org.smg.gwt.emulator.client;
 
+import java.util.ArrayList;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
@@ -85,7 +87,9 @@ public class GwtEmulatorGraphics extends Composite {
   private FlexTable flexTable;
   private ClickHandler clearAllButtonHandler;
   private PopupLoadState displayLoadPopUp;
-
+  private List<Frame> playerFrames = new ArrayList<Frame>();
+  private String gameUrl;
+  
   public GwtEmulatorGraphics() {
     GwtEmulatorGraphicsUiBinder uiBinder = GWT.create(GwtEmulatorGraphicsUiBinder.class);
     initWidget(uiBinder.createAndBindUi(this));
@@ -103,13 +107,13 @@ public class GwtEmulatorGraphics extends Composite {
     serverEmulator = new ServerEmulator(numberOfPlayers, this);
     gameTabs = new TabLayoutPanel(1.5, Unit.EM);
     gameTabs.setSize(gameFrameWidth + "px", (gameFrameHeight + 25) + "px");
-    String url = txtGameUrl.getText();
+    gameUrl = txtGameUrl.getText();
     for (int i = 0; i < numberOfPlayers; i++) {
-      //TODO: Add actual player name as tab name here
-      Frame frame = new Frame(url);
+      Frame frame = new Frame(gameUrl);
       frame.getElement().setId("frame" + i);
       frame.setSize("100%", "100%");
-      gameTabs.add(frame, "Player " + (i + 1));
+      gameTabs.add(frame, "Player " + serverEmulator.getPlayerIds().get(i));
+      playerFrames.add(frame);
     }
     gameTabsPanel.add(gameTabs);
     console.setSize("400px", "500px");
@@ -272,7 +276,8 @@ public class GwtEmulatorGraphics extends Composite {
   }
   
   private native void injectEventListener(ServerEmulator emulator, int numberOfPlayers) /*-{
-    function postMessageListener(e) {
+    $wnd.postMessageListener = function(e) {
+      //alert("Total players " + numberOfPlayers);
       for(var i = 0; i < numberOfPlayers; i++) {
         var frameName = "frame"+i;
         var frame = $doc.getElementById(frameName);
@@ -285,7 +290,11 @@ public class GwtEmulatorGraphics extends Composite {
         }
       }
     }
-    $wnd.addEventListener("message", postMessageListener, false);
+    $wnd.addEventListener("message", $wnd.postMessageListener, false);
+  }-*/;
+  
+  private native void removeEventListener() /*-{
+    $wnd.removeEventListener("message", $wnd.postMessageListener, false);
   }-*/;
   
   public void sendMessage(int playerIndex, Message message) {
@@ -304,6 +313,27 @@ public class GwtEmulatorGraphics extends Composite {
   
   public void logToConsole(String msg) {
     console.setText(console.getText() + "\n\n" + msg);
+  }
+  
+  public void addPlayerFrames(int newFrames, int oldTotalPlayers) {
+    removeEventListener();
+    for (int i = oldTotalPlayers; i < oldTotalPlayers + newFrames; ++i) {
+      Frame frame = new Frame(gameUrl);
+      frame.getElement().setId("frame" + i);
+      frame.setSize("100%", "100%");
+      gameTabs.add(frame, "Player " + serverEmulator.getPlayerIds().get(i));
+      playerFrames.add(frame);
+    }
+    injectEventListener(serverEmulator, oldTotalPlayers + newFrames);
+  }
+  
+  public void removePlayerFrames(int framesToRemove, int oldTotalPlayers) {
+    removeEventListener();
+    for (int i = oldTotalPlayers - 1; i >= oldTotalPlayers - framesToRemove; --i) {
+      Frame frame = playerFrames.remove(i);
+      gameTabs.remove(frame);
+    }
+    injectEventListener(serverEmulator, oldTotalPlayers - framesToRemove);
   }
   
 }
