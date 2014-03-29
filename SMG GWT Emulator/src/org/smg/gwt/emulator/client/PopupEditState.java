@@ -17,14 +17,17 @@ public class PopupEditState extends DialogBox {
   
   public interface StateEntered {
     public void setUpdatedStateInfo(
-        Map<String, Object> updatedState, Map<String, Object> updatedVisibilityMap);
+        Map<String, Object> updatedState, Map<String, Object> updatedVisibilityMap,
+        Map<String, Integer> updatedTokensMap);
   }
   
   final TextArea txtAreaState = new TextArea();
   final TextArea txtAreaVisibility = new TextArea();
+  final TextArea txtAreaTokens = new TextArea();
+  
   
   public PopupEditState(final String existingState, final String visibilityMap,
-      final StateEntered stateEntered) {
+      final String tokensMap, final StateEntered stateEntered) {
     
     // init
     setText("State Editor");
@@ -34,6 +37,8 @@ public class PopupEditState extends DialogBox {
     final Label lblStatus = new Label("Please edit the state.");
     txtAreaState.setText(existingState);
     txtAreaVisibility.setText(visibilityMap);
+    txtAreaTokens.setText(tokensMap);
+    
     
     // add listeners
     btnCancel.addClickHandler(new ClickHandler() {
@@ -48,6 +53,7 @@ public class PopupEditState extends DialogBox {
       public void onClick(ClickEvent event) {
         txtAreaState.setText(existingState);
         txtAreaVisibility.setText(visibilityMap);
+        txtAreaTokens.setText(tokensMap);
       }
     });
     
@@ -56,11 +62,13 @@ public class PopupEditState extends DialogBox {
       public void onClick(ClickEvent event) {
         Map<String, Object> updatedStateMap = null;
         Map<String, Object> visibilityMap = null;
+        Map<String, Integer> tokensMap = null;
         try {
           updatedStateMap = GameApiJsonHelper.getMapObject(txtAreaState.getText());
           visibilityMap = GameApiJsonHelper.getMapObject(txtAreaVisibility.getText());
+          tokensMap = (Map<String, Integer>)(Map<String, ? extends Object>)GameApiJsonHelper.getMapObject(txtAreaTokens.getText());
           hide();
-          stateEntered.setUpdatedStateInfo(updatedStateMap, visibilityMap);
+          stateEntered.setUpdatedStateInfo(updatedStateMap, visibilityMap, tokensMap);
         }
         catch(Exception ex) {
           lblStatus.setText("Please enter valid information");
@@ -72,9 +80,14 @@ public class PopupEditState extends DialogBox {
     VerticalPanel mainVertPanel = new VerticalPanel();
     mainVertPanel.add(lblStatus);
     mainVertPanel.add(new Label("State:"));
+    txtAreaState.setSize("400px", "120px");
     mainVertPanel.add(txtAreaState);
     mainVertPanel.add(new Label("Visibility Map:"));
+    txtAreaVisibility.setSize("400px", "120px");
     mainVertPanel.add(txtAreaVisibility);
+    mainVertPanel.add(new Label("Tokens Map:"));
+    txtAreaTokens.setSize("400px", "60px");
+    mainVertPanel.add(txtAreaTokens);
     HorizontalPanel btnsPanel = new HorizontalPanel();
     btnsPanel.add(btnCancel);
     btnsPanel.add(btnReset);

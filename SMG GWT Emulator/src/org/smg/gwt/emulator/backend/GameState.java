@@ -20,7 +20,7 @@ public class GameState {
 
   private final Map<String, Object> state = Maps.newHashMap();
   private final Map<String, Object> visibleTo = Maps.newHashMap();
-  private Map<String, Integer> playerIdToNumberOfTokensInPot = Maps.newHashMap();
+  private final Map<String, Integer> playerIdToNumberOfTokensInPot = Maps.newHashMap();
   
   private static final String ALL = "ALL"; 
 
@@ -57,6 +57,10 @@ public class GameState {
   
   public Map<String, Object> getMasterVisibilityMap() {
     return visibleTo;
+  }
+  
+  public Map<String, Integer> getMasterTokensMap() {
+    return playerIdToNumberOfTokensInPot;
   }
 
   public void makeMove(List<Operation> operations) {
@@ -101,8 +105,9 @@ public class GameState {
         visibleTo.put(toKey, oldVisibleTo.get(fromKey));
       }
     } else if (operation instanceof AttemptChangeTokens) {
-      playerIdToNumberOfTokensInPot =
-          ((AttemptChangeTokens) operation).getPlayerIdToNumberOfTokensInPot();
+      playerIdToNumberOfTokensInPot.clear();
+      playerIdToNumberOfTokensInPot.putAll(
+          ((AttemptChangeTokens) operation).getPlayerIdToNumberOfTokensInPot());
     }
   }
 
@@ -117,15 +122,16 @@ public class GameState {
     return res;
   }
 
-  public void setManualState(Map<String, Object> manualState, Map<String, Object> manualVisibilityMap) {
+  public void setManualState(
+      Map<String, Object> manualState,
+      Map<String, Object> manualVisibilityMap,
+      Map<String, Integer> manualTokensMap) {
     state.clear();
-    for(Map.Entry<String, Object>entry : manualState.entrySet()) {
-      state.put(entry.getKey(), entry.getValue());
-    }
+    state.putAll(manualState);
     visibleTo.clear();
-    for(Map.Entry<String, Object>entry : manualVisibilityMap.entrySet()) {
-      visibleTo.put(entry.getKey(), entry.getValue());
-    }
+    visibleTo.putAll(manualVisibilityMap);
+    playerIdToNumberOfTokensInPot.clear();
+    playerIdToNumberOfTokensInPot.putAll(manualTokensMap);
   }
 
 }

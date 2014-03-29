@@ -178,10 +178,12 @@ public class GwtEmulatorGraphics extends Composite {
   @UiHandler("btnEditState")
   void onClickEditStateButton(ClickEvent e) {
     new PopupEditState(serverEmulator.getStateAsString(), serverEmulator.getVisibilityMapAsString(),
+        serverEmulator.getTokensMapAsString(),
         new PopupEditState.StateEntered() {      
           @Override
-          public void setUpdatedStateInfo(Map<String, Object> updatedState, Map<String, Object> updatedVisibilityMap) {
-            serverEmulator.updateStateManually(updatedState, updatedVisibilityMap);
+          public void setUpdatedStateInfo(Map<String,Object> updatedState,
+              Map<String,Object> updatedVisibilityMap, Map<String,Integer> updatedTokensMap) {
+            serverEmulator.updateStateManually(updatedState, updatedVisibilityMap, updatedTokensMap);
           }
     }).center();
   }
