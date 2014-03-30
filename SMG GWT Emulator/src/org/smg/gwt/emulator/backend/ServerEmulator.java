@@ -224,6 +224,12 @@ public class ServerEmulator {
       json.put("lastState", JSON_NULL);
       json.put("lastVisibilityInfo", JSON_NULL);
     }
+    if (lastMove == null) {
+      json.put("lastMove", JSONNull.getInstance());
+    }
+    else {
+      json.put("lastMove", GameApiJsonHelper.getJsonObject(new MakeMove(lastMove).toMessage()));
+    }
     json.put("lastMovePlayerId", new JSONString(lastMovePlayerId));
     json.put("currentMovePlayerId", new JSONString(getTurnPlayer(lastMove)));
     json.put("numberOfPlayers", new JSONNumber(numberOfPlayers));
@@ -235,6 +241,7 @@ public class ServerEmulator {
     JSONValue jsonPlayerIdToNumberOfTokensInPot = json.get("playerIdToNumberOfTokensInPot");
     JSONValue jsonLastState = json.get("lastState");
     JSONValue jsonLastVisibilityInfo = json.get("lastVisibilityInfo");
+    JSONValue jsonLastMove = json.get("lastMove");
     JSONValue jsonLastMovePlayerId = json.get("lastMovePlayerId");
     JSONValue jsonCurrentMovePlayerId = json.get("currentMovePlayerId");
     JSONValue jsonCurrentState = json.get("currentState");
@@ -247,6 +254,9 @@ public class ServerEmulator {
       setupPlayers();
     }
     if (!(jsonLastState instanceof JSONNull)) {
+      lastGameState = null;
+    }
+    else {
       if (lastGameState == null) {
         lastGameState = new GameState();
       }
@@ -255,12 +265,17 @@ public class ServerEmulator {
           GameApiJsonHelper.getMapFromJsonObject(jsonLastState.isObject()), 
           GameApiJsonHelper.getMapFromJsonObject(jsonLastVisibilityInfo.isObject()),
           (Map<String, Integer>)(Map<String, ? extends Object>)GameApiJsonHelper.getMapFromJsonObject(jsonPlayerIdToNumberOfTokensInPot.isObject()));
-    } else {
-      lastGameState = null;
-    }
+    } 
     lastMovePlayerId = ((JSONString)jsonLastMovePlayerId).stringValue();
     String currentMovePlayerId = ((JSONString)jsonCurrentMovePlayerId).stringValue();
-    lastMove = Lists.newArrayList((Operation)new SetTurn(currentMovePlayerId)); 
+    //lastMove = Lists.newArrayList((Operation)new SetTurn(currentMovePlayerId));
+    if (jsonLastMove instanceof JSONNull) {
+      lastMove = null;
+    }
+    else {
+      //TODO: Refactor GameApiJsonHelper to make this simpler
+      lastMove = ((MakeMove)Message.messageToHasEquality(GameApiJsonHelper.getMapFromJsonObject((JSONObject)jsonLastMove))).getOperations();
+    }
     gameState.setManualState(
         GameApiJsonHelper.getMapFromJsonObject(jsonCurrentState.isObject()), 
         GameApiJsonHelper.getMapFromJsonObject(jsonCurrentVisibilityInfo.isObject()),
