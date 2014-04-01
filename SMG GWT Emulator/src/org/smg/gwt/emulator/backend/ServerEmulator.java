@@ -179,7 +179,7 @@ public class ServerEmulator {
       int playerIndex = getPlayerIndex(playerId);
       Map<String, Object> lastPlayerState = null;
       if (lastGameState != null) {
-        lastGameState.getStateForPlayerId(playerId);
+        lastPlayerState = lastGameState.getStateForPlayerId(playerId);
       }
       graphics.sendMessage(playerIndex, new UpdateUI(playerId, playersInfo,
           gameState.getStateForPlayerId(playerId),
@@ -203,8 +203,8 @@ public class ServerEmulator {
   public void updateStateManually(Map<String, Object> state, Map<String, Object> visibilityMap,
       Map<String, Integer> tokensMap) {
     graphics.logToConsole("Updating state manually: " + state.toString());
-    lastGameState = gameState.copy();
-    lastMove = Lists.newArrayList((Operation)new SetTurn(getTurnPlayer(lastMove)));
+    //lastGameState = gameState.copy();
+    //lastMove = Lists.newArrayList((Operation)new SetTurn(getTurnPlayer(lastMove)));
     gameState.setManualState(state, visibilityMap, tokensMap);
     sendUpdateStateToAllPlayers();
   }
