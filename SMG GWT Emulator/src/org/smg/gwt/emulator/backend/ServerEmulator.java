@@ -253,7 +253,7 @@ public class ServerEmulator {
     if (numberOfPlayers != oldTotalPlayers) {
       setupPlayers();
     }
-    if (!(jsonLastState instanceof JSONNull)) {
+    if (jsonLastState instanceof JSONNull) {
       lastGameState = null;
     }
     else {
