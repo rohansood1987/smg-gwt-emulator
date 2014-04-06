@@ -19,17 +19,21 @@ import com.google.gwt.storage.client.Storage;
 import com.google.gwt.uibinder.client.UiBinder;
 import com.google.gwt.uibinder.client.UiField;
 import com.google.gwt.uibinder.client.UiHandler;
+import com.google.gwt.user.client.Random;
 import com.google.gwt.user.client.Window;
 import com.google.gwt.user.client.ui.AbsolutePanel;
 import com.google.gwt.user.client.ui.Button;
 import com.google.gwt.user.client.ui.Composite;
+import com.google.gwt.user.client.ui.DialogBox;
 import com.google.gwt.user.client.ui.FlexTable;
 import com.google.gwt.user.client.ui.Frame;
 import com.google.gwt.user.client.ui.HorizontalPanel;
+import com.google.gwt.user.client.ui.Label;
 import com.google.gwt.user.client.ui.ListBox;
 import com.google.gwt.user.client.ui.TabLayoutPanel;
 import com.google.gwt.user.client.ui.TextArea;
 import com.google.gwt.user.client.ui.TextBox;
+import com.google.gwt.user.client.ui.VerticalPanel;
 import com.google.gwt.user.client.ui.Widget;
 import com.kiouri.sliderbar.client.event.BarValueChangedEvent;
 import com.kiouri.sliderbar.client.event.BarValueChangedHandler;
@@ -49,6 +53,9 @@ public class GwtEmulatorGraphics extends Composite {
   
   @UiField
   Button btnStart;
+  
+  @UiField
+  Button btnReLoadEmulator;
   
   @UiField
   TextArea console;
@@ -82,13 +89,15 @@ public class GwtEmulatorGraphics extends Composite {
   private ServerEmulator serverEmulator;
   private SliderBar sliderBar;
   private boolean change = false;
-  private int gameFrameWidth, gameFrameHeight;
+  private int gameFrameWidth, gameFrameHeight, numberOfPlayers;
   private Storage stateStore;
   private FlexTable flexTable;
   private ClickHandler clearAllButtonHandler;
   private PopupLoadState displayLoadPopUp;
   private List<Frame> playerFrames = new ArrayList<Frame>();
   private String gameUrl;
+  private static final int MIN_PLAYERS = 2;
+  private static final int MAX_PLAYERS = 9;
   
   public GwtEmulatorGraphics() {
     GwtEmulatorGraphicsUiBinder uiBinder = GWT.create(GwtEmulatorGraphicsUiBinder.class);
@@ -98,16 +107,33 @@ public class GwtEmulatorGraphics extends Composite {
   
   @UiHandler("btnStart")
   void onClickStartButton(ClickEvent e) {
-    if (!validatateConfigInput()) {
+    initEmulator();
+  }
+  
+  @UiHandler("btnReLoadEmulator")
+  void onClickReLoadButton(ClickEvent e) {
+    new PopupReloadEmulator().center();
+  }
+  
+  private void clearEmulator() {
+    if (gameTabs != null) {
+      gameTabsPanel.remove(gameTabs);
+      gameTabs.clear();
+      playerFrames.clear();
+      sliderBarPanel.clear();
+      removeEventListener();
+    }
+  }
+  
+  private void initEmulator() {
+    if (!validatateAndInitConfigInput()) {
       return;
     }
-    int numberOfPlayers = Integer.parseInt(
-        listNumPlayers.getValue(listNumPlayers.getSelectedIndex()));
     // initialize ServerEmulator
     serverEmulator = new ServerEmulator(numberOfPlayers, this);
+    clearEmulator();
     gameTabs = new TabLayoutPanel(1.5, Unit.EM);
     gameTabs.setSize(gameFrameWidth + "px", (gameFrameHeight + 25) + "px");
-    gameUrl = txtGameUrl.getText();
     for (int i = 0; i < numberOfPlayers; i++) {
       Frame frame = new Frame(gameUrl);
       frame.getElement().setId("frame" + i);
@@ -123,9 +149,10 @@ public class GwtEmulatorGraphics extends Composite {
     mainConfigPanel.setVisible(false);
     gamePanel.setVisible(true);
     addSaveStateTable();
+    btnReLoadEmulator.setVisible(true);
   }
   
-  private boolean validatateConfigInput() {
+  private boolean validatateAndInitConfigInput() {
     try {
       gameFrameWidth = Integer.parseInt(txtGameWidth.getText());
     }
@@ -140,9 +167,64 @@ public class GwtEmulatorGraphics extends Composite {
       alert("Invalid height: " + txtGameHeight.getText());
       return false;
     }
+    try {
+      numberOfPlayers = Integer.parseInt(
+          listNumPlayers.getValue(listNumPlayers.getSelectedIndex()));
+    } catch (Exception ex) {
+      alert("Invalid number of Players");
+      return false;
+    }
+    try {
+      gameUrl = txtGameUrl.getText();
+      String parameterUrl = "";
+      String urlWithoutParams = new String(gameUrl);
+      gameUrl = gameUrl.trim();
+      int paramStartIndex = gameUrl.indexOf('?');
+      String newParam = "cache_buster";
+      String newValue = String.valueOf(Random.nextInt(Integer.MAX_VALUE));
+      if (paramStartIndex != -1) {
+        parameterUrl = gameUrl.substring(paramStartIndex + 1);
+        urlWithoutParams = gameUrl.substring(0, paramStartIndex);
+      }
+      gameUrl = urlWithoutParams + "?" + insertParam(parameterUrl, newParam, newValue);
+      alert("GameURL: " + gameUrl);
+    } catch (Exception ex) {
+      alert("Invalid URL: " + gameUrl);
+      return false;
+    }
     return true;
   }
 
+  //paramsInUrl is the URL after '?'
+  private String insertParam(String paramsInUrl, String param, String value) {
+    String[] paramKeyValues = paramsInUrl.split("&");
+    List<String> newParamKeyValues = new ArrayList<String>();
+    boolean found = false;
+    for (int i = 0; i < paramKeyValues.length; ++i) {
+      if (paramKeyValues[i].length() != 0) {
+        String [] keyValue = paramKeyValues[i].split("=");
+        if (keyValue.length == 2) {
+          String key = keyValue[0];
+          if (key.equals(param)) {
+            paramKeyValues[i] = key + "=" + value;
+            found = true;
+          }
+          newParamKeyValues.add(paramKeyValues[i]);
+        }
+      }
+    }
+    if (!found) {
+      newParamKeyValues.add(param + "=" + value);
+    }
+    StringBuilder newParamsBuilder = new StringBuilder();
+    for (int i = 0; i < newParamKeyValues.size() - 1; ++i) {
+      newParamsBuilder.append(newParamKeyValues.get(i));
+      newParamsBuilder.append("&");
+    }
+    newParamsBuilder.append(newParamKeyValues.get(newParamKeyValues.size() - 1));
+    return newParamsBuilder.toString();
+  }
+  
   private void addSlider(int maxValue) {
     change = false;
     sliderBar = new SliderBar(maxValue, "100%");
@@ -338,4 +420,64 @@ public class GwtEmulatorGraphics extends Composite {
     injectEventListener(serverEmulator, oldTotalPlayers - framesToRemove);
   }
   
+  private void resetConfigPanelFields() {
+    txtGameWidth.setText(String.valueOf(gameFrameWidth));
+    txtGameHeight.setText(String.valueOf(gameFrameHeight));
+    listNumPlayers.setItemSelected(numberOfPlayers - MIN_PLAYERS, true);
+    txtGameUrl.setText(gameUrl);
+  }
+  private class PopupReloadEmulator extends DialogBox {
+    
+    PopupReloadEmulator() {
+      setText("Reload Emulator");
+      Button btnCancel = new Button("Cancel");
+      Button btnReset = new Button("Reset");
+      Button btnReload = new Button("Reload");
+      final Label lblStatus = new Label("Please select the reload parameters");
+      resetConfigPanelFields();
+      
+      btnCancel.addClickHandler(new ClickHandler() {
+        @Override
+        public void onClick(ClickEvent event) {
+          hide();
+        }
+      });
+      
+      btnReset.addClickHandler(new ClickHandler() {
+        @Override
+        public void onClick(ClickEvent event) {
+          resetConfigPanelFields();
+        }
+      });
+      
+      btnReload.addClickHandler(new ClickHandler() {
+        @Override
+        public void onClick(ClickEvent event) {
+          try {
+            hide();
+            initEmulator();
+          }
+          catch(Exception ex) {
+            lblStatus.setText("Please enter valid information");
+          }
+        }
+      });
+      VerticalPanel mainVertPanel = new VerticalPanel();
+      mainVertPanel.add(lblStatus);
+      mainVertPanel.add(new Label("Number of Players:"));
+      mainVertPanel.add(listNumPlayers);
+      mainVertPanel.add(new Label("Frame Width:"));
+      mainVertPanel.add(txtGameWidth);
+      mainVertPanel.add(new Label("Frame Height: "));
+      mainVertPanel.add(txtGameHeight);
+      mainVertPanel.add(new Label("Game URL:"));
+      mainVertPanel.add(txtGameUrl);
+      HorizontalPanel btnsPanel = new HorizontalPanel();
+      btnsPanel.add(btnCancel);
+      btnsPanel.add(btnReset);
+      btnsPanel.add(btnReload);
+      mainVertPanel.add(btnsPanel);
+      setWidget(mainVertPanel);
+    }
+  }
 }

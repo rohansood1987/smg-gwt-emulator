@@ -33,7 +33,7 @@
       </g:HorizontalPanel>
       <g:Button text="Start Game" ui:field="btnStart"/>
     </g:AbsolutePanel>
-  
+    <g:Button visible="false" text="ReLoad Emulator" ui:field="btnReLoadEmulator" />
   	<g:HorizontalPanel ui:field="gamePanel">
   	  <g:AbsolutePanel ui:field="gameTabsPanel"/>
   	  <!--g:Frame height="400px" width="800px" ui:field="gameFrame"/-->
@@ -47,7 +47,6 @@
   	   <g:AbsolutePanel ui:field="sliderBarPanel"></g:AbsolutePanel> 
   	  </g:VerticalPanel>
   	</g:HorizontalPanel>
-  
   </g:VerticalPanel>
   
   <!-- g:VerticalPanel>
