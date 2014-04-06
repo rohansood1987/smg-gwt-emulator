@@ -1,8 +1,10 @@
 package org.smg.gwt.emulator.backend;
 
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 import org.game_api.GameApi.GameApiJsonHelper;
 import org.game_api.GameApi.GameReady;
@@ -47,9 +49,14 @@ public class ServerEmulator {
   private static final String firstPlayerId = "42";
   
   private boolean moveInProgress;
-  private List<String> verifiers = Lists.newArrayList();
-  private int countGameReady = 0;
   
+  //players who have verified the current MakeMove
+  private Set<String> verifiers = new HashSet<String>();
+  
+  //players who have sent game ready
+  private Set<String> gameReadyPlayers = new HashSet<String>();
+  
+  //private int countGameReady = 0;
   public ServerEmulator(int numberOfPlayers, GwtEmulatorGraphics graphics) {
     gameState = new GameState();
     this.numberOfPlayers = numberOfPlayers;
@@ -60,13 +67,22 @@ public class ServerEmulator {
   private void setupPlayers() {
     playerIds = Lists.newArrayList();
     playersInfo = Lists.newArrayList();
-    for(int i = 0; i < numberOfPlayers; i++) {
-      String playerId = (Integer.parseInt(firstPlayerId) + i) + "";
-      playerIds.add(playerId);
+    playerIds.addAll(getPlayerIds(numberOfPlayers));
+    for(String playerId : playerIds) {
       playersInfo.add(ImmutableMap.<String, Object>of(PLAYER_ID, playerId));
     }
     graphics.logToConsole("Setup done for " + numberOfPlayers + " players.");
-    countGameReady = 0;
+    verifiers.clear();
+    gameReadyPlayers.clear();
+  }
+  
+  private List<String> getPlayerIds(int numOfPlayers) {
+    List<String> playerIdList = Lists.newArrayList();
+    for(int i = 0; i < numOfPlayers; i++) {
+      String playerId = (Integer.parseInt(firstPlayerId) + i) + "";
+      playerIdList.add(playerId);
+    }
+    return playerIdList;
   }
   
   public List<String> getPlayerIds() {
@@ -106,10 +122,11 @@ public class ServerEmulator {
 
   private void handleGameReady(GameReady gameReady, String sendingPlayerId) {
     // Send initial UpdateUI message
-    graphics.logToConsole("handling game ready " + (countGameReady + 1));
+    graphics.logToConsole("handling game ready from player id" + sendingPlayerId);
     //TODO: map PlayerId's here since some game can send GameReady twice
-    countGameReady++;
-    if (countGameReady == numberOfPlayers) {
+    //countGameReady++;
+    gameReadyPlayers.add(sendingPlayerId);
+    if (gameReadyPlayers.containsAll(playerIds)) {
       /*for(String playerId : playerIds) {
         int playerIndex = getPlayerIndex(playerId);
         graphics.sendMessage(playerIndex, new UpdateUI(playerId, playersInfo,
@@ -134,10 +151,10 @@ public class ServerEmulator {
     gameState.makeMove(makeMove.getOperations());
     lastMovePlayerId = playerId;
     lastMove = ImmutableList.copyOf(makeMove.getOperations());
-    // Add all playerids to verifiers list before sending verifyMove message
+    /*// Add all playerids to verifiers list before sending verifyMove message
     for (String verifyingPlayerId : playerIds) { 
       verifiers.add(verifyingPlayerId);
-    }
+    }*/
     // Verify the move by all players
     for (String verifyingPlayerId : playerIds) {
       //TODO: Should this be sent to player making the move as well?
@@ -154,9 +171,9 @@ public class ServerEmulator {
   private void handleVerifyMoveDone(VerifyMoveDone verifyMoveDone, String verifyingPlayerId) {
     graphics.logToConsole("handling verify move done");
     if(verifyMoveDone.getHackerPlayerId() == null) {
-      verifiers.remove(verifyingPlayerId);
+      verifiers.add(verifyingPlayerId);
       //TODO: make this condition lenient?
-      if(verifiers.size() == 0) {
+      if(verifiers.containsAll(playerIds)) {
         // Verified by all
         sendUpdateStateToAllPlayers();
         while (currentSliderIndex < savedStates.size() - 1) {
@@ -166,6 +183,7 @@ public class ServerEmulator {
         currentSliderIndex = savedStates.size() - 1;
         graphics.incrementSliderMaxValue(currentSliderIndex);
         moveInProgress = false;
+        verifiers.clear();
       }
     }
     else {
@@ -281,6 +299,7 @@ public class ServerEmulator {
         GameApiJsonHelper.getMapFromJsonObject(jsonCurrentVisibilityInfo.isObject()),
         (Map<String, Integer>)(Map<String, ? extends Object>)GameApiJsonHelper.getMapFromJsonObject(jsonPlayerIdToNumberOfTokensInPot.isObject()));
     if (numberOfPlayers < oldTotalPlayers) {
+      gameReadyPlayers.addAll(playerIds);
       graphics.removePlayerFrames(oldTotalPlayers - numberOfPlayers, oldTotalPlayers);
     }
     if (numberOfPlayers <= oldTotalPlayers) {
@@ -288,8 +307,9 @@ public class ServerEmulator {
     }
     else {
       /*numberOfPlayers > oldTotalPlayers: The new frames will send GameReady and make the 
-      countGameReady = numberOfPlayers which will send the updated state to all the frames.*/
-      countGameReady = oldTotalPlayers;
+      gameReadyPlayers.containsAll(playerIds) = true which will send the updated state to 
+      all the frames.*/
+      gameReadyPlayers.addAll(getPlayerIds(oldTotalPlayers));
       graphics.addPlayerFrames(numberOfPlayers - oldTotalPlayers, oldTotalPlayers);
     } 
   }
