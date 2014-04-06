@@ -21,11 +21,11 @@
 	    <g:Label text="Game size in pixels:"/>
 	    <g:HorizontalPanel verticalAlignment="ALIGN_MIDDLE">
         <g:Label text="--- Width:"/>
-        <g:TextBox width="20" ui:field="txtGameWidth"/>
+        <g:TextBox width="20" ui:field="txtGameWidth" value="600"/>
       </g:HorizontalPanel>
       <g:HorizontalPanel verticalAlignment="ALIGN_MIDDLE">
         <g:Label text="--- Height:"/>
-        <g:TextBox width="20" ui:field="txtGameHeight"/>
+        <g:TextBox width="20" ui:field="txtGameHeight" value="400"/>
       </g:HorizontalPanel>
 	    <g:HorizontalPanel verticalAlignment="ALIGN_MIDDLE">
 	      <g:Label text="Game URL"/>
@@ -33,7 +33,7 @@
       </g:HorizontalPanel>
       <g:Button text="Start Game" ui:field="btnStart"/>
     </g:AbsolutePanel>
-    <g:Button visible="false" text="ReLoad Emulator" ui:field="btnReLoadEmulator" />
+    <g:Button visible="false" text="Reload Emulator" ui:field="btnReLoadEmulator" />
   	<g:HorizontalPanel ui:field="gamePanel">
   	  <g:AbsolutePanel ui:field="gameTabsPanel"/>
   	  <!--g:Frame height="400px" width="800px" ui:field="gameFrame"/-->

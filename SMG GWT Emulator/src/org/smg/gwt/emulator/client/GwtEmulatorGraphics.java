@@ -187,7 +187,6 @@ public class GwtEmulatorGraphics extends Composite {
         urlWithoutParams = gameUrl.substring(0, paramStartIndex);
       }
       gameUrl = urlWithoutParams + "?" + insertParam(parameterUrl, newParam, newValue);
-      alert("GameURL: " + gameUrl);
     } catch (Exception ex) {
       alert("Invalid URL: " + gameUrl);
       return false;
