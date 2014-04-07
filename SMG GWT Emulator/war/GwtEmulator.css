@@ -32,3 +32,23 @@ h1 {
 #closeButton {
   margin: 15px 6px 6px;
 }
+
+.flexTable {
+	
+}
+
+.scoreTable {
+	border-spacing: 1px;
+	text-align: center;
+}
+
+.headerRow {
+  background-color: cadetblue;
+  font-weight: bold;
+}
+
+.winnerRow {
+	color: red;
+	background-color: chartreuse;
+	font-weight: bold;
+}

@@ -2,7 +2,7 @@
 <ui:UiBinder xmlns:ui="urn:ui:com.google.gwt.uibinder"
   xmlns:g="urn:import:com.google.gwt.user.client.ui">
   
-  <g:VerticalPanel>
+  <g:FlowPanel>
   
     <g:AbsolutePanel ui:field="mainConfigPanel">
       <g:HorizontalPanel verticalAlignment="ALIGN_MIDDLE">
@@ -47,7 +47,7 @@
   	   <g:AbsolutePanel ui:field="sliderBarPanel"></g:AbsolutePanel> 
   	  </g:VerticalPanel>
   	</g:HorizontalPanel>
-  </g:VerticalPanel>
+  </g:FlowPanel>
   
   <!-- g:VerticalPanel>
     <g:HorizontalPanel height="100px" ui:field="opponentArea"/>

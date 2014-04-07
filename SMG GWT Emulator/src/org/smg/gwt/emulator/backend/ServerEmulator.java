@@ -6,6 +6,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+import org.game_api.GameApi.EndGame;
 import org.game_api.GameApi.GameApiJsonHelper;
 import org.game_api.GameApi.GameReady;
 import org.game_api.GameApi.MakeMove;
@@ -176,6 +177,13 @@ public class ServerEmulator {
       if(verifiers.containsAll(playerIds)) {
         // Verified by all
         sendUpdateStateToAllPlayers();
+        // check for EndGame
+        for (Operation operation : lastMove) {
+          if(operation instanceof EndGame) {
+            graphics.handleGameOver((EndGame)operation);
+            break;
+          }
+        }
         while (currentSliderIndex < savedStates.size() - 1) {
              savedStates.remove(currentSliderIndex + 1);
         }

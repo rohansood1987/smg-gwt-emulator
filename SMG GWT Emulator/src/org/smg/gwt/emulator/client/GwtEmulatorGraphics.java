@@ -6,8 +6,10 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+import org.game_api.GameApi.EndGame;
 import org.game_api.GameApi.GameApiJsonHelper;
 import org.game_api.GameApi.Message;
+import org.game_api.GameApi.Operation;
 import org.smg.gwt.emulator.backend.ServerEmulator;
 
 import com.google.gwt.core.shared.GWT;
@@ -425,6 +427,11 @@ public class GwtEmulatorGraphics extends Composite {
     listNumPlayers.setItemSelected(numberOfPlayers - MIN_PLAYERS, true);
     txtGameUrl.setText(gameUrl);
   }
+  
+  public void handleGameOver(EndGame endGameOpn) {
+    new PopupGameOver(endGameOpn).center();
+  }
+  
   private class PopupReloadEmulator extends DialogBox {
     
     PopupReloadEmulator() {
@@ -477,6 +484,68 @@ public class GwtEmulatorGraphics extends Composite {
       btnsPanel.add(btnReload);
       mainVertPanel.add(btnsPanel);
       setWidget(mainVertPanel);
+    }
+  }
+  
+  private class PopupGameOver extends DialogBox {
+    public PopupGameOver(EndGame endGame) {
+      
+      Map<String, Integer> scores = endGame.getPlayerIdToScore();
+      List<String> playerIds = serverEmulator.getPlayerIds();
+      
+      setText("Game Over");
+      
+      Button btnRestartGame = new Button("Restart");
+      btnRestartGame.addClickHandler(new ClickHandler() {
+        @Override
+        public void onClick(ClickEvent event) {
+          hide();
+          new PopupReloadEmulator().center();
+        }
+      });
+      
+      Button btnCancel = new Button("Cancel");
+      btnCancel.addClickHandler(new ClickHandler() {
+        @Override
+        public void onClick(ClickEvent event) {
+          hide();
+        }
+      });
+      
+      int maxScore = 0;
+      for(String playerId : playerIds) {
+        if(scores.get(playerId) > maxScore) {
+          maxScore = scores.get(playerId);
+        }
+      }
+      
+      FlexTable scoreTable = new FlexTable();
+      scoreTable.setStyleName("scoreTable");
+      scoreTable.setBorderWidth(1);
+      scoreTable.setText(0, 0, "Player");
+      scoreTable.setText(0, 1, "Score");
+      scoreTable.getFlexCellFormatter().setStyleName(0, 0, "headerRow");
+      scoreTable.getFlexCellFormatter().setStyleName(0, 1, "headerRow");
+      
+      for (int i = 0; i < playerIds.size(); i++) {
+        String playerId = playerIds.get(i);
+        int score = scores.get(playerId);
+        scoreTable.setText(i + 1, 0, "Player " + playerId);
+        scoreTable.setText(i + 1, 1, "" + score);
+        if (score == maxScore) {
+            scoreTable.getFlexCellFormatter().setStyleName(i + 1, 0, "winnerRow");
+            scoreTable.getFlexCellFormatter().setStyleName(i + 1, 1, "winnerRow");
+        }
+      }
+      
+      VerticalPanel mainPanel = new VerticalPanel();
+      mainPanel.add(new Label("Final Scores:"));
+      mainPanel.add(scoreTable);
+      HorizontalPanel buttonsPanel = new HorizontalPanel();
+      buttonsPanel.add(btnCancel);
+      buttonsPanel.add(btnRestartGame);
+      mainPanel.add(buttonsPanel);
+      setWidget(mainPanel);
     }
   }
 }
