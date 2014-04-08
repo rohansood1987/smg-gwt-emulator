@@ -18,26 +18,31 @@
 	        <g:item value='9'>9 players</g:item>
 	      </g:ListBox>
 	    </g:HorizontalPanel>
-	    <g:Label text="Game size in pixels:"/>
-	    <g:HorizontalPanel verticalAlignment="ALIGN_MIDDLE">
+	  <g:Label text="Game size in pixels:"/>
+	  <g:HorizontalPanel verticalAlignment="ALIGN_MIDDLE">
         <g:Label text="--- Width:"/>
-        <g:TextBox width="20" ui:field="txtGameWidth" value="600"/>
+        <g:TextBox width="20" ui:field="txtGameWidth" value="500"/>
       </g:HorizontalPanel>
       <g:HorizontalPanel verticalAlignment="ALIGN_MIDDLE">
         <g:Label text="--- Height:"/>
-        <g:TextBox width="20" ui:field="txtGameHeight" value="400"/>
+        <g:TextBox width="20" ui:field="txtGameHeight" value="500"/>
       </g:HorizontalPanel>
-	    <g:HorizontalPanel verticalAlignment="ALIGN_MIDDLE">
-	      <g:Label text="Game URL"/>
-	      <g:TextBox width="100" ui:field="txtGameUrl"/>
+      <g:HorizontalPanel verticalAlignment="ALIGN_MIDDLE">
+        <g:Label text="Default Time Per Turn (in Secs):"/>
+        <g:TextBox width="100" ui:field="txtDefaultTimePerTurn" value="60"/>
+      </g:HorizontalPanel>
+   	  <g:HorizontalPanel verticalAlignment="ALIGN_MIDDLE">
+        <g:Label text="Game URL:"/>
+	    <g:TextBox width="200" ui:field="txtGameUrl" 
+	        value="https://googledrive.com/host/0B_LEQb_5Yz6RU0cxVG5sbllMaUk/TicTacToeGame.html"/>
       </g:HorizontalPanel>
       <g:Button text="Start Game" ui:field="btnStart"/>
     </g:AbsolutePanel>
     <g:HorizontalPanel visible="false" ui:field="gameEmulatorStatusPanel">
         <g:HTML HTML="TURN: "></g:HTML>
-        <g:Label ui:field = "playerTurnLabel" width="50px"></g:Label>
+        <g:Label ui:field = "playerTurnLabel" width="100px"></g:Label>
         <g:HTML HTML="TIME LEFT: "></g:HTML>
-        <g:Label ui:field = "turnTimerLabel" width="50px"></g:Label>
+        <g:Label ui:field = "turnTimerLabel" width="100px"></g:Label>
     	<g:Button text="Reload Emulator" ui:field="btnReLoadEmulator" />
     </g:HorizontalPanel>
   	<g:HorizontalPanel ui:field="gamePanel">

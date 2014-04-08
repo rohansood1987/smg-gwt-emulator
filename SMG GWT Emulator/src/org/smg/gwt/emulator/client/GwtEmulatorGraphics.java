@@ -9,7 +9,6 @@ import java.util.Set;
 import org.game_api.GameApi.EndGame;
 import org.game_api.GameApi.GameApiJsonHelper;
 import org.game_api.GameApi.Message;
-import org.game_api.GameApi.Operation;
 import org.smg.gwt.emulator.backend.ServerEmulator;
 
 import com.google.gwt.core.shared.GWT;
@@ -54,6 +53,9 @@ public class GwtEmulatorGraphics extends Composite {
   
   @UiField
   TextBox txtGameUrl;
+  
+  @UiField
+  TextBox txtDefaultTimePerTurn;
   
   @UiField
   Button btnStart;
@@ -131,6 +133,7 @@ public class GwtEmulatorGraphics extends Composite {
     gamePanel.setVisible(false);
     playerTurnLabel.getElement().getStyle().setFontWeight(FontWeight.BOLD);
     turnTimerLabel.getElement().getStyle().setFontWeight(FontWeight.BOLD);
+    txtGameUrl.getElement().setAttribute("size", "40");
   }
   
   @UiHandler("btnStart")
@@ -200,6 +203,12 @@ public class GwtEmulatorGraphics extends Composite {
           listNumPlayers.getValue(listNumPlayers.getSelectedIndex()));
     } catch (Exception ex) {
       alert("Invalid number of Players");
+      return false;
+    }
+    try {
+      ServerEmulator.DEFAULT_TURN_TIME_IN_SECS = Integer.parseInt(txtDefaultTimePerTurn.getText());
+    } catch (Exception ex) {
+      alert("Invalid time: " + txtDefaultTimePerTurn.getText());
       return false;
     }
     try {
@@ -502,6 +511,8 @@ public class GwtEmulatorGraphics extends Composite {
       mainVertPanel.add(txtGameWidth);
       mainVertPanel.add(new Label("Frame Height: "));
       mainVertPanel.add(txtGameHeight);
+      mainVertPanel.add(new Label("Default Time Per Turn (in Secs): "));
+      mainVertPanel.add(txtDefaultTimePerTurn);
       mainVertPanel.add(new Label("Game URL:"));
       mainVertPanel.add(txtGameUrl);
       HorizontalPanel btnsPanel = new HorizontalPanel();
@@ -577,8 +588,15 @@ public class GwtEmulatorGraphics extends Composite {
   
   public void setTurnAndTimer(String playerTurnId, String time) {
     turnTimer.cancel();
-    playerTurnLabel.setText(playerTurnId);
+    playerTurnLabel.setText("Player " + playerTurnId);
     turnTimerLabel.setText(time);
+    
+    //Select the turn player tab(iframe)
+    try {
+      gameTabs.selectTab(Integer.parseInt(playerTurnId) - 
+          Integer.parseInt(ServerEmulator.FIRST_PLAYER_ID));
+    } catch(NumberFormatException ex) {
+    }
     turnTimer.scheduleRepeating(1000);
   }
 }

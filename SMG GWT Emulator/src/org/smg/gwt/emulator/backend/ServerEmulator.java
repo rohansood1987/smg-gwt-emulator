@@ -46,8 +46,8 @@ public class ServerEmulator {
   
   private static final JSONNull JSON_NULL = JSONNull.getInstance();
   public static final String PLAYER_ID = "playerId";
-  public static final int DEFAULT_TURN_TIME_IN_SECS = 60;
-  private static final String firstPlayerId = "42";
+  public static int DEFAULT_TURN_TIME_IN_SECS = 60;
+  public static final String FIRST_PLAYER_ID = "42";
   
   private boolean moveInProgress;
   
@@ -80,7 +80,7 @@ public class ServerEmulator {
   private List<String> getPlayerIds(int numOfPlayers) {
     List<String> playerIdList = Lists.newArrayList();
     for(int i = 0; i < numOfPlayers; i++) {
-      String playerId = (Integer.parseInt(firstPlayerId) + i) + "";
+      String playerId = (Integer.parseInt(FIRST_PLAYER_ID) + i) + "";
       playerIdList.add(playerId);
     }
     return playerIdList;
@@ -230,8 +230,10 @@ public class ServerEmulator {
     return GameApiJsonHelper.getJsonStringFromMap(gameState.getMasterVisibilityMap());
   }
   
+  @SuppressWarnings("unchecked")
   public String getTokensMapAsString() {
-    return GameApiJsonHelper.getJsonStringFromMap((Map<String, Object>)(Map<String, ? extends Object>)gameState.getMasterTokensMap());
+    return GameApiJsonHelper.getJsonStringFromMap((Map<String, Object>)(
+        Map<String, ? extends Object>)gameState.getMasterTokensMap());
   }
   
   public void updateStateManually(Map<String, Object> state, Map<String, Object> visibilityMap,
@@ -243,6 +245,7 @@ public class ServerEmulator {
     sendUpdateStateToAllPlayers();
   }
 
+  @SuppressWarnings("unchecked")
   public String saveGameStateJSONAsString() {
     graphics.logToConsole("Saving Game State");
     JSONObject json = new JSONObject();
@@ -269,6 +272,7 @@ public class ServerEmulator {
     return json.toString();
   }
   
+  @SuppressWarnings("unchecked")
   public void loadGameStateFromJSON(JSONObject json) {
     graphics.logToConsole("Loading Game State");
     JSONValue jsonPlayerIdToNumberOfTokensInPot = json.get("playerIdToNumberOfTokensInPot");
@@ -296,7 +300,8 @@ public class ServerEmulator {
       lastGameState.setManualState(
           GameApiJsonHelper.getMapFromJsonObject(jsonLastState.isObject()), 
           GameApiJsonHelper.getMapFromJsonObject(jsonLastVisibilityInfo.isObject()),
-          (Map<String, Integer>)(Map<String, ? extends Object>)GameApiJsonHelper.getMapFromJsonObject(jsonPlayerIdToNumberOfTokensInPot.isObject()));
+          (Map<String, Integer>)(Map<String, ? extends Object>)
+              GameApiJsonHelper.getMapFromJsonObject(jsonPlayerIdToNumberOfTokensInPot.isObject()));
     } 
     lastMovePlayerId = ((JSONString)jsonLastMovePlayerId).stringValue();
     //lastMove = Lists.newArrayList((Operation)new SetTurn(currentMovePlayerId));
@@ -305,12 +310,14 @@ public class ServerEmulator {
     }
     else {
       //TODO: Refactor GameApiJsonHelper to make this simpler
-      lastMove = ((MakeMove)Message.messageToHasEquality(GameApiJsonHelper.getMapFromJsonObject((JSONObject)jsonLastMove))).getOperations();
+      lastMove = ((MakeMove)Message.messageToHasEquality(GameApiJsonHelper.getMapFromJsonObject(
+          (JSONObject)jsonLastMove))).getOperations();
     }
     gameState.setManualState(
         GameApiJsonHelper.getMapFromJsonObject(jsonCurrentState.isObject()), 
         GameApiJsonHelper.getMapFromJsonObject(jsonCurrentVisibilityInfo.isObject()),
-        (Map<String, Integer>)(Map<String, ? extends Object>)GameApiJsonHelper.getMapFromJsonObject(jsonPlayerIdToNumberOfTokensInPot.isObject()));
+        (Map<String, Integer>)(Map<String, ? extends Object>)GameApiJsonHelper.getMapFromJsonObject(
+            jsonPlayerIdToNumberOfTokensInPot.isObject()));
     if (numberOfPlayers < oldTotalPlayers) {
       gameReadyPlayers.addAll(playerIds);
       graphics.removePlayerFrames(oldTotalPlayers - numberOfPlayers, oldTotalPlayers);
