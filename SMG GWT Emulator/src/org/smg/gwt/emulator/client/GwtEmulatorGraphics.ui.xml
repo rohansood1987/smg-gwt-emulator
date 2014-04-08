@@ -20,25 +20,25 @@
 	    </g:HorizontalPanel>
 	  <g:Label text="Game size in pixels:"/>
 	  <g:HorizontalPanel verticalAlignment="ALIGN_MIDDLE">
-        <g:Label text="--- Width:"/>
-        <g:TextBox width="20" ui:field="txtGameWidth" value="800"/>
+        <g:Label width="65px" text="--- Width:"/>
+        <g:TextBox width="50px" ui:field="txtGameWidth" value="800"/>
       </g:HorizontalPanel>
       <g:HorizontalPanel verticalAlignment="ALIGN_MIDDLE">
-        <g:Label text="--- Height:"/>
-        <g:TextBox width="20" ui:field="txtGameHeight" value="500"/>
+        <g:Label width="65px" text="--- Height:"/>
+        <g:TextBox width="50px" ui:field="txtGameHeight" value="500"/>
       </g:HorizontalPanel>
       <g:HorizontalPanel verticalAlignment="ALIGN_MIDDLE">
         <g:Label text="Default Time Per Turn (in Secs):"/>
-        <g:TextBox width="100" ui:field="txtDefaultTimePerTurn" value="60"/>
+        <g:TextBox width="50px" ui:field="txtDefaultTimePerTurn" value="60"/>
       </g:HorizontalPanel>
    	  <g:HorizontalPanel verticalAlignment="ALIGN_MIDDLE">
         <g:Label text="Game URL:"/>
-	    <g:TextBox width="200" ui:field="txtGameUrl" 
+	    <g:TextBox width="400px" ui:field="txtGameUrl" 
 	        value="http://2-dot-cheat-game.appspot.com/CheatGame.html"/>
       </g:HorizontalPanel>
       <g:Button text="Start Game" ui:field="btnStart"/>
     </g:AbsolutePanel>
-    <g:HorizontalPanel visible="false" ui:field="gameEmulatorStatusPanel">
+    <g:HorizontalPanel visible="false" verticalAlignment="ALIGN_MIDDLE" ui:field="gameEmulatorStatusPanel">
         <g:HTML HTML="TURN: "></g:HTML>
         <g:Label ui:field = "playerTurnLabel" width="100px"></g:Label>
         <g:HTML HTML="TIME LEFT: "></g:HTML>
