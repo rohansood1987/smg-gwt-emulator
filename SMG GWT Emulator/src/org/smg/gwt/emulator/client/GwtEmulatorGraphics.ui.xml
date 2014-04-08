@@ -21,7 +21,7 @@
 	  <g:Label text="Game size in pixels:"/>
 	  <g:HorizontalPanel verticalAlignment="ALIGN_MIDDLE">
         <g:Label text="--- Width:"/>
-        <g:TextBox width="20" ui:field="txtGameWidth" value="500"/>
+        <g:TextBox width="20" ui:field="txtGameWidth" value="800"/>
       </g:HorizontalPanel>
       <g:HorizontalPanel verticalAlignment="ALIGN_MIDDLE">
         <g:Label text="--- Height:"/>
@@ -34,7 +34,7 @@
    	  <g:HorizontalPanel verticalAlignment="ALIGN_MIDDLE">
         <g:Label text="Game URL:"/>
 	    <g:TextBox width="200" ui:field="txtGameUrl" 
-	        value="https://googledrive.com/host/0B_LEQb_5Yz6RU0cxVG5sbllMaUk/TicTacToeGame.html"/>
+	        value="http://2-dot-cheat-game.appspot.com/CheatGame.html"/>
       </g:HorizontalPanel>
       <g:Button text="Start Game" ui:field="btnStart"/>
     </g:AbsolutePanel>

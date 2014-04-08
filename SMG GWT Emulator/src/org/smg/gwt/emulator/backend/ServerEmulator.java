@@ -6,6 +6,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+import org.game_api.GameApi;
 import org.game_api.GameApi.EndGame;
 import org.game_api.GameApi.GameApiJsonHelper;
 import org.game_api.GameApi.GameReady;
@@ -72,6 +73,7 @@ public class ServerEmulator {
     for(String playerId : playerIds) {
       playersInfo.add(ImmutableMap.<String, Object>of(PLAYER_ID, playerId));
     }
+    playersInfo.add(ImmutableMap.<String, Object>of(PLAYER_ID, GameApi.VIEWER_ID));
     graphics.logToConsole("Setup done for " + numberOfPlayers + " players.");
     verifiers.clear();
     gameReadyPlayers.clear();
@@ -161,7 +163,7 @@ public class ServerEmulator {
       //TODO: Should this be sent to player making the move as well?
       //verifiers.add(verifyingPlayerId);
       int verifyingPlayerIndex = getPlayerIndex(verifyingPlayerId);
-      graphics.sendMessage(verifyingPlayerIndex, new VerifyMove(playersInfo,
+      graphics.sendMessageForPlayer(verifyingPlayerIndex, new VerifyMove(playersInfo,
           gameState.getStateForPlayerId(playerId),
           lastGameState.getStateForPlayerId(playerId),
           makeMove.getOperations(), playerId,
@@ -207,18 +209,37 @@ public class ServerEmulator {
       if (lastGameState != null) {
         lastPlayerState = lastGameState.getStateForPlayerId(playerId);
       }
-      graphics.sendMessage(playerIndex, new UpdateUI(playerId, playersInfo,
+      graphics.sendMessageForPlayer(playerIndex, new UpdateUI(playerId, playersInfo,
           gameState.getStateForPlayerId(playerId),
           lastPlayerState, lastMove, lastMovePlayerId,
           gameState.getPlayerIdToNumberOfTokensInPot()));
     }
+    
+    
+    //Sending update to the viewer
+    Map<String, Object> lastPlayerState = null;
+    if (lastGameState != null) {
+      lastPlayerState = lastGameState.getStateForPlayerId(GameApi.VIEWER_ID);
+    }
+    graphics.sendMessageForViewer(new UpdateUI(GameApi.VIEWER_ID, playersInfo,
+        gameState.getStateForPlayerId(GameApi.VIEWER_ID),
+        lastPlayerState, lastMove, lastMovePlayerId,
+        gameState.getPlayerIdToNumberOfTokensInPot()));
+    
+    //Set timer and turn
     SetTurn playerTurn = getTurnPlayer(lastMove);
     if (playerTurn != null) {
       int turnInSeconds = playerTurn.getNumberOfSecondsForTurn();
       if (turnInSeconds <= 0) {
         turnInSeconds = DEFAULT_TURN_TIME_IN_SECS;
       }
-      graphics.setTurnAndTimer(playerTurn.getPlayerId(), String.valueOf(DEFAULT_TURN_TIME_IN_SECS));
+      if (turnInSeconds <= 0) {
+        //infinite time
+        graphics.setTurnAndTimer(playerTurn.getPlayerId(), "");
+      } else {
+        graphics.setTurnAndTimer(playerTurn.getPlayerId(), String.valueOf(
+            DEFAULT_TURN_TIME_IN_SECS));
+      }
     }
   }
 
