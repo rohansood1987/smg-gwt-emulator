@@ -33,7 +33,13 @@
       </g:HorizontalPanel>
       <g:Button text="Start Game" ui:field="btnStart"/>
     </g:AbsolutePanel>
-    <g:Button visible="false" text="Reload Emulator" ui:field="btnReLoadEmulator" />
+    <g:HorizontalPanel visible="false" ui:field="gameEmulatorStatusPanel">
+        <g:HTML HTML="TURN: "></g:HTML>
+        <g:Label ui:field = "playerTurnLabel" width="50px"></g:Label>
+        <g:HTML HTML="TIME LEFT: "></g:HTML>
+        <g:Label ui:field = "turnTimerLabel" width="50px"></g:Label>
+    	<g:Button text="Reload Emulator" ui:field="btnReLoadEmulator" />
+    </g:HorizontalPanel>
   	<g:HorizontalPanel ui:field="gamePanel">
   	  <g:AbsolutePanel ui:field="gameTabsPanel"/>
   	  <!--g:Frame height="400px" width="800px" ui:field="gameFrame"/-->

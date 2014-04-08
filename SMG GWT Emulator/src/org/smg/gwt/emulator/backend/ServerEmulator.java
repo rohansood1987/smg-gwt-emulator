@@ -44,9 +44,9 @@ public class ServerEmulator {
   private List<String> savedStates = new ArrayList<String>();
   public int currentSliderIndex = -1;
   
-  
   private static final JSONNull JSON_NULL = JSONNull.getInstance();
   public static final String PLAYER_ID = "playerId";
+  public static final int DEFAULT_TURN_TIME_IN_SECS = 60;
   private static final String firstPlayerId = "42";
   
   private boolean moveInProgress;
@@ -212,6 +212,14 @@ public class ServerEmulator {
           lastPlayerState, lastMove, lastMovePlayerId,
           gameState.getPlayerIdToNumberOfTokensInPot()));
     }
+    SetTurn playerTurn = getTurnPlayer(lastMove);
+    if (playerTurn != null) {
+      int turnInSeconds = playerTurn.getNumberOfSecondsForTurn();
+      if (turnInSeconds <= 0) {
+        turnInSeconds = DEFAULT_TURN_TIME_IN_SECS;
+      }
+      graphics.setTurnAndTimer(playerTurn.getPlayerId(), String.valueOf(DEFAULT_TURN_TIME_IN_SECS));
+    }
   }
 
   public String getStateAsString() {
@@ -257,7 +265,6 @@ public class ServerEmulator {
       json.put("lastMove", GameApiJsonHelper.getJsonObject(new MakeMove(lastMove).toMessage()));
     }
     json.put("lastMovePlayerId", new JSONString(lastMovePlayerId));
-    json.put("currentMovePlayerId", new JSONString(getTurnPlayer(lastMove)));
     json.put("numberOfPlayers", new JSONNumber(numberOfPlayers));
     return json.toString();
   }
@@ -269,7 +276,6 @@ public class ServerEmulator {
     JSONValue jsonLastVisibilityInfo = json.get("lastVisibilityInfo");
     JSONValue jsonLastMove = json.get("lastMove");
     JSONValue jsonLastMovePlayerId = json.get("lastMovePlayerId");
-    JSONValue jsonCurrentMovePlayerId = json.get("currentMovePlayerId");
     JSONValue jsonCurrentState = json.get("currentState");
     JSONValue jsonCurrentVisibilityInfo = json.get("currentVisibilityInfo");
     JSONNumber jsonNumberOfPlayers= (JSONNumber) json.get("numberOfPlayers");
@@ -293,7 +299,6 @@ public class ServerEmulator {
           (Map<String, Integer>)(Map<String, ? extends Object>)GameApiJsonHelper.getMapFromJsonObject(jsonPlayerIdToNumberOfTokensInPot.isObject()));
     } 
     lastMovePlayerId = ((JSONString)jsonLastMovePlayerId).stringValue();
-    String currentMovePlayerId = ((JSONString)jsonCurrentMovePlayerId).stringValue();
     //lastMove = Lists.newArrayList((Operation)new SetTurn(currentMovePlayerId));
     if (jsonLastMove instanceof JSONNull) {
       lastMove = null;
@@ -335,15 +340,15 @@ public class ServerEmulator {
    * @param operations
    * @return id of player who has the turn
    */
-  private String getTurnPlayer(List<Operation> operations) {
+  private SetTurn getTurnPlayer(List<Operation> operations) {
     if (operations != null && !operations.isEmpty()) {
       for (Operation operation : operations) {
         if (operation instanceof SetTurn) {
-          return ((SetTurn) operation).getPlayerId();
+          return ((SetTurn) operation);
         }
       }
     }
-    return lastMovePlayerId; // TODO: If not found?
+    return null; // TODO: If not found?
   }
   
   public void resetSliderState() {

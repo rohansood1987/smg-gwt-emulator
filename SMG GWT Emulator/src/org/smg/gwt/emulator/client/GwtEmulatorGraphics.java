@@ -13,6 +13,7 @@ import org.game_api.GameApi.Operation;
 import org.smg.gwt.emulator.backend.ServerEmulator;
 
 import com.google.gwt.core.shared.GWT;
+import com.google.gwt.dom.client.Style.FontWeight;
 import com.google.gwt.dom.client.Style.Unit;
 import com.google.gwt.event.dom.client.ClickEvent;
 import com.google.gwt.event.dom.client.ClickHandler;
@@ -22,6 +23,7 @@ import com.google.gwt.uibinder.client.UiBinder;
 import com.google.gwt.uibinder.client.UiField;
 import com.google.gwt.uibinder.client.UiHandler;
 import com.google.gwt.user.client.Random;
+import com.google.gwt.user.client.Timer;
 import com.google.gwt.user.client.Window;
 import com.google.gwt.user.client.ui.AbsolutePanel;
 import com.google.gwt.user.client.ui.Button;
@@ -86,6 +88,14 @@ public class GwtEmulatorGraphics extends Composite {
   @UiField
   AbsolutePanel sliderBarPanel;
   
+  @UiField
+  HorizontalPanel gameEmulatorStatusPanel;
+  
+  @UiField
+  Label playerTurnLabel;
+  
+  @UiField
+  Label turnTimerLabel;
   
   private TabLayoutPanel gameTabs;
   private ServerEmulator serverEmulator;
@@ -101,10 +111,26 @@ public class GwtEmulatorGraphics extends Composite {
   private static final int MIN_PLAYERS = 2;
   private static final int MAX_PLAYERS = 9;
   
+  private Timer turnTimer = new Timer() {
+    @Override
+    public void run() {
+      int currentTime = Integer.parseInt(turnTimerLabel.getText());
+      turnTimerLabel.setText(String.valueOf(currentTime - 1));
+      if (currentTime - 1 <= 0) {
+        alert("Game Ended. Please Restart !");
+        removeEventListener();
+        this.cancel();
+        new PopupReloadEmulator().center();
+      }
+    }
+  };
+  
   public GwtEmulatorGraphics() {
     GwtEmulatorGraphicsUiBinder uiBinder = GWT.create(GwtEmulatorGraphicsUiBinder.class);
     initWidget(uiBinder.createAndBindUi(this));
     gamePanel.setVisible(false);
+    playerTurnLabel.getElement().getStyle().setFontWeight(FontWeight.BOLD);
+    turnTimerLabel.getElement().getStyle().setFontWeight(FontWeight.BOLD);
   }
   
   @UiHandler("btnStart")
@@ -151,7 +177,7 @@ public class GwtEmulatorGraphics extends Composite {
     mainConfigPanel.setVisible(false);
     gamePanel.setVisible(true);
     addSaveStateTable();
-    btnReLoadEmulator.setVisible(true);
+    gameEmulatorStatusPanel.setVisible(true);
   }
   
   private boolean validatateAndInitConfigInput() {
@@ -547,5 +573,12 @@ public class GwtEmulatorGraphics extends Composite {
       mainPanel.add(buttonsPanel);
       setWidget(mainPanel);
     }
+  }
+  
+  public void setTurnAndTimer(String playerTurnId, String time) {
+    turnTimer.cancel();
+    playerTurnLabel.setText(playerTurnId);
+    turnTimerLabel.setText(time);
+    turnTimer.scheduleRepeating(1000);
   }
 }
