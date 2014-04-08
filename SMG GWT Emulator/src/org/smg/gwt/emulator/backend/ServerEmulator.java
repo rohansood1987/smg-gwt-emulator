@@ -240,6 +240,8 @@ public class ServerEmulator {
         graphics.setTurnAndTimer(playerTurn.getPlayerId(), String.valueOf(
             DEFAULT_TURN_TIME_IN_SECS));
       }
+    } else {
+      graphics.resetTimer();
     }
   }
 

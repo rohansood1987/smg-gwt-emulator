@@ -633,4 +633,9 @@ public class GwtEmulatorGraphics extends Composite {
       turnTimer.scheduleRepeating(1000);
     }
   }
+  
+  public void resetTimer() {
+    turnTimerLabel.setText("");
+    turnTimer.cancel();
+  }
 }
