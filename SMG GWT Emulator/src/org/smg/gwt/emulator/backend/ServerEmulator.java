@@ -73,7 +73,7 @@ public class ServerEmulator {
     for(String playerId : playerIds) {
       playersInfo.add(ImmutableMap.<String, Object>of(PLAYER_ID, playerId));
     }
-    playersInfo.add(ImmutableMap.<String, Object>of(PLAYER_ID, GameApi.VIEWER_ID));
+    //playersInfo.add(ImmutableMap.<String, Object>of(PLAYER_ID, GameApi.VIEWER_ID));
     graphics.logToConsole("Setup done for " + numberOfPlayers + " players.");
     verifiers.clear();
     gameReadyPlayers.clear();
