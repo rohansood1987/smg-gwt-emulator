@@ -18,6 +18,7 @@ import org.game_api.GameApi.UpdateUI;
 import org.game_api.GameApi.VerifyMove;
 import org.game_api.GameApi.VerifyMoveDone;
 import org.smg.gwt.emulator.client.GwtEmulatorGraphics;
+import org.smg.gwt.emulator.client.EnhancedConsole.ConsoleMessageType;
 
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
@@ -74,7 +75,7 @@ public class ServerEmulator {
       playersInfo.add(ImmutableMap.<String, Object>of(PLAYER_ID, playerId));
     }
     //playersInfo.add(ImmutableMap.<String, Object>of(PLAYER_ID, GameApi.VIEWER_ID));
-    graphics.logToConsole("Setup done for " + numberOfPlayers + " players.");
+    graphics.getConsole().addInfoMessage("Setup done for " + numberOfPlayers + " players.");
     verifiers.clear();
     gameReadyPlayers.clear();
   }
@@ -99,15 +100,16 @@ public class ServerEmulator {
   public void eventListner(String message, int playerIndex) {
     
     String playerId = playerIds.get(playerIndex);
-    graphics.logToConsole("Message from [" + playerId + "]: " + message);
-    
     Message messageObj = null;
     try {
       messageObj = GameApiJsonHelper.getMessageObject(message);
     }
     catch(Exception ex) {
-      graphics.logToConsole("<err> cant parse json. " + ex.getMessage());
+      graphics.getConsole().addInfoMessage("<err> cant parse json. " + ex.getMessage());
     }
+    
+    graphics.getConsole().addGameApiMessage(messageObj,
+        playerId, ConsoleMessageType.INCOMING);
     
     if (messageObj instanceof GameReady) {
       handleGameReady((GameReady)messageObj, playerId);
@@ -119,13 +121,13 @@ public class ServerEmulator {
       handleVerifyMoveDone((VerifyMoveDone)messageObj, playerId);
     }
     else {
-      graphics.logToConsole("<err> no instance found");
+      graphics.getConsole().addInfoMessage("<err> no instance found");
     }
   }
 
   private void handleGameReady(GameReady gameReady, String sendingPlayerId) {
     // Send initial UpdateUI message
-    graphics.logToConsole("handling game ready from player id" + sendingPlayerId);
+    graphics.getConsole().addInfoMessage("Handling game ready from player id " + sendingPlayerId);
     //TODO: map PlayerId's here since some game can send GameReady twice
     //countGameReady++;
     gameReadyPlayers.add(sendingPlayerId);
@@ -143,7 +145,7 @@ public class ServerEmulator {
   }
   
   private void handleMakeMove(MakeMove makeMove, String playerId) {
-    graphics.logToConsole("handling make move");
+    graphics.getConsole().addInfoMessage("Handling make move");
     if (moveInProgress) {
       //TODO:Handle the case where previous move was in progress and a new move was sent.
       throw new IllegalStateException("Previous move in progress!");
@@ -172,7 +174,7 @@ public class ServerEmulator {
   }
   
   private void handleVerifyMoveDone(VerifyMoveDone verifyMoveDone, String verifyingPlayerId) {
-    graphics.logToConsole("handling verify move done");
+    graphics.getConsole().addInfoMessage("Handling verify move done");
     if(verifyMoveDone.getHackerPlayerId() == null) {
       verifiers.add(verifyingPlayerId);
       //TODO: make this condition lenient?
@@ -198,7 +200,7 @@ public class ServerEmulator {
     }
     else {
       //TODO: Handle hacker!
-      graphics.logToConsole("Hacker detected! -- " + lastMovePlayerId);
+      graphics.getConsole().addInfoMessage("Hacker detected! -- " + lastMovePlayerId);
     }
   }
   
@@ -261,7 +263,7 @@ public class ServerEmulator {
   
   public void updateStateManually(Map<String, Object> state, Map<String, Object> visibilityMap,
       Map<String, Integer> tokensMap) {
-    graphics.logToConsole("Updating state manually: " + state.toString());
+    graphics.getConsole().addInfoMessage("Updating state manually: " + state.toString());
     //lastGameState = gameState.copy();
     //lastMove = Lists.newArrayList((Operation)new SetTurn(getTurnPlayer(lastMove)));
     gameState.setManualState(state, visibilityMap, tokensMap);
@@ -270,7 +272,7 @@ public class ServerEmulator {
 
   @SuppressWarnings("unchecked")
   public String saveGameStateJSONAsString() {
-    graphics.logToConsole("Saving Game State");
+    graphics.getConsole().addInfoMessage("Saving Game State");
     JSONObject json = new JSONObject();
     json.put("playerIdToNumberOfTokensInPot", GameApiJsonHelper.getJsonObject(
         (Map<String, Object>)(Map<String, ? extends Object>)gameState.getPlayerIdToNumberOfTokensInPot()));
@@ -297,7 +299,7 @@ public class ServerEmulator {
   
   @SuppressWarnings("unchecked")
   public void loadGameStateFromJSON(JSONObject json) {
-    graphics.logToConsole("Loading Game State");
+    graphics.getConsole().addInfoMessage("Loading Game State");
     JSONValue jsonPlayerIdToNumberOfTokensInPot = json.get("playerIdToNumberOfTokensInPot");
     JSONValue jsonLastState = json.get("lastState");
     JSONValue jsonLastVisibilityInfo = json.get("lastVisibilityInfo");

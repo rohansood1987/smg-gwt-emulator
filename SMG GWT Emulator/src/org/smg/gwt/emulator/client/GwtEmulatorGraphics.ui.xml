@@ -2,9 +2,9 @@
 <ui:UiBinder xmlns:ui="urn:ui:com.google.gwt.uibinder"
   xmlns:g="urn:import:com.google.gwt.user.client.ui">
   
-  <g:FlowPanel>
+  <g:FlowPanel ui:field="mainPanel" height="100%">
   
-    <g:AbsolutePanel ui:field="mainConfigPanel">
+    <g:AbsolutePanel ui:field="mainConfigPanel" styleName="mainConfigPanel">
       <g:HorizontalPanel verticalAlignment="ALIGN_MIDDLE">
         <g:Label text="Number of players:"/>
 	      <g:ListBox width="20" ui:field="listNumPlayers">
@@ -18,14 +18,14 @@
 	        <g:item value='9'>9 players</g:item>
 	      </g:ListBox>
 	    </g:HorizontalPanel>
-	  <g:Label text="Game size in pixels:"/>
-	  <g:HorizontalPanel verticalAlignment="ALIGN_MIDDLE">
+	    <g:Label text="Game size in pixels:"/>
+	    <g:HorizontalPanel verticalAlignment="ALIGN_MIDDLE">
         <g:Label width="65px" text="--- Width:"/>
         <g:TextBox width="50px" ui:field="txtGameWidth" value="800"/>
       </g:HorizontalPanel>
       <g:HorizontalPanel verticalAlignment="ALIGN_MIDDLE">
         <g:Label width="65px" text="--- Height:"/>
-        <g:TextBox width="50px" ui:field="txtGameHeight" value="500"/>
+        <g:TextBox width="50px" ui:field="txtGameHeight" value="450"/>
       </g:HorizontalPanel>
       <g:HorizontalPanel verticalAlignment="ALIGN_MIDDLE">
         <g:Label text="Default Time Per Turn (in Secs):"/>
@@ -38,38 +38,36 @@
       </g:HorizontalPanel>
       <g:Button text="Start Game" ui:field="btnStart"/>
     </g:AbsolutePanel>
-    <g:HorizontalPanel visible="false" verticalAlignment="ALIGN_MIDDLE" ui:field="gameEmulatorStatusPanel">
-        <g:HTML HTML="TURN: "></g:HTML>
-        <g:Label ui:field = "playerTurnLabel" width="100px"></g:Label>
-        <g:HTML HTML="TIME LEFT: "></g:HTML>
-        <g:Label ui:field = "turnTimerLabel" width="100px"></g:Label>
-    	<g:Button text="Reload Emulator" ui:field="btnReLoadEmulator" />
-    </g:HorizontalPanel>
-  	<g:HorizontalPanel ui:field="gamePanel">
-  	  <g:AbsolutePanel ui:field="gameTabsPanel"/>
-  	  <!--g:Frame height="400px" width="800px" ui:field="gameFrame"/-->
-  	  <g:VerticalPanel>
-  	   <g:TextArea ui:field="console"/>
-  	   <g:HorizontalPanel>
-	  	   <g:Button text="Edit State" ui:field="btnEditState" />
+    
+    <g:HorizontalPanel visible="false" ui:field="mainEmulatorPanel" styleName="mainEmulatorPanel">
+	    <g:VerticalPanel ui:field="consolePanel" styleName="consolePanel">
+	     <g:HorizontalPanel>
+	       <g:Button text="Edit State" ui:field="btnEditState" />
 	       <g:Button text="Save State" ui:field="btnSaveState" />
 	       <g:Button text="Load State" ui:field="btnLoadState" />
-  	   </g:HorizontalPanel>
-  	   <g:AbsolutePanel ui:field="sliderBarPanel"></g:AbsolutePanel> 
-  	  </g:VerticalPanel>
-  	</g:HorizontalPanel>
+	     </g:HorizontalPanel>
+	     <g:AbsolutePanel ui:field="sliderBarPanel"></g:AbsolutePanel> 
+	    </g:VerticalPanel>
+	    
+	    <g:VerticalPanel>
+		    <g:HorizontalPanel verticalAlignment="ALIGN_MIDDLE"
+		    ui:field="gameEmulatorStatusPanel" styleName="gameEmulatorStatusPanel">
+	        <g:HTML HTML="TURN: "></g:HTML>
+	        <g:Label ui:field = "playerTurnLabel" width="100px"></g:Label>
+	        <g:HTML HTML="TIME LEFT: "></g:HTML>
+	        <g:Label ui:field = "turnTimerLabel" width="100px"></g:Label>
+  	      <g:Button text="Reload Emulator" ui:field="btnReLoadEmulator" />
+  	    </g:HorizontalPanel>
+	    
+		    <g:HorizontalPanel ui:field="gamePanel" styleName="gamePanel">
+		      <g:AbsolutePanel ui:field="gameTabsPanel"/>
+		      <!--g:Frame height="400px" width="800px" ui:field="gameFrame"/-->
+		    </g:HorizontalPanel>
+	    
+	    </g:VerticalPanel>
+
+    </g:HorizontalPanel>
+
   </g:FlowPanel>
-  
-  <!-- g:VerticalPanel>
-    <g:HorizontalPanel height="100px" ui:field="opponentArea"/>
-    <g:HorizontalPanel height="100px" ui:field="middleArea"/>
-    <g:HorizontalPanel height="100px">
-      <g:HorizontalPanel ui:field="playerArea"/>
-    </g:HorizontalPanel>
-    <g:HorizontalPanel height="100px">
-      <g:HorizontalPanel width="120" height="100px" ui:field="selectedArea"/>
-      <g:Button ui:field="claimBtn" text="Finish selecting cards"/>
-    </g:HorizontalPanel>
-  </g:VerticalPanel-->
-  
+
 </ui:UiBinder> 
