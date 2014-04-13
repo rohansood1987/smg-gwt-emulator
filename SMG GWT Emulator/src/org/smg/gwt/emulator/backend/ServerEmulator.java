@@ -214,8 +214,8 @@ public class ServerEmulator {
         verifyingPlayerIndex = 0;
       }
       graphics.sendMessageForPlayer(verifyingPlayerIndex, new VerifyMove(playersInfo,
-          gameState.getStateForPlayerId(playerId),
-          lastGameState.getStateForPlayerId(playerId),
+          gameState.getStateForPlayerId(verifyingPlayerId),
+          lastGameState.getStateForPlayerId(verifyingPlayerId),
           makeMove.getOperations(), playerId,
           gameState.getPlayerIdToNumberOfTokensInPot()), verifyingPlayerId);
     }
