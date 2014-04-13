@@ -67,6 +67,9 @@ public class GwtEmulatorGraphics extends Composite {
   TextBox txtDefaultTimePerTurn;
   
   @UiField
+  TextBox txtRandomDelayMillis;
+  
+  @UiField
   CheckBox viewerCheck;
   
   @UiField
@@ -136,6 +139,7 @@ public class GwtEmulatorGraphics extends Composite {
   private ClickHandler clearAllButtonHandler;
   private PopupLoadState displayLoadPopUp;
   private List<Frame> playerFrames = new ArrayList<Frame>();
+  private Frame viewerFrame;
   private String gameUrl;
   private EnhancedConsole enhancedConsole;
   private final PopupReloadEmulator popupReloadEmulator = new PopupReloadEmulator();
@@ -146,11 +150,21 @@ public class GwtEmulatorGraphics extends Composite {
   private static final String AI = "AI";
   private final VerticalPanel emptyVerticalPanel = new VerticalPanel();
   private boolean singleFrame = true;
-  private int totalPlayerFrames = 1;
-  private boolean isViewerPresent = false;
+  private int totalPlayerFrames;
+  private boolean isViewerPresent = true;
+  private int randomDelayMillis;
+  private int timePerTurn;
   
   public EnhancedConsole getConsole() {
     return enhancedConsole;
+  }
+  
+  public void showWaitCursor() {
+    mainPanel.getElement().getStyle().setProperty("cursor", "wait");
+  }
+ 
+  public void showDefaultCursor() {
+    mainPanel.getElement().getStyle().setProperty("cursor", "default");
   }
   
   private Timer turnTimer = new Timer() {
@@ -243,7 +257,8 @@ public class GwtEmulatorGraphics extends Composite {
       return;
     }
     //initialize ServerEmulator
-    serverEmulator = new ServerEmulator(numberOfPlayers, this, singleFrame, isViewerPresent);
+    serverEmulator = new ServerEmulator(numberOfPlayers, this, timePerTurn, randomDelayMillis, 
+        singleFrame, isViewerPresent);
     clearEmulator();
     gameTabs = new TabLayoutPanel(1.5, Unit.EM);
     gameTabs.setSize(gameFrameWidth + "px", (gameFrameHeight + 25) + "px");
@@ -266,6 +281,7 @@ public class GwtEmulatorGraphics extends Composite {
       frame.getElement().setId(VIEWER_FRAME);
       frame.setSize("100%", "100%");
       gameTabs.add(frame, "Viewer");
+      viewerFrame = frame;
     }
     gameTabsPanel.add(gameTabs);
     injectEventListener(serverEmulator, totalPlayerFrames);
@@ -301,7 +317,18 @@ public class GwtEmulatorGraphics extends Composite {
         time = 0;
         alert("Default timer set to infinite time !");  
       }
-      ServerEmulator.defaultTurnTimeInSecs = time;
+      timePerTurn = time;
+    } catch (NumberFormatException ex) {
+      alert("Invalid time: " + txtDefaultTimePerTurn.getText());
+      return false;
+    }
+    try {
+      int time = Integer.parseInt(txtRandomDelayMillis.getText());
+      if (time < 0) {
+        time = 0;
+        alert("No delay set !");  
+      }
+      randomDelayMillis = time;
     } catch (NumberFormatException ex) {
       alert("Invalid time: " + txtDefaultTimePerTurn.getText());
       return false;
@@ -558,9 +585,12 @@ public class GwtEmulatorGraphics extends Composite {
   private void resetConfigPanelFields() {
     txtGameWidth.setText(String.valueOf(gameFrameWidth));
     txtGameHeight.setText(String.valueOf(gameFrameHeight));
-    txtDefaultTimePerTurn.setText(String.valueOf(ServerEmulator.defaultTurnTimeInSecs));
+    txtDefaultTimePerTurn.setText(String.valueOf(timePerTurn));
+    txtRandomDelayMillis.setText(String.valueOf(randomDelayMillis));
     listNumPlayers.setItemSelected(numberOfPlayers - MIN_PLAYERS, true);
     txtGameUrl.setText(gameUrl);
+    viewerCheck.setValue(isViewerPresent);
+    singlePlayerCheck.setValue(singleFrame);
   }
   
   public void handleGameOver(EndGame endGameOpn) {

@@ -31,13 +31,17 @@
         <g:Label text="Default Time Per Turn (in Secs):"/>
         <g:TextBox width="50px" ui:field="txtDefaultTimePerTurn" value="60"/>
       </g:HorizontalPanel>
+      <g:HorizontalPanel verticalAlignment="ALIGN_MIDDLE">
+        <g:Label text="Max Random Network Delay (in millis):"/>
+        <g:TextBox width="50px" ui:field="txtRandomDelayMillis" value="0"/>
+      </g:HorizontalPanel>
    	  <g:HorizontalPanel verticalAlignment="ALIGN_MIDDLE">
         <g:Label text="Game URL:"/>
-	    <g:TextBox width="400px" ui:field="txtGameUrl" 
-	        value="http://2-dot-cheat-game.appspot.com/CheatGame.html"/>
+        <g:TextBox width="400px" ui:field="txtGameUrl" 
+            value="http://2-dot-cheat-game.appspot.com/CheatGame.html"/>
       </g:HorizontalPanel>
       <g:VerticalPanel>
-          <g:CheckBox text="Add Viewer" ui:field="viewerCheck"></g:CheckBox>
+          <g:CheckBox text="Add Viewer" ui:field="viewerCheck" value="true"></g:CheckBox>
           <g:CheckBox text="Single Player" ui:field="singlePlayerCheck"></g:CheckBox>
       </g:VerticalPanel>
       <g:Button text="Start Game" ui:field="btnStart"/>

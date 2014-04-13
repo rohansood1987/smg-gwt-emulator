@@ -28,6 +28,8 @@ import com.google.gwt.json.client.JSONNumber;
 import com.google.gwt.json.client.JSONObject;
 import com.google.gwt.json.client.JSONString;
 import com.google.gwt.json.client.JSONValue;
+import com.google.gwt.user.client.Random;
+import com.google.gwt.user.client.Timer;
 
 /**
  * This class emulates all the functionalities of the server.
@@ -48,11 +50,12 @@ public class ServerEmulator {
   
   private static final JSONNull JSON_NULL = JSONNull.getInstance();
   public static final String PLAYER_ID = "playerId";
-  public static int defaultTurnTimeInSecs = 60;
+  public int defaultTurnTimeInSecs;
   public static final String FIRST_PLAYER_ID = "42";
   
   private boolean moveInProgress;
   private boolean singlePlayerMode;
+  private int randomDelayMillis;
   
   //players who have verified the current MakeMove
   private Set<String> verifiers = new HashSet<String>();
@@ -68,12 +71,15 @@ public class ServerEmulator {
   
   //private int countGameReady = 0;
   public ServerEmulator(int numberOfPlayers, GwtEmulatorGraphics graphics, 
-      boolean singlePlayerMode, boolean isViewerPresent) {
+      int defaultTurnTimeInSecs, int randomDelayMillis, boolean singlePlayerMode,
+          boolean isViewerPresent) {
     gameState = new GameState();
     this.numberOfPlayers = numberOfPlayers;
     this.graphics = graphics;
     this.singlePlayerMode = singlePlayerMode;
     this.isViewerPresent = isViewerPresent;
+    this.defaultTurnTimeInSecs = defaultTurnTimeInSecs;
+    this.randomDelayMillis = randomDelayMillis;
     setupPlayers();
   }
   
@@ -107,18 +113,10 @@ public class ServerEmulator {
     return playerIds.indexOf(playerId);
   }
   
-  public void eventListner(String message, int playerIndex) {
-    
+  public void handleMessage(Message messageObj, int playerIndex) {
     String playerId = playerIds.get(playerIndex);
     if (singlePlayerMode) {
       playerId = currentPlayerIdTurn;
-    }
-    Message messageObj = null;
-    try {
-      messageObj = GameApiJsonHelper.getMessageObject(message);
-    }
-    catch(Exception ex) {
-      graphics.getConsole().addInfoMessage("<err> cant parse json. " + ex.getMessage());
     }
     
     if (messageObj instanceof GameReady) {
@@ -139,7 +137,36 @@ public class ServerEmulator {
       graphics.getConsole().addInfoMessage("<err> no instance found");
     }
   }
-
+  
+  public void eventListner(final String message, final int playerIndex) {
+    Message messageObj = null;
+    try {
+      messageObj = GameApiJsonHelper.getMessageObject(message);
+    }
+    catch(Exception ex) {
+      graphics.getConsole().addInfoMessage("<err> cant parse json. " + ex.getMessage());
+    }
+    if (messageObj != null) {
+      final Message messageObject = messageObj;
+      Timer delayTimer = new Timer() {
+        @Override
+        public void run() {
+          handleMessage(messageObject, playerIndex);
+          this.cancel();
+          graphics.showDefaultCursor();
+        }
+      };
+      int delay = Random.nextInt(randomDelayMillis);
+      if (delay != 0) {
+        graphics.getConsole().addInfoMessage("Message Received: " + messageObj.getMessageName());
+        graphics.getConsole().addInfoMessage("Simulating network delay of " + delay + " ms.");
+      }
+      delayTimer.schedule(delay);
+      graphics.showWaitCursor();
+      delayTimer = null;
+    }
+  }
+  
   private void handleGameReady(GameReady gameReady, String sendingPlayerId) {
     // Send initial UpdateUI message
     graphics.getConsole().addInfoMessage("Handling game ready from player id " + sendingPlayerId);
