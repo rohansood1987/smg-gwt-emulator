@@ -48,7 +48,7 @@ public class ServerEmulator {
   
   private static final JSONNull JSON_NULL = JSONNull.getInstance();
   public static final String PLAYER_ID = "playerId";
-  public static int DEFAULT_TURN_TIME_IN_SECS = 60;
+  public static int defaultTurnTimeInSecs = 60;
   public static final String FIRST_PLAYER_ID = "42";
   
   private boolean moveInProgress;
@@ -233,14 +233,14 @@ public class ServerEmulator {
     if (playerTurn != null) {
       int turnInSeconds = playerTurn.getNumberOfSecondsForTurn();
       if (turnInSeconds <= 0) {
-        turnInSeconds = DEFAULT_TURN_TIME_IN_SECS;
+        turnInSeconds = defaultTurnTimeInSecs;
       }
       if (turnInSeconds <= 0) {
         //infinite time
         graphics.setTurnAndTimer(playerTurn.getPlayerId(), "");
       } else {
         graphics.setTurnAndTimer(playerTurn.getPlayerId(), String.valueOf(
-            DEFAULT_TURN_TIME_IN_SECS));
+            defaultTurnTimeInSecs));
       }
     } else {
       graphics.resetTimer();

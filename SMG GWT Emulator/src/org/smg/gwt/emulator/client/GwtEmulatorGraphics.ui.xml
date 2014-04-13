@@ -37,6 +37,11 @@
 	        value="http://2-dot-cheat-game.appspot.com/CheatGame.html"/>
       </g:HorizontalPanel>
       <g:Button text="Start Game" ui:field="btnStart"/>
+      <g:HorizontalPanel ui:field="btnsPanel" visible="false">
+	      <g:Button text="Cancel" ui:field="btnCancel"/>
+	      <g:Button text="Reset" ui:field="btnReset" />
+	      <g:Button text="Reload" ui:field="btnReload" />
+      </g:HorizontalPanel>
     </g:AbsolutePanel>
     
     <g:HorizontalPanel visible="false" ui:field="mainEmulatorPanel" styleName="mainEmulatorPanel">

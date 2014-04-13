@@ -29,18 +29,14 @@ import com.google.gwt.user.client.ui.AbsolutePanel;
 import com.google.gwt.user.client.ui.Button;
 import com.google.gwt.user.client.ui.Composite;
 import com.google.gwt.user.client.ui.DialogBox;
-import com.google.gwt.user.client.ui.DockLayoutPanel;
 import com.google.gwt.user.client.ui.FlexTable;
 import com.google.gwt.user.client.ui.FlowPanel;
 import com.google.gwt.user.client.ui.Frame;
 import com.google.gwt.user.client.ui.HorizontalPanel;
 import com.google.gwt.user.client.ui.Label;
-import com.google.gwt.user.client.ui.LayoutPanel;
 import com.google.gwt.user.client.ui.ListBox;
-import com.google.gwt.user.client.ui.RootLayoutPanel;
 import com.google.gwt.user.client.ui.ScrollPanel;
 import com.google.gwt.user.client.ui.TabLayoutPanel;
-import com.google.gwt.user.client.ui.TextArea;
 import com.google.gwt.user.client.ui.TextBox;
 import com.google.gwt.user.client.ui.VerticalPanel;
 import com.google.gwt.user.client.ui.Widget;
@@ -50,6 +46,9 @@ import com.kiouri.sliderbar.client.event.BarValueChangedHandler;
 public class GwtEmulatorGraphics extends Composite {
   public interface GwtEmulatorGraphicsUiBinder extends UiBinder<Widget, GwtEmulatorGraphics> {
   }
+  
+  @UiField
+  FlowPanel mainPanel;
   
   @UiField
   HorizontalPanel mainEmulatorPanel;
@@ -68,6 +67,18 @@ public class GwtEmulatorGraphics extends Composite {
   
   @UiField
   Button btnStart;
+  
+  @UiField
+  HorizontalPanel btnsPanel;
+  
+  @UiField
+  Button btnCancel;
+  
+  @UiField
+  Button btnReset;
+  
+  @UiField
+  Button btnReload;
   
   @UiField
   Button btnReLoadEmulator;
@@ -120,11 +131,13 @@ public class GwtEmulatorGraphics extends Composite {
   private List<Frame> playerFrames = new ArrayList<Frame>();
   private String gameUrl;
   private EnhancedConsole enhancedConsole;
+  private final PopupReloadEmulator popupReloadEmulator = new PopupReloadEmulator();
   private static final int MIN_PLAYERS = 2;
   private static final int MAX_PLAYERS = 9;
   private static final String PLAYER = "player";
   private static final String VIEWER = "viewer";
   private static final String AI = "AI";
+  private final VerticalPanel emptyVerticalPanel = new VerticalPanel();
   
   public EnhancedConsole getConsole() {
     return enhancedConsole;
@@ -142,7 +155,7 @@ public class GwtEmulatorGraphics extends Composite {
             alert("Game Ended. Please Restart !");
             removeEventListener();
             this.cancel();
-            new PopupReloadEmulator().center();
+            popupReloadEmulator.showConfigPanel();
           }
         }
       } catch(Exception ex) {
@@ -158,15 +171,18 @@ public class GwtEmulatorGraphics extends Composite {
     turnTimerLabel.getElement().getStyle().setFontWeight(FontWeight.BOLD);
     txtGameUrl.getElement().setAttribute("size", "40");
     enhancedConsole = new EnhancedConsole();
+    popupReloadEmulator.hide();
   }
   
   private void setupEmulatorGraphics() {
-    mainConfigPanel.setVisible(false);
+    mainPanel.remove(mainConfigPanel);
     mainEmulatorPanel.setVisible(true);
     ScrollPanel scrollPanel = new ScrollPanel();
     scrollPanel.add(enhancedConsole);
     scrollPanel.setSize("400px", "450px");
     consolePanel.add(scrollPanel);
+    btnStart.setVisible(false);
+    btnsPanel.setVisible(true);
   }
   
   @UiHandler("btnStart")
@@ -177,7 +193,28 @@ public class GwtEmulatorGraphics extends Composite {
   
   @UiHandler("btnReLoadEmulator")
   void onClickReLoadButton(ClickEvent e) {
-    new PopupReloadEmulator().center();
+    resetConfigPanelFields();
+    popupReloadEmulator.showConfigPanel();
+  }
+  
+  @UiHandler("btnCancel")
+  void onClickCancelButton(ClickEvent e) {
+    popupReloadEmulator.hideConfigPanel();
+  }
+  
+  @UiHandler("btnReset")
+  void onClickResetButton(ClickEvent e) {
+    resetConfigPanelFields();
+  }
+  
+  @UiHandler("btnReload")
+  void onClickReloadButton(ClickEvent e) {
+    try {
+      popupReloadEmulator.hideConfigPanel();
+      initEmulator();
+    }
+    catch(Exception ex) {
+    }
   }
   
   private void clearEmulator() {
@@ -195,7 +232,7 @@ public class GwtEmulatorGraphics extends Composite {
     if (!validatateAndInitConfigInput()) {
       return;
     }
-    // initialize ServerEmulator
+    //initialize ServerEmulator
     serverEmulator = new ServerEmulator(numberOfPlayers, this);
     clearEmulator();
     gameTabs = new TabLayoutPanel(1.5, Unit.EM);
@@ -219,10 +256,7 @@ public class GwtEmulatorGraphics extends Composite {
     
     injectEventListener(serverEmulator, numberOfPlayers);
     addSlider(0);
-    //mainConfigPanel.setVisible(false);
-    //gamePanel.setVisible(true);
     addSaveStateTable();
-    //gameEmulatorStatusPanel.setVisible(true);
   }
   
   private boolean validatateAndInitConfigInput() {
@@ -253,7 +287,7 @@ public class GwtEmulatorGraphics extends Composite {
         time = 0;
         alert("Default timer set to infinite time !");  
       }
-      ServerEmulator.DEFAULT_TURN_TIME_IN_SECS = time;
+      ServerEmulator.defaultTurnTimeInSecs = time;
     } catch (NumberFormatException ex) {
       alert("Invalid time: " + txtDefaultTimePerTurn.getText());
       return false;
@@ -509,6 +543,7 @@ public class GwtEmulatorGraphics extends Composite {
   private void resetConfigPanelFields() {
     txtGameWidth.setText(String.valueOf(gameFrameWidth));
     txtGameHeight.setText(String.valueOf(gameFrameHeight));
+    txtDefaultTimePerTurn.setText(String.valueOf(ServerEmulator.defaultTurnTimeInSecs));
     listNumPlayers.setItemSelected(numberOfPlayers - MIN_PLAYERS, true);
     txtGameUrl.setText(gameUrl);
   }
@@ -518,59 +553,20 @@ public class GwtEmulatorGraphics extends Composite {
   }
   
   private class PopupReloadEmulator extends DialogBox {
-    
     PopupReloadEmulator() {
       setText("Reload Emulator");
-      Button btnCancel = new Button("Cancel");
-      Button btnReset = new Button("Reset");
-      Button btnReload = new Button("Reload");
-      final Label lblStatus = new Label("Please select the reload parameters");
-      resetConfigPanelFields();
-      
-      btnCancel.addClickHandler(new ClickHandler() {
-        @Override
-        public void onClick(ClickEvent event) {
-          hide();
-        }
-      });
-      
-      btnReset.addClickHandler(new ClickHandler() {
-        @Override
-        public void onClick(ClickEvent event) {
-          resetConfigPanelFields();
-        }
-      });
-      
-      btnReload.addClickHandler(new ClickHandler() {
-        @Override
-        public void onClick(ClickEvent event) {
-          try {
-            hide();
-            initEmulator();
-          }
-          catch(Exception ex) {
-            lblStatus.setText("Please enter valid information");
-          }
-        }
-      });
-      VerticalPanel mainVertPanel = new VerticalPanel();
-      mainVertPanel.add(lblStatus);
-      mainVertPanel.add(new Label("Number of Players:"));
-      mainVertPanel.add(listNumPlayers);
-      mainVertPanel.add(new Label("Frame Width:"));
-      mainVertPanel.add(txtGameWidth);
-      mainVertPanel.add(new Label("Frame Height: "));
-      mainVertPanel.add(txtGameHeight);
-      mainVertPanel.add(new Label("Default Time Per Turn (in Secs): "));
-      mainVertPanel.add(txtDefaultTimePerTurn);
-      mainVertPanel.add(new Label("Game URL:"));
-      mainVertPanel.add(txtGameUrl);
-      HorizontalPanel btnsPanel = new HorizontalPanel();
-      btnsPanel.add(btnCancel);
-      btnsPanel.add(btnReset);
-      btnsPanel.add(btnReload);
-      mainVertPanel.add(btnsPanel);
-      setWidget(mainVertPanel);
+      setWidget(emptyVerticalPanel);
+    }
+    
+    public void showConfigPanel() {
+      popupReloadEmulator.setWidget(mainConfigPanel);
+      popupReloadEmulator.setVisible(true);
+      popupReloadEmulator.center();
+    }
+    
+    public void hideConfigPanel() {
+      popupReloadEmulator.hide();
+      popupReloadEmulator.setWidget(emptyVerticalPanel);
     }
   }
   
@@ -587,7 +583,8 @@ public class GwtEmulatorGraphics extends Composite {
         @Override
         public void onClick(ClickEvent event) {
           hide();
-          new PopupReloadEmulator().center();
+          resetConfigPanelFields();
+          popupReloadEmulator.showConfigPanel();
         }
       });
       
