@@ -52,6 +52,7 @@ public class ServerEmulator {
   public static final String FIRST_PLAYER_ID = "42";
   
   private boolean moveInProgress;
+  private boolean singlePlayerMode;
   
   //players who have verified the current MakeMove
   private Set<String> verifiers = new HashSet<String>();
@@ -59,11 +60,20 @@ public class ServerEmulator {
   //players who have sent game ready
   private Set<String> gameReadyPlayers = new HashSet<String>();
   
+  private int verifiersSize = 0;
+  
+  private String currentPlayerIdTurn = FIRST_PLAYER_ID;
+  
+  private boolean isViewerPresent = false;
+  
   //private int countGameReady = 0;
-  public ServerEmulator(int numberOfPlayers, GwtEmulatorGraphics graphics) {
+  public ServerEmulator(int numberOfPlayers, GwtEmulatorGraphics graphics, 
+      boolean singlePlayerMode, boolean isViewerPresent) {
     gameState = new GameState();
     this.numberOfPlayers = numberOfPlayers;
     this.graphics = graphics;
+    this.singlePlayerMode = singlePlayerMode;
+    this.isViewerPresent = isViewerPresent;
     setupPlayers();
   }
   
@@ -100,6 +110,9 @@ public class ServerEmulator {
   public void eventListner(String message, int playerIndex) {
     
     String playerId = playerIds.get(playerIndex);
+    if (singlePlayerMode) {
+      playerId = currentPlayerIdTurn;
+    }
     Message messageObj = null;
     try {
       messageObj = GameApiJsonHelper.getMessageObject(message);
@@ -108,16 +121,18 @@ public class ServerEmulator {
       graphics.getConsole().addInfoMessage("<err> cant parse json. " + ex.getMessage());
     }
     
-    graphics.getConsole().addGameApiMessage(messageObj,
-        playerId, ConsoleMessageType.INCOMING);
-    
     if (messageObj instanceof GameReady) {
+      graphics.getConsole().addGameApiMessage(messageObj,
+          playerId, ConsoleMessageType.INCOMING);
       handleGameReady((GameReady)messageObj, playerId);
     }
     else if (messageObj instanceof MakeMove) {
+      graphics.getConsole().addGameApiMessage(messageObj,
+          playerId, ConsoleMessageType.INCOMING);
       handleMakeMove((MakeMove)messageObj, playerId);
     }
     else if (messageObj instanceof VerifyMoveDone) {
+      graphics.getConsole().addGameApiMessage(messageObj, "UNKNOWN", ConsoleMessageType.INCOMING);
       handleVerifyMoveDone((VerifyMoveDone)messageObj, playerId);
     }
     else {
@@ -131,6 +146,9 @@ public class ServerEmulator {
     //TODO: map PlayerId's here since some game can send GameReady twice
     //countGameReady++;
     gameReadyPlayers.add(sendingPlayerId);
+    if (singlePlayerMode) {
+      gameReadyPlayers.addAll(playerIds);
+    }
     if (gameReadyPlayers.containsAll(playerIds)) {
       /*for(String playerId : playerIds) {
         int playerIndex = getPlayerIndex(playerId);
@@ -165,11 +183,14 @@ public class ServerEmulator {
       //TODO: Should this be sent to player making the move as well?
       //verifiers.add(verifyingPlayerId);
       int verifyingPlayerIndex = getPlayerIndex(verifyingPlayerId);
+      if (singlePlayerMode) {
+        verifyingPlayerIndex = 0;
+      }
       graphics.sendMessageForPlayer(verifyingPlayerIndex, new VerifyMove(playersInfo,
           gameState.getStateForPlayerId(playerId),
           lastGameState.getStateForPlayerId(playerId),
           makeMove.getOperations(), playerId,
-          gameState.getPlayerIdToNumberOfTokensInPot()));
+          gameState.getPlayerIdToNumberOfTokensInPot()), verifyingPlayerId);
     }
   }
   
@@ -177,8 +198,10 @@ public class ServerEmulator {
     graphics.getConsole().addInfoMessage("Handling verify move done");
     if(verifyMoveDone.getHackerPlayerId() == null) {
       verifiers.add(verifyingPlayerId);
+      verifiersSize++;
       //TODO: make this condition lenient?
-      if(verifiers.containsAll(playerIds)) {
+      if(verifiers.containsAll(playerIds) || 
+          (singlePlayerMode && verifiersSize == playerIds.size())) {
         // Verified by all
         sendUpdateStateToAllPlayers();
         // check for EndGame
@@ -196,6 +219,7 @@ public class ServerEmulator {
         graphics.incrementSliderMaxValue(currentSliderIndex);
         moveInProgress = false;
         verifiers.clear();
+        verifiersSize = 0;
       }
     }
     else {
@@ -205,31 +229,46 @@ public class ServerEmulator {
   }
   
   private void sendUpdateStateToAllPlayers() {
-    for(String playerId : playerIds) {
-      int playerIndex = getPlayerIndex(playerId);
+    SetTurn playerTurn = getTurnPlayer(lastMove);
+    if (playerTurn != null) {
+      currentPlayerIdTurn = playerTurn.getPlayerId();
+    }
+    if (singlePlayerMode) {
       Map<String, Object> lastPlayerState = null;
       if (lastGameState != null) {
-        lastPlayerState = lastGameState.getStateForPlayerId(playerId);
+        lastPlayerState = lastGameState.getStateForPlayerId(currentPlayerIdTurn);
       }
-      graphics.sendMessageForPlayer(playerIndex, new UpdateUI(playerId, playersInfo,
-          gameState.getStateForPlayerId(playerId),
+      graphics.sendMessageForPlayer(0, new UpdateUI(currentPlayerIdTurn, playersInfo,
+          gameState.getStateForPlayerId(currentPlayerIdTurn),
+          lastPlayerState, lastMove, lastMovePlayerId,
+          gameState.getPlayerIdToNumberOfTokensInPot()), currentPlayerIdTurn);
+    } else {
+      for(String playerId : playerIds) {
+        int playerIndex = getPlayerIndex(playerId);
+        Map<String, Object> lastPlayerState = null;
+        if (lastGameState != null) {
+          lastPlayerState = lastGameState.getStateForPlayerId(playerId);
+        }
+        graphics.sendMessageForPlayer(playerIndex, new UpdateUI(playerId, playersInfo,
+            gameState.getStateForPlayerId(playerId),
+            lastPlayerState, lastMove, lastMovePlayerId,
+            gameState.getPlayerIdToNumberOfTokensInPot()), playerId);
+      }
+    }
+    
+    //Sending update to the viewer
+    if (isViewerPresent) {
+      Map<String, Object> lastPlayerState = null;
+      if (lastGameState != null) {
+        lastPlayerState = lastGameState.getStateForPlayerId(GameApi.VIEWER_ID);
+      }
+      graphics.sendMessageForViewer(new UpdateUI(GameApi.VIEWER_ID, playersInfo,
+          gameState.getStateForPlayerId(GameApi.VIEWER_ID),
           lastPlayerState, lastMove, lastMovePlayerId,
           gameState.getPlayerIdToNumberOfTokensInPot()));
     }
     
-    
-    //Sending update to the viewer
-    Map<String, Object> lastPlayerState = null;
-    if (lastGameState != null) {
-      lastPlayerState = lastGameState.getStateForPlayerId(GameApi.VIEWER_ID);
-    }
-    graphics.sendMessageForViewer(new UpdateUI(GameApi.VIEWER_ID, playersInfo,
-        gameState.getStateForPlayerId(GameApi.VIEWER_ID),
-        lastPlayerState, lastMove, lastMovePlayerId,
-        gameState.getPlayerIdToNumberOfTokensInPot()));
-    
     //Set timer and turn
-    SetTurn playerTurn = getTurnPlayer(lastMove);
     if (playerTurn != null) {
       int turnInSeconds = playerTurn.getNumberOfSecondsForTurn();
       if (turnInSeconds <= 0) {
@@ -345,7 +384,9 @@ public class ServerEmulator {
             jsonPlayerIdToNumberOfTokensInPot.isObject()));
     if (numberOfPlayers < oldTotalPlayers) {
       gameReadyPlayers.addAll(playerIds);
-      graphics.removePlayerFrames(oldTotalPlayers - numberOfPlayers, oldTotalPlayers);
+      if (!singlePlayerMode) {
+        graphics.removePlayerFrames(oldTotalPlayers - numberOfPlayers, oldTotalPlayers);
+      }
     }
     if (numberOfPlayers <= oldTotalPlayers) {
       sendUpdateStateToAllPlayers();
@@ -355,7 +396,11 @@ public class ServerEmulator {
       gameReadyPlayers.containsAll(playerIds) = true which will send the updated state to 
       all the frames.*/
       gameReadyPlayers.addAll(getPlayerIds(oldTotalPlayers));
-      graphics.addPlayerFrames(numberOfPlayers - oldTotalPlayers, oldTotalPlayers);
+      if (!singlePlayerMode) {
+        graphics.addPlayerFrames(numberOfPlayers - oldTotalPlayers, oldTotalPlayers);
+      } else {
+        sendUpdateStateToAllPlayers();
+      }
     } 
   }
 

@@ -27,6 +27,7 @@ import com.google.gwt.user.client.Timer;
 import com.google.gwt.user.client.Window;
 import com.google.gwt.user.client.ui.AbsolutePanel;
 import com.google.gwt.user.client.ui.Button;
+import com.google.gwt.user.client.ui.CheckBox;
 import com.google.gwt.user.client.ui.Composite;
 import com.google.gwt.user.client.ui.DialogBox;
 import com.google.gwt.user.client.ui.FlexTable;
@@ -64,6 +65,12 @@ public class GwtEmulatorGraphics extends Composite {
   
   @UiField
   TextBox txtDefaultTimePerTurn;
+  
+  @UiField
+  CheckBox viewerCheck;
+  
+  @UiField
+  CheckBox singlePlayerCheck;
   
   @UiField
   Button btnStart;
@@ -134,10 +141,13 @@ public class GwtEmulatorGraphics extends Composite {
   private final PopupReloadEmulator popupReloadEmulator = new PopupReloadEmulator();
   private static final int MIN_PLAYERS = 2;
   private static final int MAX_PLAYERS = 9;
-  private static final String PLAYER = "player";
-  private static final String VIEWER = "viewer";
+  private static final String PLAYER_FRAME = "playerFrame";
+  private static final String VIEWER_FRAME = "viewerFrame";
   private static final String AI = "AI";
   private final VerticalPanel emptyVerticalPanel = new VerticalPanel();
+  private boolean singleFrame = true;
+  private int totalPlayerFrames = 1;
+  private boolean isViewerPresent = false;
   
   public EnhancedConsole getConsole() {
     return enhancedConsole;
@@ -233,28 +243,32 @@ public class GwtEmulatorGraphics extends Composite {
       return;
     }
     //initialize ServerEmulator
-    serverEmulator = new ServerEmulator(numberOfPlayers, this);
+    serverEmulator = new ServerEmulator(numberOfPlayers, this, singleFrame, isViewerPresent);
     clearEmulator();
     gameTabs = new TabLayoutPanel(1.5, Unit.EM);
     gameTabs.setSize(gameFrameWidth + "px", (gameFrameHeight + 25) + "px");
-    for (int i = 0; i < numberOfPlayers; i++) {
+    if (singleFrame) {
+      totalPlayerFrames = 1;
+    } else {
+      totalPlayerFrames = numberOfPlayers;
+    }
+    for (int i = 0; i < totalPlayerFrames; i++) {
       Frame frame = new Frame(gameUrl);
-      frame.getElement().setId(PLAYER + i);
+      frame.getElement().setId(PLAYER_FRAME + i);
       frame.setSize("100%", "100%");
       gameTabs.add(frame, "Player " + serverEmulator.getPlayerIds().get(i));
       playerFrames.add(frame);
     }
     
     //Adding a frame for VIEWER
-    Frame frame = new Frame(gameUrl);
-    frame.getElement().setId(VIEWER);
-    frame.setSize("100%", "100%");
-    gameTabs.add(frame, VIEWER);
-    
-    
+    if (isViewerPresent) {
+      Frame frame = new Frame(gameUrl);
+      frame.getElement().setId(VIEWER_FRAME);
+      frame.setSize("100%", "100%");
+      gameTabs.add(frame, "Viewer");
+    }
     gameTabsPanel.add(gameTabs);
-    
-    injectEventListener(serverEmulator, numberOfPlayers);
+    injectEventListener(serverEmulator, totalPlayerFrames);
     addSlider(0);
     addSaveStateTable();
   }
@@ -309,6 +323,8 @@ public class GwtEmulatorGraphics extends Composite {
       alert("Invalid URL: " + gameUrl);
       return false;
     }
+    isViewerPresent = viewerCheck.getValue();
+    singleFrame = singlePlayerCheck.getValue();
     return true;
   }
 
@@ -476,11 +492,11 @@ public class GwtEmulatorGraphics extends Composite {
     displayLoadPopUp.center();
   }
   
-  private native void injectEventListener(ServerEmulator emulator, int numberOfPlayers) /*-{
+  private native void injectEventListener(ServerEmulator emulator, int totalPlayerFrames) /*-{
     $wnd.postMessageListener = function(e) {
       //alert("Total players " + numberOfPlayers);
-      for(var i = 0; i < numberOfPlayers; i++) {
-        var frameName = "player"+i;
+      for(var i = 0; i < totalPlayerFrames; i++) {
+        var frameName = "playerFrame"+i;
         var frame = $doc.getElementById(frameName);
         if(e.source == frame.contentWindow || e.source.parent == frame.contentWindow) {
           //$wnd.alert(frameName + " attached!");
@@ -501,14 +517,13 @@ public class GwtEmulatorGraphics extends Composite {
     postMessageToFrame(frameId, jsonStr);
   }
   
-  public void sendMessageForPlayer(int playerIndex, Message message) {
-    enhancedConsole.addGameApiMessage(message,
-        serverEmulator.getPlayerIds().get(playerIndex), ConsoleMessageType.OUTGOING);
-    sendMessage(PLAYER+playerIndex, message);
+  public void sendMessageForPlayer(int playerIndex, Message message, String playerId) {
+    enhancedConsole.addGameApiMessage(message, playerId, ConsoleMessageType.OUTGOING);
+    sendMessage(PLAYER_FRAME+playerIndex, message);
   }
   
   public void sendMessageForViewer(Message message) {
-    sendMessage(VIEWER, message);
+    sendMessage(VIEWER_FRAME, message);
   }
   
   private static native void postMessageToFrame(String frameId, String message) /*-{
@@ -523,7 +538,7 @@ public class GwtEmulatorGraphics extends Composite {
     removeEventListener();
     for (int i = oldTotalPlayers; i < oldTotalPlayers + newFrames; ++i) {
       Frame frame = new Frame(gameUrl);
-      frame.getElement().setId(PLAYER + i);
+      frame.getElement().setId(PLAYER_FRAME + i);
       frame.setSize("100%", "100%");
       gameTabs.add(frame, "Player " + serverEmulator.getPlayerIds().get(i));
       playerFrames.add(frame);
@@ -642,10 +657,15 @@ public class GwtEmulatorGraphics extends Composite {
     playerTurnLabel.setText("Player " + playerTurnId);
     turnTimerLabel.setText(time);
     //Select the turn player tab(iframe)
-    try {
-      gameTabs.selectTab(playerFrames.get(Integer.parseInt(playerTurnId) - 
-          Integer.parseInt(ServerEmulator.FIRST_PLAYER_ID)));
-    } catch(NumberFormatException ex) {
+    if (!singleFrame) {
+      try {
+        gameTabs.selectTab(playerFrames.get(Integer.parseInt(playerTurnId) - 
+            Integer.parseInt(ServerEmulator.FIRST_PLAYER_ID)));
+      } catch(NumberFormatException ex) {
+      }
+    } else {
+      gameTabs.getTabWidget(playerFrames.get(0)).getElement().setInnerHTML(
+          "Player " + playerTurnId);
     }
     if (time != null && time.length() != 0) {
       turnTimer.scheduleRepeating(1000);

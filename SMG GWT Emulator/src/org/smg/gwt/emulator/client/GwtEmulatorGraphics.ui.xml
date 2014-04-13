@@ -36,6 +36,10 @@
 	    <g:TextBox width="400px" ui:field="txtGameUrl" 
 	        value="http://2-dot-cheat-game.appspot.com/CheatGame.html"/>
       </g:HorizontalPanel>
+      <g:VerticalPanel>
+          <g:CheckBox text="Add Viewer" ui:field="viewerCheck"></g:CheckBox>
+          <g:CheckBox text="Single Player" ui:field="singlePlayerCheck"></g:CheckBox>
+      </g:VerticalPanel>
       <g:Button text="Start Game" ui:field="btnStart"/>
       <g:HorizontalPanel ui:field="btnsPanel" visible="false">
 	      <g:Button text="Cancel" ui:field="btnCancel"/>
