@@ -6,6 +6,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+import org.game_api.GameApi;
 import org.game_api.GameApi.EndGame;
 import org.game_api.GameApi.GameApiJsonHelper;
 import org.game_api.GameApi.Message;
@@ -74,6 +75,9 @@ public class GwtEmulatorGraphics extends Composite {
   
   @UiField
   CheckBox singlePlayerCheck;
+  
+  @UiField
+  CheckBox computerPlayerCheck;
   
   @UiField
   Button btnStart;
@@ -149,9 +153,10 @@ public class GwtEmulatorGraphics extends Composite {
   private static final String VIEWER_FRAME = "viewerFrame";
   private static final String AI = "AI";
   private final VerticalPanel emptyVerticalPanel = new VerticalPanel();
-  private boolean singleFrame = true;
+  private boolean singleFrame = false;
   private int totalPlayerFrames;
   private boolean isViewerPresent = true;
+  private boolean isComputerPlayerPresent = false;
   private int randomDelayMillis;
   private int timePerTurn;
   
@@ -256,10 +261,10 @@ public class GwtEmulatorGraphics extends Composite {
     if (!validatateAndInitConfigInput()) {
       return;
     }
+    clearEmulator();
     //initialize ServerEmulator
     serverEmulator = new ServerEmulator(numberOfPlayers, this, timePerTurn, randomDelayMillis, 
-        singleFrame, isViewerPresent);
-    clearEmulator();
+        singleFrame, isViewerPresent, isComputerPlayerPresent);
     gameTabs = new TabLayoutPanel(1.5, Unit.EM);
     gameTabs.setSize(gameFrameWidth + "px", (gameFrameHeight + 25) + "px");
     if (singleFrame) {
@@ -271,7 +276,11 @@ public class GwtEmulatorGraphics extends Composite {
       Frame frame = new Frame(gameUrl);
       frame.getElement().setId(PLAYER_FRAME + i);
       frame.setSize("100%", "100%");
-      gameTabs.add(frame, "Player " + serverEmulator.getPlayerIds().get(i));
+      if (i == totalPlayerFrames - 1 && !singleFrame && isComputerPlayerPresent) {
+        gameTabs.add(frame, "AI Player");
+      } else {
+        gameTabs.add(frame, "Player " + serverEmulator.getPlayerIds().get(i));
+      }
       playerFrames.add(frame);
     }
     
@@ -352,6 +361,7 @@ public class GwtEmulatorGraphics extends Composite {
     }
     isViewerPresent = viewerCheck.getValue();
     singleFrame = singlePlayerCheck.getValue();
+    isComputerPlayerPresent = computerPlayerCheck.getValue();
     return true;
   }
 
@@ -591,6 +601,7 @@ public class GwtEmulatorGraphics extends Composite {
     txtGameUrl.setText(gameUrl);
     viewerCheck.setValue(isViewerPresent);
     singlePlayerCheck.setValue(singleFrame);
+    computerPlayerCheck.setValue(isComputerPlayerPresent);
   }
   
   public void handleGameOver(EndGame endGameOpn) {
@@ -689,13 +700,22 @@ public class GwtEmulatorGraphics extends Composite {
     //Select the turn player tab(iframe)
     if (!singleFrame) {
       try {
-        gameTabs.selectTab(playerFrames.get(Integer.parseInt(playerTurnId) - 
-            Integer.parseInt(ServerEmulator.FIRST_PLAYER_ID)));
+        if (playerTurnId.equals(GameApi.AI_PLAYER_ID)) {
+          gameTabs.selectTab(playerFrames.get(playerFrames.size() - 1));
+        } else {
+          gameTabs.selectTab(playerFrames.get(Integer.parseInt(playerTurnId) - 
+              Integer.parseInt(ServerEmulator.FIRST_PLAYER_ID)));
+        }
       } catch(NumberFormatException ex) {
       }
     } else {
-      gameTabs.getTabWidget(playerFrames.get(0)).getElement().setInnerHTML(
-          "Player " + playerTurnId);
+      if (playerTurnId.equals(GameApi.AI_PLAYER_ID)) {
+        gameTabs.getTabWidget(playerFrames.get(0)).getElement().setInnerHTML("AI Player");
+      } else {
+        gameTabs.getTabWidget(playerFrames.get(0)).getElement().setInnerHTML(
+            "Player " + playerTurnId);
+      }
+      
     }
     if (time != null && time.length() != 0) {
       turnTimer.scheduleRepeating(1000);

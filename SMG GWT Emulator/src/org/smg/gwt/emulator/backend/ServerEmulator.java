@@ -68,11 +68,12 @@ public class ServerEmulator {
   private String currentPlayerIdTurn = FIRST_PLAYER_ID;
   
   private boolean isViewerPresent = false;
+  private boolean isAIPlayerPresent = false;
   
   //private int countGameReady = 0;
   public ServerEmulator(int numberOfPlayers, GwtEmulatorGraphics graphics, 
       int defaultTurnTimeInSecs, int randomDelayMillis, boolean singlePlayerMode,
-          boolean isViewerPresent) {
+          boolean isViewerPresent, boolean isAIPlayerPresent) {
     gameState = new GameState();
     this.numberOfPlayers = numberOfPlayers;
     this.graphics = graphics;
@@ -80,6 +81,7 @@ public class ServerEmulator {
     this.isViewerPresent = isViewerPresent;
     this.defaultTurnTimeInSecs = defaultTurnTimeInSecs;
     this.randomDelayMillis = randomDelayMillis;
+    this.isAIPlayerPresent = isAIPlayerPresent;
     setupPlayers();
   }
   
@@ -92,15 +94,24 @@ public class ServerEmulator {
     }
     //playersInfo.add(ImmutableMap.<String, Object>of(PLAYER_ID, GameApi.VIEWER_ID));
     graphics.getConsole().addInfoMessage("Setup done for " + numberOfPlayers + " players.");
+    if (isAIPlayerPresent) {
+      graphics.getConsole().addInfoMessage("Added AI Player with ID: " + GameApi.AI_PLAYER_ID);
+    }
     verifiers.clear();
     gameReadyPlayers.clear();
   }
   
   private List<String> getPlayerIds(int numOfPlayers) {
     List<String> playerIdList = Lists.newArrayList();
-    for(int i = 0; i < numOfPlayers; i++) {
+    int i = 0;
+    for(; i < numOfPlayers - 1; i++) {
       String playerId = (Integer.parseInt(FIRST_PLAYER_ID) + i) + "";
       playerIdList.add(playerId);
+    }
+    if (isAIPlayerPresent) {
+      playerIdList.add(GameApi.AI_PLAYER_ID);
+    } else {
+      playerIdList.add((Integer.parseInt(FIRST_PLAYER_ID) + i) + "");
     }
     return playerIdList;
   }
