@@ -46,6 +46,7 @@
           <g:CheckBox text="AI Player Present" ui:field="computerPlayerCheck"></g:CheckBox>
       </g:VerticalPanel>
       <g:Button text="Start Game" ui:field="btnStart"/>
+      <g:Button text="Load State" ui:field="btnLoadState"/>
       <g:HorizontalPanel ui:field="btnsPanel" visible="false">
 	      <g:Button text="Cancel" ui:field="btnCancel"/>
 	      <g:Button text="Reset" ui:field="btnReset" />
@@ -57,8 +58,6 @@
 	    <g:VerticalPanel ui:field="consolePanel" styleName="consolePanel">
 	     <g:HorizontalPanel>
 	       <g:Button text="Edit State" ui:field="btnEditState" />
-	       <g:Button text="Save State" ui:field="btnSaveState" />
-	       <g:Button text="Load State" ui:field="btnLoadState" />
 	     </g:HorizontalPanel>
 	     <g:AbsolutePanel ui:field="sliderBarPanel"></g:AbsolutePanel> 
 	    </g:VerticalPanel>
@@ -66,12 +65,13 @@
 	    <g:VerticalPanel>
 		    <g:HorizontalPanel verticalAlignment="ALIGN_MIDDLE"
 		    ui:field="gameEmulatorStatusPanel" styleName="gameEmulatorStatusPanel">
-	        <g:HTML HTML="TURN: "></g:HTML>
-	        <g:Label ui:field = "playerTurnLabel" width="100px"></g:Label>
-	        <g:HTML HTML="TIME LEFT: "></g:HTML>
-	        <g:Label ui:field = "turnTimerLabel" width="100px"></g:Label>
-  	      <g:Button text="Reload Emulator" ui:field="btnReLoadEmulator" />
-  	    </g:HorizontalPanel>
+	          <g:HTML HTML="TURN: "></g:HTML>
+	          <g:Label ui:field = "playerTurnLabel" width="100px"></g:Label>
+	          <g:HTML HTML="TIME LEFT: "></g:HTML>
+	          <g:Label ui:field = "turnTimerLabel" width="100px"></g:Label>
+  	          <g:Button text="Reload Emulator" ui:field="btnReLoadEmulator" />
+   	          <g:Button text="Save State" ui:field="btnSaveState" />
+  	        </g:HorizontalPanel>
 	    
 		    <g:HorizontalPanel ui:field="gamePanel" styleName="gamePanel">
 		      <g:AbsolutePanel ui:field="gameTabsPanel"/>

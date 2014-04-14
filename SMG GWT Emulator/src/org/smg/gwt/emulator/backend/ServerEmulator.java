@@ -23,6 +23,7 @@ import org.smg.gwt.emulator.client.EnhancedConsole.ConsoleMessageType;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Lists;
+import com.google.gwt.json.client.JSONBoolean;
 import com.google.gwt.json.client.JSONNull;
 import com.google.gwt.json.client.JSONNumber;
 import com.google.gwt.json.client.JSONObject;
@@ -83,6 +84,21 @@ public class ServerEmulator {
     this.randomDelayMillis = randomDelayMillis;
     this.isAIPlayerPresent = isAIPlayerPresent;
     setupPlayers();
+  }
+  
+  public ServerEmulator(int numberOfPlayers, GwtEmulatorGraphics graphics, 
+      int defaultTurnTimeInSecs, int randomDelayMillis, boolean singlePlayerMode,
+          boolean isViewerPresent, boolean isAIPlayerPresent, JSONObject gameStateJSON) {
+    gameState = new GameState();
+    this.numberOfPlayers = numberOfPlayers;
+    this.graphics = graphics;
+    this.singlePlayerMode = singlePlayerMode;
+    this.isViewerPresent = isViewerPresent;
+    this.defaultTurnTimeInSecs = defaultTurnTimeInSecs;
+    this.randomDelayMillis = randomDelayMillis;
+    this.isAIPlayerPresent = isAIPlayerPresent;
+    setupPlayers();
+    loadGameStateFromJSON(gameStateJSON);
   }
   
   private void setupPlayers() {
@@ -252,7 +268,7 @@ public class ServerEmulator {
         while (currentSliderIndex < savedStates.size() - 1) {
              savedStates.remove(currentSliderIndex + 1);
         }
-        savedStates.add(saveGameStateJSONAsString());
+        savedStates.add(getGameStateAsJSON().toString());
         currentSliderIndex = savedStates.size() - 1;
         graphics.incrementSliderMaxValue(currentSliderIndex);
         moveInProgress = false;
@@ -348,7 +364,7 @@ public class ServerEmulator {
   }
 
   @SuppressWarnings("unchecked")
-  public String saveGameStateJSONAsString() {
+  public JSONObject getGameStateAsJSON() {
     graphics.getConsole().addInfoMessage("Saving Game State");
     JSONObject json = new JSONObject();
     json.put("playerIdToNumberOfTokensInPot", GameApiJsonHelper.getJsonObject(
@@ -370,8 +386,18 @@ public class ServerEmulator {
       json.put("lastMove", GameApiJsonHelper.getJsonObject(new MakeMove(lastMove).toMessage()));
     }
     json.put("lastMovePlayerId", new JSONString(lastMovePlayerId));
+    return json;
+  }
+  
+  public JSONObject getEmulatorConfigAsJSON() {
+    JSONObject json = new JSONObject();
+    json.put("defaultTurnTimeInSecs", new JSONNumber(defaultTurnTimeInSecs));
+    json.put("randomDelayMillis", new JSONNumber(randomDelayMillis));
+    json.put("singlePlayerMode", JSONBoolean.getInstance(singlePlayerMode));
+    json.put("isViewerPresent", JSONBoolean.getInstance(isViewerPresent));
+    json.put("isAIPlayerPresent", JSONBoolean.getInstance(isAIPlayerPresent));
     json.put("numberOfPlayers", new JSONNumber(numberOfPlayers));
-    return json.toString();
+    return json;
   }
   
   @SuppressWarnings("unchecked")
@@ -384,13 +410,6 @@ public class ServerEmulator {
     JSONValue jsonLastMovePlayerId = json.get("lastMovePlayerId");
     JSONValue jsonCurrentState = json.get("currentState");
     JSONValue jsonCurrentVisibilityInfo = json.get("currentVisibilityInfo");
-    JSONNumber jsonNumberOfPlayers= (JSONNumber) json.get("numberOfPlayers");
-    
-    int oldTotalPlayers = numberOfPlayers;
-    numberOfPlayers = (int) jsonNumberOfPlayers.doubleValue();
-    if (numberOfPlayers != oldTotalPlayers) {
-      setupPlayers();
-    }
     if (jsonLastState instanceof JSONNull) {
       lastGameState = null;
     }
@@ -420,26 +439,9 @@ public class ServerEmulator {
         GameApiJsonHelper.getMapFromJsonObject(jsonCurrentVisibilityInfo.isObject()),
         (Map<String, Integer>)(Map<String, ? extends Object>)GameApiJsonHelper.getMapFromJsonObject(
             jsonPlayerIdToNumberOfTokensInPot.isObject()));
-    if (numberOfPlayers < oldTotalPlayers) {
-      gameReadyPlayers.addAll(playerIds);
-      if (!singlePlayerMode) {
-        graphics.removePlayerFrames(oldTotalPlayers - numberOfPlayers, oldTotalPlayers);
-      }
-    }
-    if (numberOfPlayers <= oldTotalPlayers) {
+    if (gameReadyPlayers.containsAll(playerIds)) {  
       sendUpdateStateToAllPlayers();
     }
-    else {
-      /*numberOfPlayers > oldTotalPlayers: The new frames will send GameReady and make the 
-      gameReadyPlayers.containsAll(playerIds) = true which will send the updated state to 
-      all the frames.*/
-      gameReadyPlayers.addAll(getPlayerIds(oldTotalPlayers));
-      if (!singlePlayerMode) {
-        graphics.addPlayerFrames(numberOfPlayers - oldTotalPlayers, oldTotalPlayers);
-      } else {
-        sendUpdateStateToAllPlayers();
-      }
-    } 
   }
 
   public String getSavedStateAtIndex(int index) {
@@ -468,7 +470,7 @@ public class ServerEmulator {
   
   public void resetSliderState() {
     savedStates.clear();
-    savedStates.add(saveGameStateJSONAsString());
+    savedStates.add(getGameStateAsJSON().toString());
     currentSliderIndex = savedStates.size() - 1;
     graphics.incrementSliderMaxValue(currentSliderIndex);
   }

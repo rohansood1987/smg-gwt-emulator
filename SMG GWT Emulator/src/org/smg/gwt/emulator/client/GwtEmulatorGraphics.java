@@ -18,7 +18,11 @@ import com.google.gwt.dom.client.Style.FontWeight;
 import com.google.gwt.dom.client.Style.Unit;
 import com.google.gwt.event.dom.client.ClickEvent;
 import com.google.gwt.event.dom.client.ClickHandler;
+import com.google.gwt.json.client.JSONBoolean;
+import com.google.gwt.json.client.JSONNumber;
+import com.google.gwt.json.client.JSONObject;
 import com.google.gwt.json.client.JSONParser;
+import com.google.gwt.json.client.JSONString;
 import com.google.gwt.storage.client.Storage;
 import com.google.gwt.uibinder.client.UiBinder;
 import com.google.gwt.uibinder.client.UiField;
@@ -159,6 +163,7 @@ public class GwtEmulatorGraphics extends Composite {
   private boolean isComputerPlayerPresent = false;
   private int randomDelayMillis;
   private int timePerTurn;
+  private ScrollPanel scrollPanel;
   
   public EnhancedConsole getConsole() {
     return enhancedConsole;
@@ -201,17 +206,20 @@ public class GwtEmulatorGraphics extends Composite {
     txtGameUrl.getElement().setAttribute("size", "40");
     enhancedConsole = new EnhancedConsole();
     popupReloadEmulator.hide();
+    addSaveStateTable();
   }
   
   private void setupEmulatorGraphics() {
+    mainConfigPanel.remove(btnLoadState);
     mainPanel.remove(mainConfigPanel);
     mainEmulatorPanel.setVisible(true);
-    ScrollPanel scrollPanel = new ScrollPanel();
+    scrollPanel = new ScrollPanel();
     scrollPanel.add(enhancedConsole);
     scrollPanel.setSize("400px", "450px");
     consolePanel.add(scrollPanel);
     btnStart.setVisible(false);
     btnsPanel.setVisible(true);
+    gameEmulatorStatusPanel.add(btnLoadState);
   }
   
   @UiHandler("btnStart")
@@ -254,7 +262,19 @@ public class GwtEmulatorGraphics extends Composite {
       playerFrames.clear();
       sliderBarPanel.clear();
       removeEventListener();
+      resetTimer();
     }
+  }
+  
+  private void initEmulator(JSONObject gameStateJSON) {
+    if (!validatateAndInitConfigInput()) {
+      return;
+    }
+    clearEmulator();
+    //initialize ServerEmulator
+    serverEmulator = new ServerEmulator(numberOfPlayers, this, timePerTurn, randomDelayMillis, 
+        singleFrame, isViewerPresent, isComputerPlayerPresent, gameStateJSON);
+    initGameTabs();
   }
   
   private void initEmulator() {
@@ -265,6 +285,10 @@ public class GwtEmulatorGraphics extends Composite {
     //initialize ServerEmulator
     serverEmulator = new ServerEmulator(numberOfPlayers, this, timePerTurn, randomDelayMillis, 
         singleFrame, isViewerPresent, isComputerPlayerPresent);
+    initGameTabs();
+  }
+  
+  private void initGameTabs() {
     gameTabs = new TabLayoutPanel(1.5, Unit.EM);
     gameTabs.setSize(gameFrameWidth + "px", (gameFrameHeight + 25) + "px");
     if (singleFrame) {
@@ -295,7 +319,6 @@ public class GwtEmulatorGraphics extends Composite {
     gameTabsPanel.add(gameTabs);
     injectEventListener(serverEmulator, totalPlayerFrames);
     addSlider(0);
-    addSaveStateTable();
   }
   
   private boolean validatateAndInitConfigInput() {
@@ -484,8 +507,26 @@ public class GwtEmulatorGraphics extends Composite {
       public void onClick(ClickEvent event) {
         String key = flexTable.getText(row, 0);
         String content = stateStore.getItem(key);
-        serverEmulator.loadGameStateFromJSON(JSONParser.parseStrict(content).isObject());
-        serverEmulator.resetSliderState();
+        //serverEmulator.loadGameStateFromJSON(JSONParser.parseStrict(content).isObject());
+        //serverEmulator.resetSliderState();
+        JSONObject emulatorState = JSONParser.parseStrict(content).isObject();
+        JSONObject config = emulatorState.get("emulatorConfig").isObject();
+        JSONObject gameStateJSON = emulatorState.get("gameState").isObject();
+        if (scrollPanel == null) {
+          setupEmulatorGraphics();
+        }
+        txtGameWidth.setText(config.get("txtGameWidth").isString().stringValue());
+        txtGameHeight.setText(config.get("txtGameHeight").isString().stringValue());
+        txtDefaultTimePerTurn.setText(config.get("txtDefaultTimePerTurn").isString().stringValue());
+        txtRandomDelayMillis.setText(config.get("txtRandomDelayMillis").isString().stringValue());
+        txtGameWidth.setText(config.get("txtGameWidth").isString().stringValue());
+        listNumPlayers.setSelectedIndex((int) 
+            config.get("listNumPlayers").isNumber().doubleValue());
+        txtGameUrl.setText(config.get("txtGameUrl").isString().stringValue());
+        viewerCheck.setValue(config.get("viewerCheck").isBoolean().booleanValue());
+        singlePlayerCheck.setValue(config.get("singlePlayerCheck").isBoolean().booleanValue());
+        computerPlayerCheck.setValue(config.get("computerPlayerCheck").isBoolean().booleanValue());
+        initEmulator(gameStateJSON);
         displayLoadPopUp.hide();
       }
     });
@@ -503,7 +544,12 @@ public class GwtEmulatorGraphics extends Composite {
 
   @UiHandler("btnSaveState")
   void onClickSaveStateButton(ClickEvent e) {
-    final String data = serverEmulator.saveGameStateJSONAsString();
+    final JSONObject gameStateJSON = serverEmulator.getGameStateAsJSON();
+    final JSONObject emulatorConfigJSON = getEmulatorConfigAsJSON();
+    final JSONObject saveState = new JSONObject();
+    saveState.put("gameState", gameStateJSON);
+    saveState.put("emulatorConfig", emulatorConfigJSON);
+    final String data = saveState.toString();
     Set<String> keySet = new HashSet<String>(); 
     for (int i = 0; i < stateStore.getLength(); i++) {
       keySet.add(stateStore.key(i));
@@ -570,27 +616,6 @@ public class GwtEmulatorGraphics extends Composite {
   private native void alert(String message) /*-{
     alert(message);
   }-*/;
-  
-  public void addPlayerFrames(int newFrames, int oldTotalPlayers) {
-    removeEventListener();
-    for (int i = oldTotalPlayers; i < oldTotalPlayers + newFrames; ++i) {
-      Frame frame = new Frame(gameUrl);
-      frame.getElement().setId(PLAYER_FRAME + i);
-      frame.setSize("100%", "100%");
-      gameTabs.add(frame, "Player " + serverEmulator.getPlayerIds().get(i));
-      playerFrames.add(frame);
-    }
-    injectEventListener(serverEmulator, oldTotalPlayers + newFrames);
-  }
-  
-  public void removePlayerFrames(int framesToRemove, int oldTotalPlayers) {
-    removeEventListener();
-    for (int i = oldTotalPlayers - 1; i >= oldTotalPlayers - framesToRemove; --i) {
-      Frame frame = playerFrames.remove(i);
-      gameTabs.remove(frame);
-    }
-    injectEventListener(serverEmulator, oldTotalPlayers - framesToRemove);
-  }
   
   private void resetConfigPanelFields() {
     txtGameWidth.setText(String.valueOf(gameFrameWidth));
@@ -725,5 +750,19 @@ public class GwtEmulatorGraphics extends Composite {
   public void resetTimer() {
     turnTimerLabel.setText("");
     turnTimer.cancel();
+  }
+  
+  public JSONObject getEmulatorConfigAsJSON() {
+    JSONObject json = new JSONObject();
+    json.put("txtGameWidth", new JSONString(txtGameWidth.getText()));
+    json.put("txtGameHeight", new JSONString(txtGameHeight.getText()));
+    json.put("txtDefaultTimePerTurn", new JSONString(txtDefaultTimePerTurn.getText()));
+    json.put("txtRandomDelayMillis", new JSONString(txtRandomDelayMillis.getText()));
+    json.put("listNumPlayers", new JSONNumber(numberOfPlayers - MIN_PLAYERS));
+    json.put("txtGameUrl", new JSONString(txtGameUrl.getText()));
+    json.put("viewerCheck", JSONBoolean.getInstance(viewerCheck.getValue()));
+    json.put("singlePlayerCheck", JSONBoolean.getInstance(singlePlayerCheck.getValue()));
+    json.put("computerPlayerCheck", JSONBoolean.getInstance(computerPlayerCheck.getValue()));
+    return json;
   }
 }
