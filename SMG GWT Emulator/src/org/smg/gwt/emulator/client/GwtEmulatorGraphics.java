@@ -147,7 +147,7 @@ public class GwtEmulatorGraphics extends Composite {
   private int timePerTurn;
   private ScrollPanel scrollPanel;
   private final static String TIME_LEFT_BOLD = "<b>Time Left : <b>";
-  private final static String TURN_BOLD = "<b>Time Left : </b>";
+  private final static String TURN_BOLD = "<b>Turn : </b>";
   public EnhancedConsole getConsole() {
     return enhancedConsole;
   }
