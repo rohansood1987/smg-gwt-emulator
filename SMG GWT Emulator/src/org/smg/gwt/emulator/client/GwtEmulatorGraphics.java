@@ -10,11 +10,24 @@ import org.game_api.GameApi;
 import org.game_api.GameApi.EndGame;
 import org.game_api.GameApi.GameApiJsonHelper;
 import org.game_api.GameApi.Message;
+import org.gwtbootstrap3.client.ui.Alert;
+import org.gwtbootstrap3.client.ui.ButtonGroup;
+import org.gwtbootstrap3.client.ui.CheckBoxButton;
+import org.gwtbootstrap3.client.ui.FormGroup;
+import org.gwtbootstrap3.client.ui.ListItem;
+import org.gwtbootstrap3.client.ui.NavbarNav;
+import org.gwtbootstrap3.client.ui.RadioButton;
+import org.gwtbootstrap3.client.ui.TabPanel;
+import org.gwtbootstrap3.client.ui.TextBox;
+import org.gwtbootstrap3.client.ui.constants.AlertType;
+import org.gwtbootstrap3.client.ui.constants.ValidationState;
 import org.smg.gwt.emulator.backend.ServerEmulator;
 import org.smg.gwt.emulator.client.EnhancedConsole.ConsoleMessageType;
 
 import com.google.gwt.core.shared.GWT;
+import com.google.gwt.dom.client.Style.BorderStyle;
 import com.google.gwt.dom.client.Style.FontWeight;
+import com.google.gwt.dom.client.Style.Overflow;
 import com.google.gwt.dom.client.Style.Unit;
 import com.google.gwt.event.dom.client.ClickEvent;
 import com.google.gwt.event.dom.client.ClickHandler;
@@ -29,10 +42,8 @@ import com.google.gwt.uibinder.client.UiField;
 import com.google.gwt.uibinder.client.UiHandler;
 import com.google.gwt.user.client.Random;
 import com.google.gwt.user.client.Timer;
-import com.google.gwt.user.client.Window;
 import com.google.gwt.user.client.ui.AbsolutePanel;
 import com.google.gwt.user.client.ui.Button;
-import com.google.gwt.user.client.ui.CheckBox;
 import com.google.gwt.user.client.ui.Composite;
 import com.google.gwt.user.client.ui.DialogBox;
 import com.google.gwt.user.client.ui.FlexTable;
@@ -40,10 +51,9 @@ import com.google.gwt.user.client.ui.FlowPanel;
 import com.google.gwt.user.client.ui.Frame;
 import com.google.gwt.user.client.ui.HorizontalPanel;
 import com.google.gwt.user.client.ui.Label;
-import com.google.gwt.user.client.ui.ListBox;
+import com.google.gwt.user.client.ui.RootPanel;
 import com.google.gwt.user.client.ui.ScrollPanel;
 import com.google.gwt.user.client.ui.TabLayoutPanel;
-import com.google.gwt.user.client.ui.TextBox;
 import com.google.gwt.user.client.ui.VerticalPanel;
 import com.google.gwt.user.client.ui.Widget;
 import com.kiouri.sliderbar.client.event.BarValueChangedEvent;
@@ -60,82 +70,46 @@ public class GwtEmulatorGraphics extends Composite {
   HorizontalPanel mainEmulatorPanel;
   
   @UiField
-  TextBox txtGameWidth;
+  TextBox txtGameWidth, txtGameHeight, txtDefaultTimePerTurn, txtGameUrl, txtRandomDelayMillis;
   
   @UiField
-  TextBox txtGameHeight;
+  CheckBoxButton viewerCheck, singlePlayerCheck, computerPlayerCheck;
   
   @UiField
-  TextBox txtGameUrl;
+  org.gwtbootstrap3.client.ui.Button btnStart;
   
   @UiField
-  TextBox txtDefaultTimePerTurn;
+  Alert alertBar;
   
   @UiField
-  TextBox txtRandomDelayMillis;
+  ListItem btnLoadState, btnReloadEmulator, btnSaveState, btnEditState;
   
   @UiField
-  CheckBox viewerCheck;
+  ButtonGroup btnsPanel;
   
   @UiField
-  CheckBox singlePlayerCheck;
+  org.gwtbootstrap3.client.ui.Button btnCancel, btnReset, btnReload;
   
   @UiField
-  CheckBox computerPlayerCheck;
+  RadioButton n2, n3, n4, n5, n6, n7, n8, n9;
   
   @UiField
-  Button btnStart;
-  
-  @UiField
-  HorizontalPanel btnsPanel;
-  
-  @UiField
-  Button btnCancel;
-  
-  @UiField
-  Button btnReset;
-  
-  @UiField
-  Button btnReload;
-  
-  @UiField
-  Button btnReLoadEmulator;
-  
-  @UiField
-  Button btnEditState;
-  
-  @UiField
-  ListBox listNumPlayers;
-  
-  @UiField
-  Button btnSaveState;
-  
-  @UiField
-  Button btnLoadState;
-  
-  @UiField
-  AbsolutePanel mainConfigPanel;
+  FormGroup numOfPlayers, width, height, timeLimit, networkDelay, url;
 
   @UiField
-  HorizontalPanel gamePanel;
-  
+  AbsolutePanel mainConfigPanel, sliderBarPanel;
+
   @UiField
   VerticalPanel consolePanel;
   
   @UiField
-  AbsolutePanel gameTabsPanel;
-  
-  @UiField
-  AbsolutePanel sliderBarPanel;
-  
-  @UiField
-  HorizontalPanel gameEmulatorStatusPanel;
-  
-  @UiField
-  Label playerTurnLabel;
+  TabPanel gameTabsPanel;
   
   @UiField
   Label turnTimerLabel;
+  
+  @UiField
+  NavbarNav headerPanel;
   
   private TabLayoutPanel gameTabs;
   private ServerEmulator serverEmulator;
@@ -164,7 +138,7 @@ public class GwtEmulatorGraphics extends Composite {
   private int randomDelayMillis;
   private int timePerTurn;
   private ScrollPanel scrollPanel;
-  
+  private final static String TIME_LEFT = "Time Left : ";
   public EnhancedConsole getConsole() {
     return enhancedConsole;
   }
@@ -181,15 +155,21 @@ public class GwtEmulatorGraphics extends Composite {
     @Override
     public void run() {
       try {
-        String timeText = turnTimerLabel.getText();
-        if (timeText != null && timeText.length() != 0) {
-          int currentTime = Integer.parseInt(timeText);
-          turnTimerLabel.setText(String.valueOf(currentTime - 1));
-          if (currentTime - 1 <= 0) {
-            alert("Game Ended. Please Restart !");
-            removeEventListener();
-            this.cancel();
-            popupReloadEmulator.showConfigPanel();
+        String timerLabel = turnTimerLabel.getText();
+        int index = timerLabel.indexOf(TIME_LEFT);
+        if (index != -1 ) {
+          String timeText = turnTimerLabel.getText().substring(index + TIME_LEFT.length());
+          if (timeText != null && timeText.length() != 0) {
+            int currentTime = Integer.parseInt(timeText);
+            turnTimerLabel.setText(timerLabel.replaceFirst(TIME_LEFT + ".*$", TIME_LEFT 
+                + String.valueOf(currentTime - 1)));
+            if (currentTime - 1 <= 0) {
+              alertBar.setType(AlertType.DANGER);
+              turnTimerLabel.setText("Game Ended. Please Restart !");
+              removeEventListener();
+              this.cancel();
+              popupReloadEmulator.showConfigPanel();
+            }
           }
         }
       } catch(Exception ex) {
@@ -201,35 +181,44 @@ public class GwtEmulatorGraphics extends Composite {
   public GwtEmulatorGraphics() {
     GwtEmulatorGraphicsUiBinder uiBinder = GWT.create(GwtEmulatorGraphicsUiBinder.class);
     initWidget(uiBinder.createAndBindUi(this));
-    playerTurnLabel.getElement().getStyle().setFontWeight(FontWeight.BOLD);
     turnTimerLabel.getElement().getStyle().setFontWeight(FontWeight.BOLD);
     txtGameUrl.getElement().setAttribute("size", "40");
     enhancedConsole = new EnhancedConsole();
     popupReloadEmulator.hide();
+    btnReloadEmulator.setVisible(false);
+    btnSaveState.setVisible(false);
+    btnEditState.setVisible(false);
+    alertBar.setVisible(false);
     addSaveStateTable();
   }
   
   private void setupEmulatorGraphics() {
-    mainConfigPanel.remove(btnLoadState);
     mainPanel.remove(mainConfigPanel);
     mainEmulatorPanel.setVisible(true);
     scrollPanel = new ScrollPanel();
     scrollPanel.add(enhancedConsole);
-    scrollPanel.setSize("400px", "450px");
+    scrollPanel.setSize("300px", gameFrameHeight - 75 + "px");
+    scrollPanel.getElement().getStyle().setBorderStyle(BorderStyle.SOLID);
+    scrollPanel.getElement().getStyle().setBorderWidth(1, Unit.MM);
+    scrollPanel.getElement().getStyle().setBorderColor("lightgrey");
     consolePanel.add(scrollPanel);
     btnStart.setVisible(false);
     btnsPanel.setVisible(true);
-    gameEmulatorStatusPanel.add(btnLoadState);
+    btnReloadEmulator.setVisible(true);
+    btnSaveState.setVisible(true);
+    btnEditState.setVisible(true);
+    alertBar.setVisible(true);
   }
   
   @UiHandler("btnStart")
   void onClickStartButton(ClickEvent e) {
-    initEmulator();
+    if (!initEmulator())
+      return;
     setupEmulatorGraphics();
   }
   
-  @UiHandler("btnReLoadEmulator")
-  void onClickReLoadButton(ClickEvent e) {
+  @UiHandler("btnReloadEmulator")
+  void onClickReloadEmulatorButton(ClickEvent e) {
     resetConfigPanelFields();
     popupReloadEmulator.showConfigPanel();
   }
@@ -263,33 +252,42 @@ public class GwtEmulatorGraphics extends Composite {
       sliderBarPanel.clear();
       removeEventListener();
       resetTimer();
+      alertBar.setType(AlertType.WARNING);
+      numOfPlayers.setValidationState(ValidationState.NONE);
+      width.setValidationState(ValidationState.NONE);
+      height.setValidationState(ValidationState.NONE);
+      timeLimit.setValidationState(ValidationState.NONE);
+      networkDelay.setValidationState(ValidationState.NONE);
+      url.setValidationState(ValidationState.NONE);
     }
   }
   
-  private void initEmulator(JSONObject gameStateJSON) {
+  private boolean initEmulator(JSONObject gameStateJSON) {
     if (!validatateAndInitConfigInput()) {
-      return;
+      return false;
     }
     clearEmulator();
     //initialize ServerEmulator
     serverEmulator = new ServerEmulator(numberOfPlayers, this, timePerTurn, randomDelayMillis, 
         singleFrame, isViewerPresent, isComputerPlayerPresent, gameStateJSON);
     initGameTabs();
+    return true;
   }
   
-  private void initEmulator() {
+  private boolean initEmulator() {
     if (!validatateAndInitConfigInput()) {
-      return;
+      return false;
     }
     clearEmulator();
     //initialize ServerEmulator
     serverEmulator = new ServerEmulator(numberOfPlayers, this, timePerTurn, randomDelayMillis, 
         singleFrame, isViewerPresent, isComputerPlayerPresent);
     initGameTabs();
+    return true;
   }
   
   private void initGameTabs() {
-    gameTabs = new TabLayoutPanel(1.5, Unit.EM);
+    gameTabs = new TabLayoutPanel(2, Unit.EM);
     gameTabs.setSize(gameFrameWidth + "px", (gameFrameHeight + 25) + "px");
     if (singleFrame) {
       totalPlayerFrames = 1;
@@ -322,48 +320,52 @@ public class GwtEmulatorGraphics extends Composite {
   }
   
   private boolean validatateAndInitConfigInput() {
+    boolean validation = true;
+    try {
+      numberOfPlayers = getNumOfPlayers();
+      numOfPlayers.setValidationState(ValidationState.SUCCESS);
+    } catch (Exception ex) {
+      numOfPlayers.setValidationState(ValidationState.ERROR);
+      validation = false;
+    }
     try {
       gameFrameWidth = Integer.parseInt(txtGameWidth.getText());
+      width.setValidationState(ValidationState.SUCCESS);
     }
     catch(NumberFormatException ex) {
-      alert("Invalid width: " + txtGameWidth.getText());
-      return false;
+      width.setValidationState(ValidationState.ERROR);
+      validation = false;
     }
     try {
       gameFrameHeight = Integer.parseInt(txtGameHeight.getText());
+      height.setValidationState(ValidationState.SUCCESS);
     }
     catch(NumberFormatException ex) {
-      alert("Invalid height: " + txtGameHeight.getText());
-      return false;
+      height.setValidationState(ValidationState.ERROR);
+      validation = false;
     }
-    try {
-      numberOfPlayers = Integer.parseInt(
-          listNumPlayers.getValue(listNumPlayers.getSelectedIndex()));
-    } catch (Exception ex) {
-      alert("Invalid number of Players");
-      return false;
-    }
+    
     try {
       int time = Integer.parseInt(txtDefaultTimePerTurn.getText());
       if (time <= 0) {
         time = 0;
-        alert("Default timer set to infinite time !");  
       }
       timePerTurn = time;
+      timeLimit.setValidationState(ValidationState.SUCCESS);
     } catch (NumberFormatException ex) {
-      alert("Invalid time: " + txtDefaultTimePerTurn.getText());
-      return false;
+      timeLimit.setValidationState(ValidationState.ERROR);
+      validation = false;
     }
     try {
       int time = Integer.parseInt(txtRandomDelayMillis.getText());
       if (time < 0) {
         time = 0;
-        alert("No delay set !");  
       }
       randomDelayMillis = time;
+      networkDelay.setValidationState(ValidationState.SUCCESS);
     } catch (NumberFormatException ex) {
-      alert("Invalid time: " + txtDefaultTimePerTurn.getText());
-      return false;
+      networkDelay.setValidationState(ValidationState.ERROR);
+      validation = false;
     }
     try {
       gameUrl = txtGameUrl.getText();
@@ -378,15 +380,44 @@ public class GwtEmulatorGraphics extends Composite {
         urlWithoutParams = gameUrl.substring(0, paramStartIndex);
       }
       gameUrl = urlWithoutParams + "?" + insertParam(parameterUrl, newParam, newValue);
+      url.setValidationState(ValidationState.SUCCESS);
     } catch (Exception ex) {
-      alert("Invalid URL: " + gameUrl);
-      return false;
+      url.setValidationState(ValidationState.ERROR);
+      validation = false;
     }
     isViewerPresent = viewerCheck.getValue();
     singleFrame = singlePlayerCheck.getValue();
     isComputerPlayerPresent = computerPlayerCheck.getValue();
-    return true;
+    return validation;
   }
+
+  private int getNumOfPlayers() {
+    return n2.isActive() ? 2 : (n3.isActive() ? 3 : (n4.isActive() ? 4 : (n5.isActive() ? 5 : 
+      (n6.isActive() ? 6 : (n7.isActive() ? 7 : (n8.isActive() ? 8 : 9))))));
+  }
+  
+  private void setNumOfPlayers(int numberOfPlayers) {
+   switch(numberOfPlayers){
+     case 2: n2.setActive(true);
+             break;
+     case 3: n3.setActive(true);
+             break;
+     case 4: n4.setActive(true);
+             break;
+     case 5: n5.setActive(true);
+             break;
+     case 6: n6.setActive(true);
+             break;
+     case 7: n7.setActive(true);
+             break;
+     case 8: n8.setActive(true);
+             break;
+     case 9: n9.setActive(true);
+             break;
+     default: break;
+   }
+  }
+
 
   //paramsInUrl is the URL after '?'
   private String insertParam(String paramsInUrl, String param, String value) {
@@ -507,8 +538,6 @@ public class GwtEmulatorGraphics extends Composite {
       public void onClick(ClickEvent event) {
         String key = flexTable.getText(row, 0);
         String content = stateStore.getItem(key);
-        //serverEmulator.loadGameStateFromJSON(JSONParser.parseStrict(content).isObject());
-        //serverEmulator.resetSliderState();
         JSONObject emulatorState = JSONParser.parseStrict(content).isObject();
         JSONObject config = emulatorState.get("emulatorConfig").isObject();
         JSONObject gameStateJSON = emulatorState.get("gameState").isObject();
@@ -520,8 +549,7 @@ public class GwtEmulatorGraphics extends Composite {
         txtDefaultTimePerTurn.setText(config.get("txtDefaultTimePerTurn").isString().stringValue());
         txtRandomDelayMillis.setText(config.get("txtRandomDelayMillis").isString().stringValue());
         txtGameWidth.setText(config.get("txtGameWidth").isString().stringValue());
-        listNumPlayers.setSelectedIndex((int) 
-            config.get("listNumPlayers").isNumber().doubleValue());
+        setNumOfPlayers((int)config.get("listNumPlayers").isNumber().doubleValue());
         txtGameUrl.setText(config.get("txtGameUrl").isString().stringValue());
         viewerCheck.setValue(config.get("viewerCheck").isBoolean().booleanValue());
         singlePlayerCheck.setValue(config.get("singlePlayerCheck").isBoolean().booleanValue());
@@ -565,7 +593,11 @@ public class GwtEmulatorGraphics extends Composite {
         addLoadClearButtonHandlers(load, clear, row + 1);
         flexTable.setWidget(row + 1, 1, load);
         flexTable.setWidget(row + 1, 2, clear);
-        Window.alert("State saved successfully. Press Load button to load any saved states");
+        Alert message = new Alert(
+            "State saved successfully. Press Load button to load any saved states", 
+            AlertType.SUCCESS);
+        message.setDismissable(true);
+        RootPanel.get("mainDiv").insert(message, 1);
       }
     }, keySet).center();
   }
@@ -577,13 +609,10 @@ public class GwtEmulatorGraphics extends Composite {
   
   private native void injectEventListener(ServerEmulator emulator, int totalPlayerFrames) /*-{
     $wnd.postMessageListener = function(e) {
-      //alert("Total players " + numberOfPlayers);
       for(var i = 0; i < totalPlayerFrames; i++) {
         var frameName = "playerFrame"+i;
         var frame = $doc.getElementById(frameName);
         if(e.source == frame.contentWindow || e.source.parent == frame.contentWindow) {
-          //$wnd.alert(frameName + " attached!");
-          //$wnd.alert(JSON.stringify(e.data));
           emulator.@org.smg.gwt.emulator.backend.ServerEmulator::eventListner(Ljava/lang/String;I)(JSON.stringify(e.data), i);
         }
       }
@@ -613,16 +642,13 @@ public class GwtEmulatorGraphics extends Composite {
     $doc.getElementById(frameId).contentWindow.postMessage(JSON.parse(message), "*");
   }-*/;
   
-  private native void alert(String message) /*-{
-    alert(message);
-  }-*/;
-  
+
   private void resetConfigPanelFields() {
     txtGameWidth.setText(String.valueOf(gameFrameWidth));
     txtGameHeight.setText(String.valueOf(gameFrameHeight));
     txtDefaultTimePerTurn.setText(String.valueOf(timePerTurn));
     txtRandomDelayMillis.setText(String.valueOf(randomDelayMillis));
-    listNumPlayers.setItemSelected(numberOfPlayers - MIN_PLAYERS, true);
+    setNumOfPlayers(numberOfPlayers);
     txtGameUrl.setText(gameUrl);
     viewerCheck.setValue(isViewerPresent);
     singlePlayerCheck.setValue(singleFrame);
@@ -641,6 +667,7 @@ public class GwtEmulatorGraphics extends Composite {
     
     public void showConfigPanel() {
       popupReloadEmulator.setWidget(mainConfigPanel);
+      popupReloadEmulator.setWidth("500px");
       popupReloadEmulator.setVisible(true);
       popupReloadEmulator.center();
     }
@@ -716,12 +743,13 @@ public class GwtEmulatorGraphics extends Composite {
   
   //send time = "" for infinite timer
   public void setTurnAndTimer(String playerTurnId, String time) {
-    if (time == null) {
+    if (time == null || time.isEmpty()) {
       time = "";
+      turnTimerLabel.setText("Turn : " + "Player " + playerTurnId);
+    } else {
+      turnTimerLabel.setText("Turn : " + "Player " + playerTurnId + " " + TIME_LEFT + time);
     }
     turnTimer.cancel();
-    playerTurnLabel.setText("Player " + playerTurnId);
-    turnTimerLabel.setText(time);
     //Select the turn player tab(iframe)
     if (!singleFrame) {
       try {
@@ -758,7 +786,7 @@ public class GwtEmulatorGraphics extends Composite {
     json.put("txtGameHeight", new JSONString(txtGameHeight.getText()));
     json.put("txtDefaultTimePerTurn", new JSONString(txtDefaultTimePerTurn.getText()));
     json.put("txtRandomDelayMillis", new JSONString(txtRandomDelayMillis.getText()));
-    json.put("listNumPlayers", new JSONNumber(numberOfPlayers - MIN_PLAYERS));
+    json.put("listNumPlayers", new JSONNumber(numberOfPlayers));
     json.put("txtGameUrl", new JSONString(txtGameUrl.getText()));
     json.put("viewerCheck", JSONBoolean.getInstance(viewerCheck.getValue()));
     json.put("singlePlayerCheck", JSONBoolean.getInstance(singlePlayerCheck.getValue()));

@@ -99,6 +99,8 @@ public class ServerEmulator {
     this.isAIPlayerPresent = isAIPlayerPresent;
     setupPlayers();
     loadGameStateFromJSON(gameStateJSON);
+    savedStates.add(gameStateJSON.toString());
+    currentSliderIndex = savedStates.size() - 1;
   }
   
   private void setupPlayers() {
@@ -157,7 +159,11 @@ public class ServerEmulator {
       handleMakeMove((MakeMove)messageObj, playerId);
     }
     else if (messageObj instanceof VerifyMoveDone) {
-      graphics.getConsole().addGameApiMessage(messageObj, "UNKNOWN", ConsoleMessageType.INCOMING);
+      if (singlePlayerMode) {
+        graphics.getConsole().addGameApiMessage(messageObj, "UNKNOWN", ConsoleMessageType.INCOMING);
+      } else {
+        graphics.getConsole().addGameApiMessage(messageObj, playerId, ConsoleMessageType.INCOMING);
+      }
       handleVerifyMoveDone((VerifyMoveDone)messageObj, playerId);
     }
     else {

@@ -35,7 +35,8 @@ public class EnhancedConsole extends VerticalPanel {
       Map<String, Object> messageMap = message.message.toMessage();
       setText(message.message.getMessageName());
       VerticalPanel panel = new VerticalPanel();
-      Label lblFrom = new Label("From: Player " + message.playerId);
+      Label lblFrom = new Label(message.type == ConsoleMessageType.OUTGOING ? "To: " : "From: " 
+      + "Player " + message.playerId);
       lblFrom.getElement().getStyle().setFontWeight(FontWeight.BOLD);
       panel.add(lblFrom);
       setupListBox(messageMap);
