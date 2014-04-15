@@ -21,11 +21,16 @@ public class GameState {
   private final Map<String, Object> state = Maps.newHashMap();
   private final Map<String, Object> visibleTo = Maps.newHashMap();
   private final Map<String, Integer> playerIdToNumberOfTokensInPot = Maps.newHashMap();
+  private final ServerEmulator serverEmulator;
   
   private static final String ALL = "ALL"; 
 
+  public GameState(ServerEmulator serverEmulator) {
+    this.serverEmulator = serverEmulator;
+  }
+  
   public GameState copy() {
-    GameState result = new GameState();
+    GameState result = new GameState(serverEmulator);
     result.state.putAll(state);
     result.visibleTo.putAll(visibleTo);
     result.playerIdToNumberOfTokensInPot.putAll(playerIdToNumberOfTokensInPot);
@@ -105,9 +110,41 @@ public class GameState {
         visibleTo.put(toKey, oldVisibleTo.get(fromKey));
       }
     } else if (operation instanceof AttemptChangeTokens) {
-      playerIdToNumberOfTokensInPot.clear();
-      playerIdToNumberOfTokensInPot.putAll(
-          ((AttemptChangeTokens) operation).getPlayerIdToNumberOfTokensInPot());
+      boolean isFailure = false;
+      List<String> playerIds = serverEmulator.getPlayerIds();
+      List<Integer> playerTokens = serverEmulator.getPlayerTokens();
+      Map<String, Integer> potChange = ((AttemptChangeTokens) operation).getPlayerIdToTokenChange();
+      Map<String, Integer> potExisting = ((AttemptChangeTokens) operation).getPlayerIdToNumberOfTokensInPot();
+      
+      for (String player : playerIds) {
+        if (!potChange.containsKey(player)) continue;
+        int playerIndex = playerIds.indexOf(player);
+        int tokensServer = playerTokens.get(playerIndex);
+        int tokensChange = potChange.get(player);
+        int tokensInPot = potExisting.get(player);
+        int tokensInPotExisting = playerIdToNumberOfTokensInPot.containsKey(player) ?
+            playerIdToNumberOfTokensInPot.get(player) : 0;
+        if (tokensChange >= 0) continue;
+        if (tokensServer < (-1)*tokensChange || tokensInPot != tokensInPotExisting + (-1)*tokensChange) {
+          isFailure = true;
+          break;
+        }
+      }
+      if (!isFailure) {
+        for (String player : playerIds) {
+          if (!potChange.containsKey(player)) continue;
+          int playerIndex = playerIds.indexOf(player);
+          int tokensServer = playerTokens.get(playerIndex);
+          int tokensChange = potChange.get(player);
+          if (tokensChange >= 0) {
+            // Positive change always succeeds
+            playerTokens.set(playerIndex, tokensServer + tokensChange);
+          }
+        }
+        playerIdToNumberOfTokensInPot.clear();
+        playerIdToNumberOfTokensInPot.putAll(
+            ((AttemptChangeTokens) operation).getPlayerIdToNumberOfTokensInPot());
+      }
     }
   }
 

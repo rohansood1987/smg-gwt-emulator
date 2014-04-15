@@ -236,7 +236,7 @@ public class EnhancedConsole extends VerticalPanel {
     
     public InfoMessage(String message) {
       this.message = message;
-      this.setText("Info: " + message.substring(0, 40));
+      this.setText("Info: " + (message.length() > 40 ? message.substring(0, 40) : message));
       this.getElement().getStyle().setCursor(Cursor.POINTER);
       this.getElement().getStyle().setColor("GREEN");
     }

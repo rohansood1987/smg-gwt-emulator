@@ -14,6 +14,8 @@ import org.gwtbootstrap3.client.ui.Alert;
 import org.gwtbootstrap3.client.ui.ButtonGroup;
 import org.gwtbootstrap3.client.ui.CheckBoxButton;
 import org.gwtbootstrap3.client.ui.FormGroup;
+import org.gwtbootstrap3.client.ui.FormLabel;
+import org.gwtbootstrap3.client.ui.HelpBlock;
 import org.gwtbootstrap3.client.ui.ListItem;
 import org.gwtbootstrap3.client.ui.NavbarNav;
 import org.gwtbootstrap3.client.ui.RadioButton;
@@ -26,7 +28,9 @@ import org.smg.gwt.emulator.backend.ServerEmulator;
 import org.smg.gwt.emulator.client.EnhancedConsole.ConsoleMessageType;
 
 import com.google.gwt.core.shared.GWT;
+import com.google.gwt.dom.client.Element;
 import com.google.gwt.dom.client.Style.BorderStyle;
+import com.google.gwt.dom.client.Style.FontWeight;
 import com.google.gwt.dom.client.Style.Unit;
 import com.google.gwt.dom.client.Style.VerticalAlign;
 import com.google.gwt.event.dom.client.ClickEvent;
@@ -42,6 +46,8 @@ import com.google.gwt.storage.client.Storage;
 import com.google.gwt.uibinder.client.UiBinder;
 import com.google.gwt.uibinder.client.UiField;
 import com.google.gwt.uibinder.client.UiHandler;
+import com.google.gwt.user.client.Event;
+import com.google.gwt.user.client.EventListener;
 import com.google.gwt.user.client.Random;
 import com.google.gwt.user.client.Timer;
 import com.google.gwt.user.client.ui.AbsolutePanel;
@@ -68,7 +74,7 @@ public class GwtEmulatorGraphics extends Composite {
   FlowPanel mainPanel;
   
   @UiField
-  HorizontalPanel mainEmulatorPanel;
+  HorizontalPanel mainEmulatorPanel, tokensInfoPanel;
   
   @UiField
   TextBox txtGameWidth, txtGameHeight, txtDefaultTimePerTurn, txtGameUrl, txtRandomDelayMillis;
@@ -94,8 +100,10 @@ public class GwtEmulatorGraphics extends Composite {
   @UiField
   RadioButton n2, n3, n4, n5, n6, n7, n8, n9;
   
+  RadioButton numPlayerRadioBtn[];
+  
   @UiField
-  FormGroup numOfPlayers, width, height, timeLimit, networkDelay, url;
+  FormGroup numOfPlayers, tokensInfo, size, timeLimit, networkDelay, url;
 
   @UiField
   AbsolutePanel mainConfigPanel;
@@ -124,6 +132,7 @@ public class GwtEmulatorGraphics extends Composite {
   private TabLayoutPanel gameTabs;
   private ServerEmulator serverEmulator;
   private int gameFrameWidth, gameFrameHeight, numberOfPlayers;
+  private List<Integer> playerTokens = new ArrayList<Integer>();
   private Storage stateStore;
   private FlexTable flexTable;
   private ClickHandler clearAllButtonHandler;
@@ -188,6 +197,7 @@ public class GwtEmulatorGraphics extends Composite {
   public GwtEmulatorGraphics() {
     GwtEmulatorGraphicsUiBinder uiBinder = GWT.create(GwtEmulatorGraphicsUiBinder.class);
     initWidget(uiBinder.createAndBindUi(this));
+    numPlayerRadioBtn = new RadioButton[] {n2, n3, n4, n5, n6, n7, n8, n9};
     txtGameUrl.getElement().setAttribute("size", "40");
     enhancedConsole = new EnhancedConsole();
     popupReloadEmulator.hide();
@@ -195,6 +205,34 @@ public class GwtEmulatorGraphics extends Composite {
     btnSaveState.setVisible(false);
     btnEditState.setVisible(false);
     addSaveStateTable();
+    changePlayerInfoPanel(2);
+    for (int i = 0; i < 8; i++) {
+      numPlayerRadioBtn[i].addClickHandler(new ClickHandler() {
+        @Override
+        public void onClick(ClickEvent event) {
+          RadioButton btn = (RadioButton)event.getSource();
+          int num = Integer.parseInt(btn.getText());
+          changePlayerInfoPanel(num);
+        }        
+      });
+    }
+  }
+  
+  private void changePlayerInfoPanel(int num) {
+    int existingPlayers = tokensInfoPanel.getWidgetCount();
+    int i;
+    for(i = 0; i < num; i++) {
+      if (i < existingPlayers) {
+        continue;
+      }
+      TextBox textBox = new TextBox();
+      textBox.setWidth("70px");
+      textBox.setValue("10000");
+      tokensInfoPanel.add(textBox);
+    }
+    for (int j = i; j < existingPlayers; j++) {
+      tokensInfoPanel.remove(i);
+    }
   }
   
   private void setupEmulatorGraphics() {
@@ -275,8 +313,8 @@ public class GwtEmulatorGraphics extends Composite {
   
   private void clearFormValidation() {
     numOfPlayers.setValidationState(ValidationState.NONE);
-    width.setValidationState(ValidationState.NONE);
-    height.setValidationState(ValidationState.NONE);
+    tokensInfo.setValidationState(ValidationState.NONE);
+    size.setValidationState(ValidationState.NONE);
     timeLimit.setValidationState(ValidationState.NONE);
     networkDelay.setValidationState(ValidationState.NONE);
     url.setValidationState(ValidationState.NONE);
@@ -287,8 +325,8 @@ public class GwtEmulatorGraphics extends Composite {
     }
     clearEmulator();
     //initialize ServerEmulator
-    serverEmulator = new ServerEmulator(numberOfPlayers, this, timePerTurn, randomDelayMillis, 
-        singleFrame, isViewerPresent, isComputerPlayerPresent, gameStateJSON);
+    serverEmulator = new ServerEmulator(numberOfPlayers, this, playerTokens, timePerTurn,
+        randomDelayMillis, singleFrame, isViewerPresent, isComputerPlayerPresent, gameStateJSON);
     initGameTabs();
     return true;
   }
@@ -299,8 +337,8 @@ public class GwtEmulatorGraphics extends Composite {
     }
     clearEmulator();
     //initialize ServerEmulator
-    serverEmulator = new ServerEmulator(numberOfPlayers, this, timePerTurn, randomDelayMillis, 
-        singleFrame, isViewerPresent, isComputerPlayerPresent);
+    serverEmulator = new ServerEmulator(numberOfPlayers, this, playerTokens, timePerTurn,
+        randomDelayMillis, singleFrame, isViewerPresent, isComputerPlayerPresent);
     initGameTabs();
     return true;
   }
@@ -348,25 +386,28 @@ public class GwtEmulatorGraphics extends Composite {
       validation = false;
     }
     try {
+      playerTokens.clear();
+      for (int i = 0; i < numberOfPlayers; i++) {
+        playerTokens.add(Integer.parseInt(((TextBox)tokensInfoPanel.getWidget(i)).getText()));
+      }
+      tokensInfo.setValidationState(ValidationState.SUCCESS);
+    } catch (Exception ex) {
+      tokensInfo.setValidationState(ValidationState.ERROR);
+      validation = false;
+    }
+    try {
       gameFrameWidth = Integer.parseInt(txtGameWidth.getText());
       if (gameFrameWidth < 0) {
         throw new NumberFormatException("Width should be positive");
       }
-      width.setValidationState(ValidationState.SUCCESS);
-    }
-    catch(NumberFormatException ex) {
-      width.setValidationState(ValidationState.ERROR);
-      validation = false;
-    }
-    try {
       gameFrameHeight = Integer.parseInt(txtGameHeight.getText());
       if (gameFrameHeight < 0) {
         throw new NumberFormatException("Height should be positive");
       }
-      height.setValidationState(ValidationState.SUCCESS);
+      size.setValidationState(ValidationState.SUCCESS);
     }
     catch(NumberFormatException ex) {
-      height.setValidationState(ValidationState.ERROR);
+      size.setValidationState(ValidationState.ERROR);
       validation = false;
     }
     
@@ -417,30 +458,14 @@ public class GwtEmulatorGraphics extends Composite {
   }
 
   private int getNumOfPlayers() {
-    return n2.isActive() ? 2 : (n3.isActive() ? 3 : (n4.isActive() ? 4 : (n5.isActive() ? 5 : 
-      (n6.isActive() ? 6 : (n7.isActive() ? 7 : (n8.isActive() ? 8 : 9))))));
+    for (RadioButton rb : numPlayerRadioBtn) {
+      if (rb.isActive()) return Integer.parseInt(rb.getText());
+    }
+    throw new RuntimeException("Number of players not selected!");
   }
   
   private void setNumOfPlayers(int numberOfPlayers) {
-   switch(numberOfPlayers){
-     case 2: n2.setActive(true);
-             break;
-     case 3: n3.setActive(true);
-             break;
-     case 4: n4.setActive(true);
-             break;
-     case 5: n5.setActive(true);
-             break;
-     case 6: n6.setActive(true);
-             break;
-     case 7: n7.setActive(true);
-             break;
-     case 8: n8.setActive(true);
-             break;
-     case 9: n9.setActive(true);
-             break;
-     default: break;
-   }
+    numPlayerRadioBtn[numberOfPlayers - 2].setActive(true);
   }
 
 

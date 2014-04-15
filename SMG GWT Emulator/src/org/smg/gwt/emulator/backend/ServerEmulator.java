@@ -40,6 +40,7 @@ public class ServerEmulator {
   
   private int numberOfPlayers;
   private List<String> playerIds;
+  private List<Integer> playerTokens;
   private List<Map<String, Object>> playersInfo;
   private GameState gameState;
   private GameState lastGameState;
@@ -71,13 +72,18 @@ public class ServerEmulator {
   private boolean isViewerPresent = false;
   private boolean isAIPlayerPresent = false;
   
+  public List<Integer> getPlayerTokens() {
+    return playerTokens;
+  }
+  
   //private int countGameReady = 0;
   public ServerEmulator(int numberOfPlayers, GwtEmulatorGraphics graphics, 
-      int defaultTurnTimeInSecs, int randomDelayMillis, boolean singlePlayerMode,
-          boolean isViewerPresent, boolean isAIPlayerPresent) {
-    gameState = new GameState();
+      List<Integer> playerTokens, int defaultTurnTimeInSecs, int randomDelayMillis,
+      boolean singlePlayerMode, boolean isViewerPresent, boolean isAIPlayerPresent) {
+    gameState = new GameState(this);
     this.numberOfPlayers = numberOfPlayers;
     this.graphics = graphics;
+    this.playerTokens = playerTokens;
     this.singlePlayerMode = singlePlayerMode;
     this.isViewerPresent = isViewerPresent;
     this.defaultTurnTimeInSecs = defaultTurnTimeInSecs;
@@ -87,11 +93,13 @@ public class ServerEmulator {
   }
   
   public ServerEmulator(int numberOfPlayers, GwtEmulatorGraphics graphics, 
-      int defaultTurnTimeInSecs, int randomDelayMillis, boolean singlePlayerMode,
-          boolean isViewerPresent, boolean isAIPlayerPresent, JSONObject gameStateJSON) {
-    gameState = new GameState();
+      List<Integer> playerTokens, int defaultTurnTimeInSecs, int randomDelayMillis,
+      boolean singlePlayerMode, boolean isViewerPresent, boolean isAIPlayerPresent,
+      JSONObject gameStateJSON) {
+    gameState = new GameState(this);
     this.numberOfPlayers = numberOfPlayers;
     this.graphics = graphics;
+    this.playerTokens = playerTokens;
     this.singlePlayerMode = singlePlayerMode;
     this.isViewerPresent = isViewerPresent;
     this.defaultTurnTimeInSecs = defaultTurnTimeInSecs;
@@ -421,7 +429,7 @@ public class ServerEmulator {
     }
     else {
       if (lastGameState == null) {
-        lastGameState = new GameState();
+        lastGameState = new GameState(this);
       }
       // playerIdToNumberOfTokensInPot for last state doesn't matter
       lastGameState.setManualState(

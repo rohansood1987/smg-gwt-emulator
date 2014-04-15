@@ -58,18 +58,26 @@
 		          </b:ButtonToolBar>
 		        </g:FlowPanel> 
 	        </b:FormGroup>
-	        <b:FormGroup ui:field="width">
-	          <b:FormLabel addStyleNames="col-lg-2">Game Window Width</b:FormLabel>
+	        <b:FormGroup ui:field="tokensInfo">
+            <b:FormLabel addStyleNames="col-lg-2">Player Tokens</b:FormLabel>
+            <g:FlowPanel addStyleNames="col-lg-10">
+              <g:HorizontalPanel ui:field="tokensInfoPanel"/>
+              <b:HelpBlock text="Number of tokens available for each player"/>
+            </g:FlowPanel>  
+          </b:FormGroup>
+	        <b:FormGroup ui:field="size">
+	          <b:FormLabel addStyleNames="col-lg-2">Game Window Size</b:FormLabel>
 	          <g:FlowPanel addStyleNames="col-lg-10">
-	            <b:TextBox width="70px" ui:field="txtGameWidth" value="800"/>
-	            <b:HelpBlock text="In pixels"/>
-	          </g:FlowPanel>
-	        </b:FormGroup>
-	        <b:FormGroup ui:field="height">
-	          <b:FormLabel addStyleNames="col-lg-2">Game Window Height</b:FormLabel>
-	          <g:FlowPanel addStyleNames="col-lg-10">
-	            <b:TextBox width="70px" ui:field="txtGameHeight" value="450"/>
-	            <b:HelpBlock text="In pixels"/>
+	            <g:HorizontalPanel>
+	            <g:FlowPanel>
+	              <b:TextBox width="70px" ui:field="txtGameWidth" value="800"/>
+	              <b:HelpBlock text="Width (px)"/>
+	            </g:FlowPanel>
+	            <g:FlowPanel>
+	              <b:TextBox width="70px" ui:field="txtGameHeight" value="450"/>
+                <b:HelpBlock text="Height (px)"/>
+	            </g:FlowPanel>
+	            </g:HorizontalPanel>
 	          </g:FlowPanel>
 	        </b:FormGroup>
 	        <b:FormGroup ui:field="timeLimit">
