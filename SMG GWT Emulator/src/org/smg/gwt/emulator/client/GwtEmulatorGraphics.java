@@ -268,6 +268,7 @@ public class GwtEmulatorGraphics extends Composite {
       sliderBar.setMax(0);
       removeEventListener();
       resetTimer();
+      alertBar.setType(AlertType.WARNING);
       clearFormValidation();
     }
   }
