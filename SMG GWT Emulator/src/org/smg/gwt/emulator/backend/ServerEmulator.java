@@ -480,4 +480,8 @@ public class ServerEmulator {
     currentSliderIndex = savedStates.size() - 1;
     graphics.incrementSliderMaxValue(currentSliderIndex);
   }
+  
+  public int numOfSavedState() {
+    return savedStates.size();
+  }
 }

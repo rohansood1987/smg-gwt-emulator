@@ -21,16 +21,19 @@ import org.gwtbootstrap3.client.ui.TabPanel;
 import org.gwtbootstrap3.client.ui.TextBox;
 import org.gwtbootstrap3.client.ui.constants.AlertType;
 import org.gwtbootstrap3.client.ui.constants.ValidationState;
+import org.gwtbootstrap3.extras.slider.client.ui.Slider;
 import org.smg.gwt.emulator.backend.ServerEmulator;
 import org.smg.gwt.emulator.client.EnhancedConsole.ConsoleMessageType;
 
 import com.google.gwt.core.shared.GWT;
 import com.google.gwt.dom.client.Style.BorderStyle;
 import com.google.gwt.dom.client.Style.FontWeight;
-import com.google.gwt.dom.client.Style.Overflow;
 import com.google.gwt.dom.client.Style.Unit;
+import com.google.gwt.dom.client.Style.VerticalAlign;
 import com.google.gwt.event.dom.client.ClickEvent;
 import com.google.gwt.event.dom.client.ClickHandler;
+import com.google.gwt.event.logical.shared.ValueChangeEvent;
+import com.google.gwt.event.logical.shared.ValueChangeHandler;
 import com.google.gwt.json.client.JSONBoolean;
 import com.google.gwt.json.client.JSONNumber;
 import com.google.gwt.json.client.JSONObject;
@@ -56,8 +59,6 @@ import com.google.gwt.user.client.ui.ScrollPanel;
 import com.google.gwt.user.client.ui.TabLayoutPanel;
 import com.google.gwt.user.client.ui.VerticalPanel;
 import com.google.gwt.user.client.ui.Widget;
-import com.kiouri.sliderbar.client.event.BarValueChangedEvent;
-import com.kiouri.sliderbar.client.event.BarValueChangedHandler;
 
 public class GwtEmulatorGraphics extends Composite {
   public interface GwtEmulatorGraphicsUiBinder extends UiBinder<Widget, GwtEmulatorGraphics> {
@@ -88,7 +89,7 @@ public class GwtEmulatorGraphics extends Composite {
   ButtonGroup btnsPanel;
   
   @UiField
-  org.gwtbootstrap3.client.ui.Button btnCancel, btnReset, btnReload;
+  org.gwtbootstrap3.client.ui.Button btnCancel, btnReset, btnReload, previousState, nextState;
   
   @UiField
   RadioButton n2, n3, n4, n5, n6, n7, n8, n9;
@@ -97,7 +98,7 @@ public class GwtEmulatorGraphics extends Composite {
   FormGroup numOfPlayers, width, height, timeLimit, networkDelay, url;
 
   @UiField
-  AbsolutePanel mainConfigPanel, sliderBarPanel;
+  AbsolutePanel mainConfigPanel;
 
   @UiField
   VerticalPanel consolePanel;
@@ -111,10 +112,11 @@ public class GwtEmulatorGraphics extends Composite {
   @UiField
   NavbarNav headerPanel;
   
+  @UiField
+  Slider sliderBar;
+  
   private TabLayoutPanel gameTabs;
   private ServerEmulator serverEmulator;
-  private SliderBar sliderBar;
-  private boolean change = false;
   private int gameFrameWidth, gameFrameHeight, numberOfPlayers;
   private Storage stateStore;
   private FlexTable flexTable;
@@ -188,7 +190,6 @@ public class GwtEmulatorGraphics extends Composite {
     btnReloadEmulator.setVisible(false);
     btnSaveState.setVisible(false);
     btnEditState.setVisible(false);
-    alertBar.setVisible(false);
     addSaveStateTable();
   }
   
@@ -197,7 +198,7 @@ public class GwtEmulatorGraphics extends Composite {
     mainEmulatorPanel.setVisible(true);
     scrollPanel = new ScrollPanel();
     scrollPanel.add(enhancedConsole);
-    scrollPanel.setSize("300px", gameFrameHeight - 75 + "px");
+    scrollPanel.setHeight(gameFrameHeight - 100 + "px");
     scrollPanel.getElement().getStyle().setBorderStyle(BorderStyle.SOLID);
     scrollPanel.getElement().getStyle().setBorderWidth(1, Unit.MM);
     scrollPanel.getElement().getStyle().setBorderColor("lightgrey");
@@ -207,7 +208,6 @@ public class GwtEmulatorGraphics extends Composite {
     btnReloadEmulator.setVisible(true);
     btnSaveState.setVisible(true);
     btnEditState.setVisible(true);
-    alertBar.setVisible(true);
   }
   
   @UiHandler("btnStart")
@@ -237,10 +237,22 @@ public class GwtEmulatorGraphics extends Composite {
   void onClickReloadButton(ClickEvent e) {
     try {
       popupReloadEmulator.hideConfigPanel();
-      initEmulator();
+      if (!initEmulator())
+        return;
+      scrollPanel.setHeight(gameFrameHeight - 100 + "px");
     }
     catch(Exception ex) {
     }
+  }
+  
+  @UiHandler("previousState")
+  void onClickPreviousState(ClickEvent e) {
+    sliderBar.setValue((double) (serverEmulator.currentSliderIndex - 1), true);
+  }
+  
+  @UiHandler("nextState")
+  void onClickNextState(ClickEvent e) {
+    sliderBar.setValue((double) (serverEmulator.currentSliderIndex + 1), true);
   }
   
   private void clearEmulator() {
@@ -249,19 +261,22 @@ public class GwtEmulatorGraphics extends Composite {
       gameTabsPanel.remove(gameTabs);
       gameTabs.clear();
       playerFrames.clear();
-      sliderBarPanel.clear();
+      sliderBar.setMax(0);
       removeEventListener();
       resetTimer();
-      alertBar.setType(AlertType.WARNING);
-      numOfPlayers.setValidationState(ValidationState.NONE);
-      width.setValidationState(ValidationState.NONE);
-      height.setValidationState(ValidationState.NONE);
-      timeLimit.setValidationState(ValidationState.NONE);
-      networkDelay.setValidationState(ValidationState.NONE);
-      url.setValidationState(ValidationState.NONE);
+      clearFormValidation();
     }
   }
   
+  private void clearFormValidation() {
+    alertBar.setType(AlertType.WARNING);
+    numOfPlayers.setValidationState(ValidationState.NONE);
+    width.setValidationState(ValidationState.NONE);
+    height.setValidationState(ValidationState.NONE);
+    timeLimit.setValidationState(ValidationState.NONE);
+    networkDelay.setValidationState(ValidationState.NONE);
+    url.setValidationState(ValidationState.NONE);
+  }
   private boolean initEmulator(JSONObject gameStateJSON) {
     if (!validatateAndInitConfigInput()) {
       return false;
@@ -316,7 +331,7 @@ public class GwtEmulatorGraphics extends Composite {
     }
     gameTabsPanel.add(gameTabs);
     injectEventListener(serverEmulator, totalPlayerFrames);
-    addSlider(0);
+    addSlider();
   }
   
   private boolean validatateAndInitConfigInput() {
@@ -449,36 +464,43 @@ public class GwtEmulatorGraphics extends Composite {
     return newParamsBuilder.toString();
   }
   
-  private void addSlider(int maxValue) {
-    change = false;
-    sliderBar = new SliderBar(maxValue, "100%");
-    sliderBar.drawMarks("white", 10);
-    sliderBar.addBarValueChangedHandler(new BarValueChangedHandler() {
+  private void addSlider() {
+    sliderBar.setMin(0);
+    sliderBar.setMax(0);
+    sliderBar.setStep(1);
+    sliderBar.setValue((double)0);
+    sliderBar.getElement().getParentElement().getParentElement().getStyle().
+                          setVerticalAlign(VerticalAlign.MIDDLE);
+    previousState.getElement().getStyle().setMarginRight(10, Unit.PX);
+    nextState.getElement().getStyle().setMarginLeft(10, Unit.PX);
+
+    sliderBar.addValueChangeHandler(new ValueChangeHandler<Double>() {
+      
       @Override
-      public void onBarValueChanged(BarValueChangedEvent event) {
-        if (getAndSetBooleanValue()) {
-          serverEmulator.currentSliderIndex = event.getValue();
-          String jsonState = serverEmulator.getSavedStateAtIndex(event.getValue());
-          if (jsonState != null) {
-            serverEmulator.loadGameStateFromJSON(JSONParser.parseStrict(jsonState).isObject());
-          }
+      public void onValueChange(ValueChangeEvent<Double> event) {
+        if(event.getValue().intValue() > serverEmulator.numOfSavedState() - 1) {
+          sliderBar.setValue(serverEmulator.numOfSavedState() - 1.0, true);
+          return;
+        }
+        if(event.getValue().intValue() < 0) {
+          sliderBar.setValue(0.0, true);
+          return;
+        }
+        if(event.getValue().intValue() == serverEmulator.currentSliderIndex) {
+          return;
+        }
+        serverEmulator.currentSliderIndex = event.getValue().intValue();
+        String jsonState = serverEmulator.getSavedStateAtIndex(event.getValue().intValue());
+        if (jsonState != null) {
+          serverEmulator.loadGameStateFromJSON(JSONParser.parseStrict(jsonState).isObject());
         }
       }
     });
-    sliderBarPanel.add(sliderBar);
-  }
-  
-  private boolean getAndSetBooleanValue() {
-    boolean value = change;
-    change = true;
-    return value;
   }
   
   public void incrementSliderMaxValue(int value) {
-    sliderBarPanel.remove(sliderBar);
-    addSlider(value);
-    change = false;
-    sliderBar.setValue(value);
+    sliderBar.setMax(value);
+    sliderBar.setValue((double)value);
   }
 
   @UiHandler("btnEditState")
@@ -653,6 +675,7 @@ public class GwtEmulatorGraphics extends Composite {
     viewerCheck.setValue(isViewerPresent);
     singlePlayerCheck.setValue(singleFrame);
     computerPlayerCheck.setValue(isComputerPlayerPresent);
+    clearFormValidation();
   }
   
   public void handleGameOver(EndGame endGameOpn) {

@@ -10,8 +10,9 @@
   <inherits name='com.google.gwt.user.User'/>
   <inherits name='com.google.gwt.json.JSON'/>
   <inherits name='com.google.common.collect.Collect'/>
-  <inherits name="com.kiouri.sliderbar.SliderBarMVP"/>
   <inherits name="org.gwtbootstrap3.GwtBootstrap3"/>
+  <inherits name="org.gwtbootstrap3.extras.respond.Respond"/>
+  <inherits name="org.gwtbootstrap3.extras.slider.Slider"/>
   
   <!-- Inherit the default GWT style sheet.  You can change       -->
   <!-- the theme of your GWT application by uncommenting          -->
