@@ -2,6 +2,7 @@ package org.smg.gwt.emulator.client;
 
 import java.util.ArrayList;
 import java.util.HashSet;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -92,7 +93,7 @@ public class GwtEmulatorGraphics extends Composite {
   ListItem btnLoadState, btnReloadEmulator, btnSaveState, btnEditState;
   
   @UiField
-  ButtonGroup btnsPanel;
+  ButtonGroup btnsPanel, totalPlayersButtonGroup;
   
   @UiField
   org.gwtbootstrap3.client.ui.Button btnCancel, btnReset, btnReload, previousState, nextState;
@@ -464,8 +465,19 @@ public class GwtEmulatorGraphics extends Composite {
     throw new RuntimeException("Number of players not selected!");
   }
   
+  private void resetNumOfPlayers() {
+    Iterator<Widget> buttonIterator = totalPlayersButtonGroup.iterator();
+    while (buttonIterator != null && buttonIterator.hasNext()) {
+      Widget button = buttonIterator.next();
+      if (button instanceof RadioButton) {
+        ((RadioButton) button).setActive(false);
+      }
+    }
+  }
+  
   private void setNumOfPlayers(int numberOfPlayers) {
-    numPlayerRadioBtn[numberOfPlayers - 2].setActive(true);
+    resetNumOfPlayers();
+    numPlayerRadioBtn[numberOfPlayers - MIN_PLAYERS].setActive(true);
   }
 
 
@@ -612,6 +624,11 @@ public class GwtEmulatorGraphics extends Composite {
         singlePlayerCheck.setValue(config.get("singlePlayerCheck").isBoolean().booleanValue());
         computerPlayerCheck.setValue(config.get("computerPlayerCheck").isBoolean().booleanValue());
         initEmulator(gameStateJSON);
+        if (scrollPanel == null) {
+          setupEmulatorGraphics();
+        } else {
+          scrollPanel.setHeight(gameFrameHeight - 100 + "px");
+        }
         displayLoadPopUp.hide();
       }
     });

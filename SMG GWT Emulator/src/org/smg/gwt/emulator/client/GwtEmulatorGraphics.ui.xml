@@ -45,7 +45,7 @@
 	          <b:FormLabel addStyleNames="col-lg-2">Number of Players</b:FormLabel>
 	          <g:FlowPanel addStyleNames="col-lg-10">
 		          <b:ButtonToolBar>
-		            <b:ButtonGroup toggle="BUTTONS">
+		            <b:ButtonGroup toggle="BUTTONS" ui:field="totalPlayersButtonGroup">
 		               <b:RadioButton active="true" ui:field="n2">2</b:RadioButton>
 		               <b:RadioButton ui:field="n3">3</b:RadioButton>
 		               <b:RadioButton ui:field="n4">4</b:RadioButton>
