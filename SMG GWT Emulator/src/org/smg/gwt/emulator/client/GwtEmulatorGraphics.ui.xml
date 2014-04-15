@@ -76,14 +76,14 @@
 	          <b:FormLabel addStyleNames="col-lg-2">Time-limit Per Turn</b:FormLabel>
 	          <g:FlowPanel addStyleNames="col-lg-10">
 	            <b:TextBox width="70px" ui:field="txtDefaultTimePerTurn" value="60"/>
-	            <b:HelpBlock text="In Seconds. 0 = No Time-limit"/>
+	            <b:HelpBlock text="In Seconds. &lt;=0 for No Time Limit"/>
 	          </g:FlowPanel>
 	        </b:FormGroup>
 	        <b:FormGroup ui:field="networkDelay">
 	          <b:FormLabel addStyleNames="col-lg-2">Max Random Network Delay</b:FormLabel>
 	          <g:FlowPanel addStyleNames="col-lg-10">
 	            <b:TextBox width="70px" ui:field="txtRandomDelayMillis" value="0"/>
-	            <b:HelpBlock text="In Milli-Seconds"/>
+	            <b:HelpBlock text="In Milliseconds. &lt;=0 for No Delay"/>
 	          </g:FlowPanel>
 	        </b:FormGroup>
 	        <b:FormGroup ui:field="url">
@@ -120,8 +120,15 @@
     <g:HorizontalPanel visible="false" ui:field="mainEmulatorPanel">
 	    <g:VerticalPanel ui:field="consolePanel" width="300px">
 	      <b:Alert type="WARNING" ui:field="alertBar">
-          <g:Label ui:field = "turnTimerLabel" ></g:Label>
-        </b:Alert> 
+	        <g:HorizontalPanel width="100%">
+	          	<g:HTML ui:field = "turnLabel" ></g:HTML>
+	          	<g:HorizontalPanel>
+		          	<g:HTML ui:field = "timeLeftBold" ></g:HTML>
+		          	<g:HTML>&nbsp;</g:HTML>
+		          	<g:HTML ui:field = "timerLabel" ></g:HTML>
+	          	</g:HorizontalPanel>
+	      	</g:HorizontalPanel>
+          </b:Alert> 
         <g:HorizontalPanel width="300px" height="30px" addStyleNames="{style.pushBottom}">
           <b:Button ui:field="previousState" icon="STEP_BACKWARD" />
           <b3:Slider ui:field="sliderBar" handle="SQUARE" width="300px"></b3:Slider>

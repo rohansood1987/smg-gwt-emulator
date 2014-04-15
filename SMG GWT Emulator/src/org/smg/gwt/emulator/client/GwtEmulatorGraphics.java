@@ -27,7 +27,6 @@ import org.smg.gwt.emulator.client.EnhancedConsole.ConsoleMessageType;
 
 import com.google.gwt.core.shared.GWT;
 import com.google.gwt.dom.client.Style.BorderStyle;
-import com.google.gwt.dom.client.Style.FontWeight;
 import com.google.gwt.dom.client.Style.Unit;
 import com.google.gwt.dom.client.Style.VerticalAlign;
 import com.google.gwt.event.dom.client.ClickEvent;
@@ -52,6 +51,7 @@ import com.google.gwt.user.client.ui.DialogBox;
 import com.google.gwt.user.client.ui.FlexTable;
 import com.google.gwt.user.client.ui.FlowPanel;
 import com.google.gwt.user.client.ui.Frame;
+import com.google.gwt.user.client.ui.HTML;
 import com.google.gwt.user.client.ui.HorizontalPanel;
 import com.google.gwt.user.client.ui.Label;
 import com.google.gwt.user.client.ui.RootPanel;
@@ -107,7 +107,13 @@ public class GwtEmulatorGraphics extends Composite {
   TabPanel gameTabsPanel;
   
   @UiField
-  Label turnTimerLabel;
+  HTML turnLabel;
+  
+  @UiField
+  HTML timeLeftBold;
+  
+  @UiField
+  HTML timerLabel;
   
   @UiField
   NavbarNav headerPanel;
@@ -140,7 +146,8 @@ public class GwtEmulatorGraphics extends Composite {
   private int randomDelayMillis;
   private int timePerTurn;
   private ScrollPanel scrollPanel;
-  private final static String TIME_LEFT = "Time Left : ";
+  private final static String TIME_LEFT_BOLD = "<b>Time Left : <b>";
+  private final static String TURN_BOLD = "<b>Time Left : </b>";
   public EnhancedConsole getConsole() {
     return enhancedConsole;
   }
@@ -157,25 +164,23 @@ public class GwtEmulatorGraphics extends Composite {
     @Override
     public void run() {
       try {
-        String timerLabel = turnTimerLabel.getText();
-        int index = timerLabel.indexOf(TIME_LEFT);
-        if (index != -1 ) {
-          String timeText = turnTimerLabel.getText().substring(index + TIME_LEFT.length());
-          if (timeText != null && timeText.length() != 0) {
-            int currentTime = Integer.parseInt(timeText);
-            turnTimerLabel.setText(timerLabel.replaceFirst(TIME_LEFT + ".*$", TIME_LEFT 
-                + String.valueOf(currentTime - 1)));
-            if (currentTime - 1 <= 0) {
-              alertBar.setType(AlertType.DANGER);
-              turnTimerLabel.setText("Game Ended. Please Restart !");
-              removeEventListener();
-              this.cancel();
-              popupReloadEmulator.showConfigPanel();
-            }
+        String timeText = timerLabel.getText();
+        if (timeText != null && timeText.length() != 0) {
+          int currentTime = Integer.parseInt(timeText);
+          timerLabel.setHTML(String.valueOf(currentTime - 1));
+          if (currentTime - 1 < 0) {
+            alertBar.setType(AlertType.DANGER);
+            turnLabel.setHTML("<b>Game Ended. Please Restart !</b>");
+            timerLabel.setHTML("");
+            timeLeftBold.setHTML("");
+            removeEventListener();
+            this.cancel();
+            popupReloadEmulator.showConfigPanel();
           }
         }
       } catch(Exception ex) {
         this.cancel();
+        resetTimer();
       }
     }
   };
@@ -183,7 +188,6 @@ public class GwtEmulatorGraphics extends Composite {
   public GwtEmulatorGraphics() {
     GwtEmulatorGraphicsUiBinder uiBinder = GWT.create(GwtEmulatorGraphicsUiBinder.class);
     initWidget(uiBinder.createAndBindUi(this));
-    turnTimerLabel.getElement().getStyle().setFontWeight(FontWeight.BOLD);
     txtGameUrl.getElement().setAttribute("size", "40");
     enhancedConsole = new EnhancedConsole();
     popupReloadEmulator.hide();
@@ -236,9 +240,9 @@ public class GwtEmulatorGraphics extends Composite {
   @UiHandler("btnReload")
   void onClickReloadButton(ClickEvent e) {
     try {
-      popupReloadEmulator.hideConfigPanel();
       if (!initEmulator())
         return;
+      popupReloadEmulator.hideConfigPanel();
       scrollPanel.setHeight(gameFrameHeight - 100 + "px");
     }
     catch(Exception ex) {
@@ -269,7 +273,6 @@ public class GwtEmulatorGraphics extends Composite {
   }
   
   private void clearFormValidation() {
-    alertBar.setType(AlertType.WARNING);
     numOfPlayers.setValidationState(ValidationState.NONE);
     width.setValidationState(ValidationState.NONE);
     height.setValidationState(ValidationState.NONE);
@@ -345,6 +348,9 @@ public class GwtEmulatorGraphics extends Composite {
     }
     try {
       gameFrameWidth = Integer.parseInt(txtGameWidth.getText());
+      if (gameFrameWidth < 0) {
+        throw new NumberFormatException("Width should be positive");
+      }
       width.setValidationState(ValidationState.SUCCESS);
     }
     catch(NumberFormatException ex) {
@@ -353,6 +359,9 @@ public class GwtEmulatorGraphics extends Composite {
     }
     try {
       gameFrameHeight = Integer.parseInt(txtGameHeight.getText());
+      if (gameFrameHeight < 0) {
+        throw new NumberFormatException("Height should be positive");
+      }
       height.setValidationState(ValidationState.SUCCESS);
     }
     catch(NumberFormatException ex) {
@@ -766,11 +775,14 @@ public class GwtEmulatorGraphics extends Composite {
   
   //send time = "" for infinite timer
   public void setTurnAndTimer(String playerTurnId, String time) {
+    turnLabel.setHTML(TURN_BOLD + "Player " + playerTurnId);
     if (time == null || time.isEmpty()) {
       time = "";
-      turnTimerLabel.setText("Turn : " + "Player " + playerTurnId);
+      timeLeftBold.setHTML("");
+      timerLabel.setHTML("");
     } else {
-      turnTimerLabel.setText("Turn : " + "Player " + playerTurnId + " " + TIME_LEFT + time);
+      timeLeftBold.setHTML(TIME_LEFT_BOLD);
+      timerLabel.setHTML(time);
     }
     turnTimer.cancel();
     //Select the turn player tab(iframe)
@@ -799,7 +811,9 @@ public class GwtEmulatorGraphics extends Composite {
   }
   
   public void resetTimer() {
-    turnTimerLabel.setText("");
+    turnLabel.setHTML("");
+    timeLeftBold.setHTML("");
+    timerLabel.setHTML("");
     turnTimer.cancel();
   }
   
