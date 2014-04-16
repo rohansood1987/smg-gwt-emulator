@@ -15,8 +15,6 @@ import org.gwtbootstrap3.client.ui.Alert;
 import org.gwtbootstrap3.client.ui.ButtonGroup;
 import org.gwtbootstrap3.client.ui.CheckBoxButton;
 import org.gwtbootstrap3.client.ui.FormGroup;
-import org.gwtbootstrap3.client.ui.FormLabel;
-import org.gwtbootstrap3.client.ui.HelpBlock;
 import org.gwtbootstrap3.client.ui.ListItem;
 import org.gwtbootstrap3.client.ui.NavbarNav;
 import org.gwtbootstrap3.client.ui.RadioButton;
@@ -29,9 +27,7 @@ import org.smg.gwt.emulator.backend.ServerEmulator;
 import org.smg.gwt.emulator.client.EnhancedConsole.ConsoleMessageType;
 
 import com.google.gwt.core.shared.GWT;
-import com.google.gwt.dom.client.Element;
 import com.google.gwt.dom.client.Style.BorderStyle;
-import com.google.gwt.dom.client.Style.FontWeight;
 import com.google.gwt.dom.client.Style.Unit;
 import com.google.gwt.dom.client.Style.VerticalAlign;
 import com.google.gwt.event.dom.client.ClickEvent;
@@ -47,8 +43,6 @@ import com.google.gwt.storage.client.Storage;
 import com.google.gwt.uibinder.client.UiBinder;
 import com.google.gwt.uibinder.client.UiField;
 import com.google.gwt.uibinder.client.UiHandler;
-import com.google.gwt.user.client.Event;
-import com.google.gwt.user.client.EventListener;
 import com.google.gwt.user.client.Random;
 import com.google.gwt.user.client.Timer;
 import com.google.gwt.user.client.ui.AbsolutePanel;
@@ -290,12 +284,12 @@ public class GwtEmulatorGraphics extends Composite {
   
   @UiHandler("previousState")
   void onClickPreviousState(ClickEvent e) {
-    sliderBar.setValue((double) (serverEmulator.currentSliderIndex - 1), true);
+    sliderBar.setValue((double) ((serverEmulator.currentSliderIndex - 1) * sliderBar.getStep()), true);
   }
   
   @UiHandler("nextState")
   void onClickNextState(ClickEvent e) {
-    sliderBar.setValue((double) (serverEmulator.currentSliderIndex + 1), true);
+    sliderBar.setValue((double) ((serverEmulator.currentSliderIndex + 1) * sliderBar.getStep()), true);
   }
   
   private void clearEmulator() {
@@ -512,10 +506,10 @@ public class GwtEmulatorGraphics extends Composite {
   }
   
   private void addSlider() {
-    sliderBar.setMin(0);
-    sliderBar.setMax(0);
-    sliderBar.setStep(1);
-    sliderBar.setValue((double)0);
+    sliderBar.setMin(10);
+    sliderBar.setMax(10);
+    sliderBar.setStep(10);
+    sliderBar.setValue((double)10);
     sliderBar.getElement().getParentElement().getParentElement().getStyle().
                           setVerticalAlign(VerticalAlign.MIDDLE);
     previousState.getElement().getStyle().setMarginRight(10, Unit.PX);
@@ -525,19 +519,20 @@ public class GwtEmulatorGraphics extends Composite {
       
       @Override
       public void onValueChange(ValueChangeEvent<Double> event) {
-        if(event.getValue().intValue() > serverEmulator.numOfSavedState() - 1) {
-          sliderBar.setValue(serverEmulator.numOfSavedState() - 1.0, true);
+        if(event.getValue() / sliderBar.getStep() > serverEmulator.numOfSavedState() - 1) {
+          sliderBar.setValue((serverEmulator.numOfSavedState() - 1.0) * sliderBar.getStep(), true);
           return;
         }
-        if(event.getValue().intValue() < 0) {
+        if(event.getValue() / sliderBar.getStep() < 0) {
           sliderBar.setValue(0.0, true);
           return;
         }
-        if(event.getValue().intValue() == serverEmulator.currentSliderIndex) {
+        if(event.getValue() / sliderBar.getStep() == serverEmulator.currentSliderIndex) {
           return;
         }
-        serverEmulator.currentSliderIndex = event.getValue().intValue();
-        String jsonState = serverEmulator.getSavedStateAtIndex(event.getValue().intValue());
+        serverEmulator.currentSliderIndex = (int) (
+            event.getValue() / sliderBar.getStep());
+        String jsonState = serverEmulator.getSavedStateAtIndex(serverEmulator.currentSliderIndex);
         if (jsonState != null) {
           serverEmulator.loadGameStateFromJSON(JSONParser.parseStrict(jsonState).isObject());
         }
@@ -546,8 +541,8 @@ public class GwtEmulatorGraphics extends Composite {
   }
   
   public void incrementSliderMaxValue(int value) {
-    sliderBar.setMax(value);
-    sliderBar.setValue((double)value);
+    sliderBar.setStep(10.0/serverEmulator.numOfSavedState());
+    sliderBar.setValue(10d);
   }
 
   @UiHandler("btnEditState")
