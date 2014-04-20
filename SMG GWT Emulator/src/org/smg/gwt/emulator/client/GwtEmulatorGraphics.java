@@ -179,6 +179,7 @@ public class GwtEmulatorGraphics extends Composite {
             timeLeftBold.setHTML("");
             removeEventListener();
             this.cancel();
+            clearFormValidation();
             popupReloadEmulator.showConfigPanel();
           }
         }
@@ -722,6 +723,7 @@ public class GwtEmulatorGraphics extends Composite {
     viewerCheck.setValue(isViewerPresent);
     singlePlayerCheck.setValue(singleFrame);
     computerPlayerCheck.setValue(isComputerPlayerPresent);
+    changePlayerInfoPanel(numberOfPlayers);
     clearFormValidation();
   }
   
