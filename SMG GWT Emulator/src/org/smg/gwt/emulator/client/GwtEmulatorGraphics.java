@@ -613,8 +613,8 @@ public class GwtEmulatorGraphics extends Composite {
         txtGameHeight.setText(config.get("txtGameHeight").isString().stringValue());
         txtDefaultTimePerTurn.setText(config.get("txtDefaultTimePerTurn").isString().stringValue());
         txtRandomDelayMillis.setText(config.get("txtRandomDelayMillis").isString().stringValue());
-        txtGameWidth.setText(config.get("txtGameWidth").isString().stringValue());
         setNumOfPlayers((int)config.get("listNumPlayers").isNumber().doubleValue());
+        changePlayerInfoPanel(getNumOfPlayers());
         txtGameUrl.setText(config.get("txtGameUrl").isString().stringValue());
         viewerCheck.setValue(config.get("viewerCheck").isBoolean().booleanValue());
         singlePlayerCheck.setValue(config.get("singlePlayerCheck").isBoolean().booleanValue());
