@@ -1,12 +1,13 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <classpath>
 	<classpathentry kind="src" path="src"/>
-	<classpathentry kind="con" path="com.google.appengine.eclipse.core.GAE_CONTAINER"/>
-	<classpathentry kind="con" path="com.google.gwt.eclipse.core.GWT_CONTAINER"/>
 	<classpathentry kind="con" path="org.eclipse.jdt.launching.JRE_CONTAINER"/>
 	<classpathentry kind="lib" path="lib/guava-16.0.jar"/>
 	<classpathentry kind="lib" path="lib/guava-gwt-16.0.1.jar"/>
 	<classpathentry kind="lib" path="lib/gwtbootstrap3-0.6.jar"/>
 	<classpathentry kind="lib" path="lib/gwtbootstrap3-extras-0.6.jar"/>
+	<classpathentry kind="lib" path="lib/mgwt-1.2.0-SNAPSHOT.jar"/>
+	<classpathentry kind="con" path="com.google.appengine.eclipse.core.GAE_CONTAINER/App Engine (1)"/>
+	<classpathentry kind="con" path="com.google.gwt.eclipse.core.GWT_CONTAINER/GWT (1)"/>
 	<classpathentry kind="output" path="war/WEB-INF/classes"/>
 </classpath>
