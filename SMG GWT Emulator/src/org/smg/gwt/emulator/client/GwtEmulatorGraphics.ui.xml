@@ -4,7 +4,7 @@
   xmlns:mgwt="urn:import:com.googlecode.mgwt.ui.client.widget"
   xmlns:m="urn:import:com.googlecode.mgwt.ui.client">
  
- <mgwt:LayoutPanel>
+ <mgwt:LayoutPanel ui:field="main">
       <mgwt:HeaderPanel>
         <mgwt:left>
           <g:HorizontalPanel ui:field ="headerPanelLabel">
@@ -21,8 +21,6 @@
         </mgwt:right>
       </mgwt:HeaderPanel>
       
-      <mgwt:LayoutPanel ui:field="gameTabsPanel"/>
-      
       <mgwt:ScrollPanel ui:field="mainConfigPanel">
         <mgwt:WidgetList round="true">
             <mgwt:FormListEntry ui:field="numOfPlayersEntry"/>
@@ -35,21 +33,16 @@
             <mgwt:FormListEntry ui:field="aiEntry" />
             <mgwt:Button text="Start Game" ui:field="btnStart"/>
             <mgwt:RoundPanel ui:field="btnsPanel" visible="false">
-              <g:HorizontalPanel>
-                  <mgwt:Button text="Cancel" ui:field="btnCancel"/>
-                  <mgwt:Button  text="Reset" ui:field="btnReset" />
-                  <mgwt:Button text="Reload" ui:field="btnReload" />
-              </g:HorizontalPanel>
+              <g:HorizontalPanel horizontalAlignment="ALIGN_CENTER" width="100%">
+                 <mgwt:Button text="Cancel" ui:field="btnCancel" small="true" />
+                 <mgwt:Button text="Reset" ui:field="btnReset" small="true" />
+                 <mgwt:Button text="Reload" ui:field="btnReload" small="true"/>
+               </g:HorizontalPanel>
             </mgwt:RoundPanel>
         </mgwt:WidgetList>
       </mgwt:ScrollPanel>
 
-      <mgwt:LayoutPanel visible="false" ui:field="mainEmulatorPanel">
-       <g:VerticalPanel ui:field="consolePanel" width="300px" visible="false">
-       </g:VerticalPanel>
-      </mgwt:LayoutPanel>
-
-      <mgwt:buttonbar.ButtonBar ui:field="headerPanel">
+      <mgwt:buttonbar.ButtonBar ui:field="footerPanel">
           <mgwt:buttonbar.RefreshButton ui:field="btnReloadEmulator" />
           <mgwt:buttonbar.ButtonBarSpacer />
           <mgwt:buttonbar.ComposeButton ui:field="btnEditState" />

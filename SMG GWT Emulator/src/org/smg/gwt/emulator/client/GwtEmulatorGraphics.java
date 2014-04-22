@@ -70,13 +70,7 @@ public class GwtEmulatorGraphics extends Composite {
   }
   
   @UiField
-  LayoutPanel mainEmulatorPanel;
-  
-  HorizontalPanel tokensInfoPanel;
-  
-  MTextBox txtGameUrl, txtRandomDelayMillis, txtDefaultTimePerTurn;
-  MCheckBox viewerCheck, singlePlayerCheck, computerPlayerCheck;
-  
+  LayoutPanel main;
   
   @UiField
   ArrowLeftButton btnPrevious;
@@ -131,12 +125,9 @@ public class GwtEmulatorGraphics extends Composite {
   @UiField
   ScrollPanel mainConfigPanel;
 
-  @UiField
-  VerticalPanel consolePanel;
-  
-  @UiField
-  LayoutPanel gameTabsPanel;
-  
+//  @UiField
+  VerticalPanel consolePanel = new VerticalPanel();
+    
   @UiField
   HTML turnLabel;
   
@@ -147,7 +138,7 @@ public class GwtEmulatorGraphics extends Composite {
   HTML timerLabel;
   
   @UiField
-  ButtonBar headerPanel;
+  ButtonBar footerPanel;
   
   private Carousel gameTabs;
   private ServerEmulator serverEmulator;
@@ -174,6 +165,9 @@ public class GwtEmulatorGraphics extends Composite {
   private int randomDelayMillis;
   private int timePerTurn;
   private ScrollPanel scrollPanel;
+  private HorizontalPanel tokensInfoPanel;
+  private MTextBox txtGameUrl, txtRandomDelayMillis, txtDefaultTimePerTurn;
+  private MCheckBox viewerCheck, singlePlayerCheck, computerPlayerCheck;
   private final static String TIME_LEFT_BOLD = "<b>Time Left : </b>";
   private final static String TURN_BOLD = "<b>Turn : </b>";
   public EnhancedConsole getConsole() {
@@ -242,7 +236,7 @@ public class GwtEmulatorGraphics extends Composite {
     leftHorizontalPanel(viewerCheck.getElement());
     
     singlePlayerCheck = new MCheckBox();
-    singlePlayerEntry.setWidget("Single Player Mode", singlePlayerCheck);
+    singlePlayerEntry.setWidget("Single Player", singlePlayerCheck);
     leftHorizontalPanel(singlePlayerCheck.getElement());
     
     computerPlayerCheck = new MCheckBox();
@@ -266,12 +260,7 @@ public class GwtEmulatorGraphics extends Composite {
     timerLabel.setVisible(false);
     txtGameUrl.getElement().setAttribute("size", "40");
     enhancedConsole = new EnhancedConsole();
-    btnReloadEmulator.setVisible(false);
-    btnSaveState.setVisible(false);
-    btnEditState.setVisible(false);
-    btnNext.setVisible(false);
-    btnPrevious.setVisible(false);
-    btnConsole.setVisible(false);
+    setButtonsVisibility(false);
     addSaveStateTable();
     changePlayerInfoPanel(2);
     listNumPlayers.addChangeHandler(new ChangeHandler() {
@@ -283,6 +272,15 @@ public class GwtEmulatorGraphics extends Composite {
       }
     });
     headerPanelLabel.getElement().getStyle().setTop(10, Unit.PX);
+  }
+
+  private void setButtonsVisibility(boolean visibility) {
+    btnReloadEmulator.setVisible(visibility);
+    btnSaveState.setVisible(visibility);
+    btnEditState.setVisible(visibility);
+    btnNext.setVisible(visibility);
+    btnPrevious.setVisible(visibility);
+    btnConsole.setVisible(visibility);
   }
   
   private void changePlayerInfoPanel(int num) {
@@ -303,7 +301,6 @@ public class GwtEmulatorGraphics extends Composite {
   }
   
   private void setupEmulatorGraphics() {
-    mainConfigPanel.setVisible(false);
     configLabel.setVisible(false);
     scrollPanel = new ScrollPanel();
     scrollPanel.add(enhancedConsole);
@@ -313,12 +310,7 @@ public class GwtEmulatorGraphics extends Composite {
     consolePanel.add(scrollPanel);
     btnStart.setVisible(false);
     btnsPanel.setVisible(true);
-    btnReloadEmulator.setVisible(true);
-    btnSaveState.setVisible(true);
-    btnEditState.setVisible(true);
-    btnNext.setVisible(true);
-    btnPrevious.setVisible(true);
-    btnConsole.setVisible(true);
+    setButtonsVisibility(true);
   }
   
   @UiHandler("btnStart")
@@ -385,7 +377,7 @@ public class GwtEmulatorGraphics extends Composite {
   private void clearEmulator() {
     enhancedConsole.reset();
     if (gameTabs != null) {
-      gameTabsPanel.remove(gameTabs);
+      gameTabs.removeFromParent();
       gameTabs.clear();
       playerFrames.clear();
       removeEventListener();
@@ -422,11 +414,14 @@ public class GwtEmulatorGraphics extends Composite {
   }
   
   private void initGameTabs() {
-    mainEmulatorPanel.removeFromParent();
     gameTabs = new Carousel();
     turnLabel.setVisible(true);
     timerLabel.setVisible(true);
-    gameTabsPanel.add(gameTabs);
+    footerPanel.removeFromParent();
+    mainConfigPanel.setVisible(false);
+    main.add(gameTabs);
+    main.add(footerPanel);
+    
     if (singleFrame) {
       totalPlayerFrames = 1;
     } else {
@@ -444,7 +439,7 @@ public class GwtEmulatorGraphics extends Composite {
       roundPanel.setHeight("100%");
       Frame frame = new Frame(gameUrl);
       frame.getElement().setId(PLAYER_FRAME + i);
-      frame.setSize("100%", "78%");
+      frame.setSize("100%", "70%");
       roundPanel.add(frame);
       frameScroll.setWidget(roundPanel);
       frameScroll.refresh();
@@ -466,7 +461,6 @@ public class GwtEmulatorGraphics extends Composite {
       frameScroll.setWidget(roundPanel);
       frameScroll.refresh();
       gameTabs.add(frameScroll);
-      //gameTabs.add(frame, "Viewer");
       viewerFrame = frame;
     }
     gameTabs.refresh();
@@ -754,19 +748,25 @@ public class GwtEmulatorGraphics extends Composite {
   }
   
     public void showConfigPanel() {
+      gameTabs.setVisible(false);
+      footerPanel.removeFromParent();
       mainConfigPanel.setVisible(true);
+      main.add(footerPanel);
       configLabel.setVisible(true);
       turnLabel.setVisible(false);
       timerLabel.setVisible(false);
-      gameTabsPanel.setVisible(false);
+      setButtonsVisibility(false);
     }
     
     public void hideConfigPanel() {
       mainConfigPanel.setVisible(false);
+      footerPanel.removeFromParent();
+      gameTabs.setVisible(true);
+      main.add(footerPanel);
       configLabel.setVisible(false);
       turnLabel.setVisible(true);
       timerLabel.setVisible(true);
-      gameTabsPanel.setVisible(true);
+      setButtonsVisibility(true);
     }
 
     private class PopupGameOver extends PopinDialog {
