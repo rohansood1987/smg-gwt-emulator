@@ -31,10 +31,14 @@ public class PopupEditState extends PopinDialog {
       final String tokensMap, final StateEntered stateEntered) {
     
     // init
-    /*setText("State Editor");*/
     Button btnCancel = new Button("Cancel");
     Button btnReset = new Button("Reset");
     Button btnUpdate = new Button("Update");
+    
+    btnCancel.setSmall(true);
+    btnReset.setSmall(true);
+    btnUpdate.setSmall(true);
+    
     final Label lblStatus = new Label("Please edit the state.");
     txtAreaState.setText(existingState);
     txtAreaVisibility.setText(visibilityMap);

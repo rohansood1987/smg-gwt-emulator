@@ -284,7 +284,6 @@ public class ServerEmulator {
         }
         savedStates.add(getGameStateAsJSON().toString());
         currentSliderIndex = savedStates.size() - 1;
-        graphics.incrementSliderMaxValue(currentSliderIndex);
         moveInProgress = false;
         verifiers.clear();
         verifiersSize = 0;
@@ -486,7 +485,6 @@ public class ServerEmulator {
     savedStates.clear();
     savedStates.add(getGameStateAsJSON().toString());
     currentSliderIndex = savedStates.size() - 1;
-    graphics.incrementSliderMaxValue(currentSliderIndex);
   }
   
   public int numOfSavedState() {

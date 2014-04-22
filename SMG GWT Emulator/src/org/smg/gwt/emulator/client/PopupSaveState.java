@@ -2,6 +2,7 @@ package org.smg.gwt.emulator.client;
 
 import java.util.Set;
 
+import com.google.gwt.user.client.DOM;
 import com.google.gwt.user.client.ui.HorizontalPanel;
 import com.google.gwt.user.client.ui.Label;
 import com.googlecode.mgwt.dom.client.event.tap.TapEvent;
@@ -20,12 +21,16 @@ public class PopupSaveState extends PopinDialog {
   }
   final MTextBox stateName = new MTextBox();
   
+  @SuppressWarnings("deprecation")
   public PopupSaveState(final NameEntered name, final Set<String> keySet) {
     
     // init
-    //setText("Save State");
     Button btnCancel = new Button("Cancel");
     Button btnSave = new Button("Save");
+    
+    btnCancel.setSmall(true);
+    btnSave.setSmall(true);
+
     final Label lblStatus = new Label("Please enter name to save this state");
     
     // add listeners
@@ -72,6 +77,7 @@ public class PopupSaveState extends PopinDialog {
     HorizontalPanel btnsPanel = new HorizontalPanel();
     btnsPanel.add(btnCancel);
     btnsPanel.add(btnSave);
+    DOM.setStyleAttribute(btnsPanel.getElement(), "margin", "auto");
     mainVertPanel.add(btnsPanel);
     add(mainVertPanel);
   }
@@ -81,5 +87,5 @@ public class PopupSaveState extends PopinDialog {
     super.center();
     stateName.setFocus(true);
   }
-
+  
 }

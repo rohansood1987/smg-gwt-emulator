@@ -12,9 +12,10 @@ public class PopupLoadState extends PopinDialog {
   public PopupLoadState(final FlexTable table) {
     
     // init
-   /* setText("Load State");*/
     Button btnCancel = new Button("Cancel");
-    
+   
+    btnCancel.setSmall(true);
+
     // add listeners
     btnCancel.addTapHandler(new TapHandler() {
       @Override
