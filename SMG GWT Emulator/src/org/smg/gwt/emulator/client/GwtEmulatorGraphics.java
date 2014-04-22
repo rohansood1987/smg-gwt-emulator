@@ -14,7 +14,9 @@ import org.smg.gwt.emulator.backend.ServerEmulator;
 import org.smg.gwt.emulator.client.EnhancedConsole.ConsoleMessageType;
 
 import com.google.gwt.core.shared.GWT;
+import com.google.gwt.dom.client.Style;
 import com.google.gwt.dom.client.Style.BorderStyle;
+import com.google.gwt.dom.client.Style.Display;
 import com.google.gwt.dom.client.Style.Unit;
 import com.google.gwt.event.dom.client.ChangeEvent;
 import com.google.gwt.event.dom.client.ChangeHandler;
@@ -34,8 +36,10 @@ import com.google.gwt.user.client.Random;
 import com.google.gwt.user.client.Timer;
 import com.google.gwt.user.client.ui.Composite;
 import com.google.gwt.user.client.ui.FlexTable;
+import com.google.gwt.user.client.ui.FlowPanel;
 import com.google.gwt.user.client.ui.Frame;
 import com.google.gwt.user.client.ui.HTML;
+import com.google.gwt.user.client.ui.HasWidgets;
 import com.google.gwt.user.client.ui.HorizontalPanel;
 import com.google.gwt.user.client.ui.Label;
 import com.google.gwt.user.client.ui.RootPanel;
@@ -140,7 +144,7 @@ public class GwtEmulatorGraphics extends Composite {
   @UiField
   ButtonBar footerPanel;
   
-  private Carousel gameTabs;
+  private Carousel gameTabs = new Carousel();
   private ServerEmulator serverEmulator;
   private int numberOfPlayers;
   private List<Integer> playerTokens = new ArrayList<Integer>();
@@ -165,11 +169,13 @@ public class GwtEmulatorGraphics extends Composite {
   private int randomDelayMillis;
   private int timePerTurn;
   private ScrollPanel scrollPanel;
-  private HorizontalPanel tokensInfoPanel;
+  private FlowPanel tokensInfoPanel;
   private MTextBox txtGameUrl, txtRandomDelayMillis, txtDefaultTimePerTurn;
   private MCheckBox viewerCheck, singlePlayerCheck, computerPlayerCheck;
   private final static String TIME_LEFT_BOLD = "<b>Time Left : </b>";
   private final static String TURN_BOLD = "<b>Turn : </b>";
+  private final WidgetList widgetListToHide = new WidgetList();
+  
   public EnhancedConsole getConsole() {
     return enhancedConsole;
   }
@@ -180,6 +186,12 @@ public class GwtEmulatorGraphics extends Composite {
  
   public void showDefaultCursor() {
     RootPanel.get().getElement().getStyle().setProperty("cursor", "default");
+  }
+  
+  public static void setVisible(HasWidgets widgets, boolean isVisibile) {
+    for (Widget widget : widgets) {
+      widget.setVisible(isVisibile);
+    }
   }
   
   private Timer turnTimer = new Timer() {
@@ -214,7 +226,7 @@ public class GwtEmulatorGraphics extends Composite {
       listNumPlayers.addItem(i + " Players");
     }
     numOfPlayersEntry.setWidget("Number of Players", listNumPlayers);
-    tokensInfoPanel = new HorizontalPanel();
+    tokensInfoPanel = new FlowPanel();
     tokensInfoPanelEntry.setWidget("Player Tokens", tokensInfoPanel);
     leftHorizontalPanel(tokensInfoPanel.getElement());
     
@@ -256,6 +268,8 @@ public class GwtEmulatorGraphics extends Composite {
     GwtEmulatorGraphicsUiBinder uiBinder = GWT.create(GwtEmulatorGraphicsUiBinder.class);
     initWidget(uiBinder.createAndBindUi(this));
     createFormListEntries();
+    widgetListToHide.add(gameTabs);
+    widgetListToHide.add(footerPanel);
     turnLabel.setVisible(false);
     timerLabel.setVisible(false);
     txtGameUrl.getElement().setAttribute("size", "40");
@@ -293,6 +307,8 @@ public class GwtEmulatorGraphics extends Composite {
       MTextBox textBox = new MTextBox();
       textBox.setWidth("70px");
       textBox.setValue("10000");
+      Style style = textBox.getElement().getStyle();
+      style.setDisplay(Display.INLINE_BLOCK);
       tokensInfoPanel.add(textBox);
     }
     for (int j = i; j < existingPlayers; j++) {
@@ -414,7 +430,7 @@ public class GwtEmulatorGraphics extends Composite {
   }
   
   private void initGameTabs() {
-    gameTabs = new Carousel();
+    gameTabs.clear();
     turnLabel.setVisible(true);
     timerLabel.setVisible(true);
     footerPanel.removeFromParent();
@@ -576,7 +592,7 @@ public class GwtEmulatorGraphics extends Composite {
               Map<String,Object> updatedVisibilityMap, Map<String,Integer> updatedTokensMap) {
             serverEmulator.updateStateManually(updatedState, updatedVisibilityMap, updatedTokensMap);
           }
-    }).center();
+    }, widgetListToHide).center();
   }
   
   private void addSaveStateTable() {
@@ -599,7 +615,7 @@ public class GwtEmulatorGraphics extends Composite {
       flexTable.setWidget(i + 1, 1, load);
       flexTable.setWidget(i + 1, 2, clear);
     }
-    displayLoadPopUp = new PopupLoadState(flexTable);
+    displayLoadPopUp = new PopupLoadState(flexTable, widgetListToHide);
     displayLoadPopUp.hide();
   }
   
@@ -645,6 +661,7 @@ public class GwtEmulatorGraphics extends Composite {
           setupEmulatorGraphics();
         }
         displayLoadPopUp.hide();
+        GwtEmulatorGraphics.setVisible(widgetListToHide, true);
       }
     });
     
@@ -687,7 +704,7 @@ public class GwtEmulatorGraphics extends Composite {
         Dialogs.alert("Success",
             "State saved successfully. Press Load button to load any saved states", null);
       }
-    }, keySet).center();
+    }, keySet, widgetListToHide).center();
   }
    
   @UiHandler("btnLoadState")
@@ -744,7 +761,7 @@ public class GwtEmulatorGraphics extends Composite {
   }
   
   public void handleGameOver(EndGame endGameOpn) {
-    new PopupGameOver(endGameOpn).center();
+    new PopupGameOver(endGameOpn, widgetListToHide).center();
   }
   
     public void showConfigPanel() {
@@ -770,7 +787,12 @@ public class GwtEmulatorGraphics extends Composite {
     }
 
     private class PopupGameOver extends PopinDialog {
-    public PopupGameOver(EndGame endGame) {
+    
+    private final HasWidgets widgetsToHide;
+    
+    public PopupGameOver(EndGame endGame, final HasWidgets widgetsToHide) {
+      
+      this.widgetsToHide = widgetsToHide;
       
       Map<String, Integer> scores = endGame.getPlayerIdToScore();
       List<String> playerIds = serverEmulator.getPlayerIds();
@@ -781,6 +803,7 @@ public class GwtEmulatorGraphics extends Composite {
         @Override
         public void onTap(TapEvent event) {
           hide();
+          GwtEmulatorGraphics.setVisible(widgetsToHide, true);
           resetConfigPanelFields();
           showConfigPanel();
         }
@@ -792,6 +815,7 @@ public class GwtEmulatorGraphics extends Composite {
         @Override
         public void onTap(TapEvent event) {
           hide();
+          GwtEmulatorGraphics.setVisible(widgetsToHide, true);
         }
       });
       
@@ -829,6 +853,12 @@ public class GwtEmulatorGraphics extends Composite {
       buttonsPanel.add(btnRestartGame);
       mainPanel.add(buttonsPanel);
       add(mainPanel);
+    }
+    
+    @Override
+    public void center() {
+      super.center();
+      GwtEmulatorGraphics.setVisible(widgetsToHide, false);
     }
   }
   

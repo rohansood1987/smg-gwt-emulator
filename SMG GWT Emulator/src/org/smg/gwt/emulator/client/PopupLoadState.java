@@ -1,6 +1,7 @@
 package org.smg.gwt.emulator.client;
 
 import com.google.gwt.user.client.ui.FlexTable;
+import com.google.gwt.user.client.ui.HasWidgets;
 import com.googlecode.mgwt.dom.client.event.tap.TapEvent;
 import com.googlecode.mgwt.dom.client.event.tap.TapHandler;
 import com.googlecode.mgwt.ui.client.dialog.PopinDialog;
@@ -9,8 +10,11 @@ import com.googlecode.mgwt.ui.client.widget.WidgetList;
 
 public class PopupLoadState extends PopinDialog {
     
-  public PopupLoadState(final FlexTable table) {
+  final HasWidgets widgetsToHide;
+  
+  public PopupLoadState(final FlexTable table, final HasWidgets widgets) {
     
+    this.widgetsToHide = widgets;
     // init
     Button btnCancel = new Button("Cancel");
    
@@ -21,6 +25,7 @@ public class PopupLoadState extends PopinDialog {
       @Override
       public void onTap(TapEvent event) {
         hide();
+        GwtEmulatorGraphics.setVisible(widgetsToHide, true);
       }
     });
       
@@ -29,5 +34,11 @@ public class PopupLoadState extends PopinDialog {
     mainVertPanel.add(table);
     mainVertPanel.add(btnCancel);
     add(mainVertPanel);
+  }
+  
+  @Override
+  public void center() {
+    super.center();
+    GwtEmulatorGraphics.setVisible(widgetsToHide, false);
   }
 }

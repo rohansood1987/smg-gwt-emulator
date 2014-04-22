@@ -4,6 +4,7 @@ import java.util.Map;
 
 import org.game_api.GameApi.GameApiJsonHelper;
 
+import com.google.gwt.user.client.ui.HasWidgets;
 import com.google.gwt.user.client.ui.HorizontalPanel;
 import com.google.gwt.user.client.ui.Label;
 import com.googlecode.mgwt.dom.client.event.tap.TapEvent;
@@ -26,9 +27,12 @@ public class PopupEditState extends PopinDialog {
   final MTextArea txtAreaVisibility = new MTextArea();
   final MTextArea txtAreaTokens = new MTextArea();
   
+  final HasWidgets widgetsToHide;
   
   public PopupEditState(final String existingState, final String visibilityMap,
-      final String tokensMap, final StateEntered stateEntered) {
+      final String tokensMap, final StateEntered stateEntered, final HasWidgets widgetsToHide) {
+    
+    this.widgetsToHide = widgetsToHide;
     
     // init
     Button btnCancel = new Button("Cancel");
@@ -51,6 +55,7 @@ public class PopupEditState extends PopinDialog {
       @Override
       public void onTap(TapEvent event) {
         hide();
+        GwtEmulatorGraphics.setVisible(widgetsToHide, true);
       }
     });
     
@@ -76,6 +81,7 @@ public class PopupEditState extends PopinDialog {
           tokensMap = (Map<String, Integer>)(Map<String, ? extends Object>)GameApiJsonHelper.getMapObject(txtAreaTokens.getText());
           hide();
           stateEntered.setUpdatedStateInfo(updatedStateMap, visibilityMap, tokensMap);
+          GwtEmulatorGraphics.setVisible(widgetsToHide, true);
         }
         catch(Exception ex) {
           lblStatus.setText("Please enter valid information");
@@ -109,6 +115,7 @@ public class PopupEditState extends PopinDialog {
   public void center() {
     super.center();
     txtAreaState.setFocus(true);
+    GwtEmulatorGraphics.setVisible(widgetsToHide, false);
   }
 
 }

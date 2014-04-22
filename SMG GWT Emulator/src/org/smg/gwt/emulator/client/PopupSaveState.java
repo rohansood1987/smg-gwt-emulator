@@ -3,6 +3,7 @@ package org.smg.gwt.emulator.client;
 import java.util.Set;
 
 import com.google.gwt.user.client.DOM;
+import com.google.gwt.user.client.ui.HasWidgets;
 import com.google.gwt.user.client.ui.HorizontalPanel;
 import com.google.gwt.user.client.ui.Label;
 import com.googlecode.mgwt.dom.client.event.tap.TapEvent;
@@ -20,10 +21,14 @@ public class PopupSaveState extends PopinDialog {
     public void setName(String name);
   }
   final MTextBox stateName = new MTextBox();
+  final HasWidgets widgetsToHide;
   
   @SuppressWarnings("deprecation")
-  public PopupSaveState(final NameEntered name, final Set<String> keySet) {
+  public PopupSaveState(final NameEntered name, final Set<String> keySet, final HasWidgets widgets) {
     
+    this.widgetsToHide = widgets;
+    this.setHideOnBackgroundClick(false);
+    this.setShadow(true);
     // init
     Button btnCancel = new Button("Cancel");
     Button btnSave = new Button("Save");
@@ -38,6 +43,7 @@ public class PopupSaveState extends PopinDialog {
       @Override
       public void onTap(TapEvent event) {
         hide();
+        GwtEmulatorGraphics.setVisible(widgets, true);
       }
     });
     
@@ -54,6 +60,7 @@ public class PopupSaveState extends PopinDialog {
               public void onOk() {
                 name.setName(stateName.getValue());
                 hide();
+                GwtEmulatorGraphics.setVisible(widgets, true);
               }
               @Override
               public void onCancel() {
@@ -62,6 +69,7 @@ public class PopupSaveState extends PopinDialog {
           } else {
             name.setName(stateName.getValue());
             hide();
+            GwtEmulatorGraphics.setVisible(widgets, true);
           }
         }
         catch(Exception ex) {
@@ -86,6 +94,7 @@ public class PopupSaveState extends PopinDialog {
   public void center() {
     super.center();
     stateName.setFocus(true);
+    GwtEmulatorGraphics.setVisible(widgetsToHide, false);
   }
   
 }
