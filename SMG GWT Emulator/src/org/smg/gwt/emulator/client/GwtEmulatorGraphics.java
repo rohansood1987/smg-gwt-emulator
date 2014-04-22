@@ -345,7 +345,7 @@ public class GwtEmulatorGraphics extends Composite {
   
   @UiHandler("btnConsole")
   void onClickConsoleButton(TapEvent e) {
-    
+    //new PopupConsole(enhancedConsole, widgetListToHide).center();
   }
   
   @UiHandler("btnCancel")
