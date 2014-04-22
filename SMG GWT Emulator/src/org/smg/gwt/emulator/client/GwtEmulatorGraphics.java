@@ -56,6 +56,7 @@ import com.googlecode.mgwt.ui.client.widget.FormListEntry;
 import com.googlecode.mgwt.ui.client.widget.LayoutPanel;
 import com.googlecode.mgwt.ui.client.widget.MCheckBox;
 import com.googlecode.mgwt.ui.client.widget.MListBox;
+import com.googlecode.mgwt.ui.client.widget.MTextArea;
 import com.googlecode.mgwt.ui.client.widget.MTextBox;
 import com.googlecode.mgwt.ui.client.widget.RoundPanel;
 import com.googlecode.mgwt.ui.client.widget.ScrollPanel;
@@ -171,7 +172,8 @@ public class GwtEmulatorGraphics extends Composite {
   private int timePerTurn;
   private ScrollPanel scrollPanel;
   private FlowPanel tokensInfoPanel;
-  private MTextBox txtGameUrl, txtRandomDelayMillis, txtDefaultTimePerTurn;
+  private MTextArea txtGameUrl;
+  private MTextBox txtRandomDelayMillis, txtDefaultTimePerTurn;
   private MCheckBox viewerCheck, singlePlayerCheck, computerPlayerCheck;
   private final static String TIME_LEFT_BOLD = "<b>Time Left : </b>";
   private final static String TURN_BOLD = "<b>Turn : </b>";
@@ -239,7 +241,7 @@ public class GwtEmulatorGraphics extends Composite {
     txtRandomDelayMillis.setText("0");
     networkDelayEntry.setWidget("Network Delay", txtRandomDelayMillis);
     
-    txtGameUrl = new MTextBox();
+    txtGameUrl = new MTextArea();
     txtGameUrl.setText("http://2-dot-cheat-game.appspot.com/CheatGame.html");
     urlEntry.setWidget("URL", txtGameUrl);
     
@@ -431,7 +433,9 @@ public class GwtEmulatorGraphics extends Composite {
   }
   
   private void initGameTabs() {
-    gameTabs.clear();
+    widgetListToHide.remove(gameTabs);
+    gameTabs = new Carousel();
+    widgetListToHide.add(gameTabs);
     turnLabel.setVisible(true);
     timerLabel.setVisible(true);
     footerPanel.removeFromParent();
