@@ -4,42 +4,39 @@
   xmlns:g="urn:import:com.google.gwt.user.client.ui"
   xmlns:b3="urn:import:org.gwtbootstrap3.extras.slider.client.ui"
   xmlns:mgwt="urn:import:com.googlecode.mgwt.ui.client.widget" xmlns:m="urn:import:com.googlecode.mgwt.ui.client">
-  <!-- <ui:style>
-   .push {
-       padding-top: 60px;
-       margin-left: -25px;
-   }
-   
-   .pushLeft {
-       padding-left: 15px; 
-   }
-   .pushBottom {
-       margin-bottom:20px;
-   }
-  </ui:style>
-     -->
  <mgwt:LayoutPanel>
-    <!-- <b:Container>
-       <b:Navbar position="FIXED_TOP">
-          <b:NavbarHeader>
-            <b:NavbarBrand>GWT Emulator</b:NavbarBrand>
-            <b:NavbarCollapseButton target="#navbar-collapse"/>
-          </b:NavbarHeader>
-          <b:NavbarCollapse b:id="navbar-collapse"> -->
-            <mgwt:buttonbar.ButtonBar ui:field="headerPanel">
-              <mgwt:buttonbar.RefreshButton ui:field="btnReloadEmulator" />
-              <mgwt:buttonbar.ButtonBarSpacer />
-              <mgwt:buttonbar.ComposeButton ui:field="btnEditState" />
-              <mgwt:buttonbar.ButtonBarSpacer />
-              <mgwt:buttonbar.CameraButton ui:field="btnSaveState" />
-              <mgwt:buttonbar.ButtonBarSpacer />
-              <mgwt:buttonbar.ActionButton ui:field="btnLoadState" />
-            </mgwt:buttonbar.ButtonBar>
-         <!-- </b:NavbarCollapse>
-       </b:Navbar> -->
-    
-  <g:FlowPanel ui:field="mainPanel" height="100%">
-    <g:AbsolutePanel ui:field="mainConfigPanel" styleName="mainConfigPanel">
+      <mgwt:buttonbar.ButtonBar ui:field="headerPanel">
+	        <mgwt:buttonbar.RefreshButton ui:field="btnReloadEmulator" />
+	        <mgwt:buttonbar.ButtonBarSpacer />
+	        <mgwt:buttonbar.ComposeButton ui:field="btnEditState" />
+	        <mgwt:buttonbar.ButtonBarSpacer />
+	        <mgwt:buttonbar.ButtonBarText ui:field="btnConsole" HTML="Console" />
+    	    <mgwt:buttonbar.ButtonBarSpacer />
+	        <mgwt:buttonbar.CameraButton ui:field="btnSaveState" />
+	        <mgwt:buttonbar.ButtonBarSpacer />
+	        <mgwt:buttonbar.ActionButton ui:field="btnLoadState" />
+      </mgwt:buttonbar.ButtonBar>
+      <g:HorizontalPanel>
+	      <g:HTML ui:field = "turnLabel" ></g:HTML>
+	      <g:HTML ui:field = "timerLabel" ></g:HTML>
+      </g:HorizontalPanel>
+      <!-- <mgwt:HeaderPanel ui:field = "turnTimerPanel">
+        <mgwt:left>
+       		<g:HTML ui:field = "turnLabel" ></g:HTML>
+       	</mgwt:left>
+       	<mgwt:center>
+	       	<mgwt:RoundPanel>
+	        	<g:HTML ui:field = "timeLeftBold" ></g:HTML>
+	        	<g:HTML ui:field = "timerLabel" ></g:HTML>
+	       	</mgwt:RoundPanel>
+       	</mgwt:center>
+       	<mgwt:right>
+    		<g:HTML><a href="http://smg-gwt-emulator.appspot.com/index.html">HOME</a></g:HTML>
+    	</mgwt:right>
+   	</mgwt:HeaderPanel> -->
+      <mgwt:LayoutPanel ui:field="gameTabsPanel"/>
+  	  <!-- <mgwt:LayoutPanel ui:field="mainPanel"> -->
+      	<mgwt:LayoutPanel ui:field="mainConfigPanel" styleName="mainConfigPanel">
 	      <mgwt:WidgetList round="true">
 	          <mgwt:FormListEntry ui:field="numOfPlayersEntry"/>
 	          <mgwt:FormListEntry ui:field="tokensInfoPanelEntry"/>
@@ -48,40 +45,17 @@
 	       	  <mgwt:FormListEntry ui:field="timeLimitEntry"/>
 	       	  <mgwt:FormListEntry ui:field="networkDelayEntry"/>
 	       	  <mgwt:FormListEntry ui:field="urlEntry"/>
-	       	  <!-- <mgwt:FormListEntry ui:field="otherOptionsEntry"/> -->
-	       	  
-	        <!-- <b:FormGroup ui:field="timeLimit">
-	          <b:FormLabel addStyleNames="col-lg-2">Time-limit Per Turn</b:FormLabel>
-	          <g:FlowPanel addStyleNames="col-lg-10">
-	            <b:TextBox width="70px" ui:field="txtDefaultTimePerTurn" value="60"/>
-	            <b:HelpBlock text="In Seconds. &lt;=0 for No Time Limit"/>
-	          </g:FlowPanel>
-	        </b:FormGroup> -->
-	        <!-- <b:FormGroup ui:field="networkDelay">
-	          <b:FormLabel addStyleNames="col-lg-2">Max Random Network Delay</b:FormLabel>
-	          <g:FlowPanel addStyleNames="col-lg-10">
-	            <b:TextBox width="70px" ui:field="txtRandomDelayMillis" value="0"/>
-	            <b:HelpBlock text="In Milliseconds. &lt;=0 for No Delay"/>
-	          </g:FlowPanel>
-	        </b:FormGroup>
-	        <b:FormGroup ui:field="url">
-	          <b:FormLabel addStyleNames="col-lg-2">Game URL</b:FormLabel>
-	          <g:FlowPanel addStyleNames="col-lg-10">
-	            <b:TextBox ui:field="txtGameUrl" 
-	            value="http://2-dot-cheat-game.appspot.com/CheatGame.html"/>
-	          </g:FlowPanel>
-	        </b:FormGroup> -->
-	           <mgwt:RoundPanel>
+	          <mgwt:RoundPanel>
 		           <g:HorizontalPanel ui:field="otherCheckBoxPanel">
 		               	  <g:VerticalPanel>
 		               	  	<g:Label>Add Viewer</g:Label>
-				          	<mgwt:MCheckBox ui:field="viewerCheck" value="true" >
+				          	<mgwt:MCheckBox ui:field="viewerCheck" value="false" >
 				          	</mgwt:MCheckBox>
 				          </g:VerticalPanel>
 				          <g:HTML>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</g:HTML>
 				          <g:VerticalPanel>
 				          	<g:Label>Single Player</g:Label>
-				          	<mgwt:MCheckBox ui:field="singlePlayerCheck" value="false" >
+				          	<mgwt:MCheckBox ui:field="singlePlayerCheck" value="true" >
 				          	</mgwt:MCheckBox>
 				          </g:VerticalPanel>
 				          <g:HTML>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</g:HTML>
@@ -101,31 +75,17 @@
 		          </g:HorizontalPanel>
 	          </mgwt:RoundPanel>
 	      </mgwt:WidgetList>
-	    <!-- </b:Form>  -->
-    </g:AbsolutePanel>
-    <g:HorizontalPanel visible="false" ui:field="mainEmulatorPanel">
+    </mgwt:LayoutPanel>
+    <mgwt:LayoutPanel visible="false" ui:field="mainEmulatorPanel">
 	    <g:VerticalPanel ui:field="consolePanel" width="300px" visible="false">
-	      <b:Alert type="WARNING" ui:field="alertBar">
-	        <g:HorizontalPanel width="100%">
-	          	<g:HTML ui:field = "turnLabel" ></g:HTML>
-	          	<g:HorizontalPanel>
-		          	<g:HTML ui:field = "timeLeftBold" ></g:HTML>
-		          	<g:HTML>&nbsp;</g:HTML>
-		          	<g:HTML ui:field = "timerLabel" ></g:HTML>
-	          	</g:HorizontalPanel>
-	      	</g:HorizontalPanel>
-          </b:Alert> 
-        <g:HorizontalPanel width="300px" height="30px">
-          <b:Button ui:field="previousState" icon="STEP_BACKWARD" />
-          <b3:Slider ui:field="sliderBar" handle="SQUARE" width="300px"></b3:Slider>
-          <b:Button ui:field="nextState" icon="STEP_FORWARD" />
-        </g:HorizontalPanel>
+          <g:HorizontalPanel width="300px" height="30px">
+            <b:Button ui:field="previousState" icon="STEP_BACKWARD" />
+            <b3:Slider ui:field="sliderBar" handle="SQUARE" width="300px"></b3:Slider>
+            <b:Button ui:field="nextState" icon="STEP_FORWARD" />
+          </g:HorizontalPanel>
 	    </g:VerticalPanel>
-	    <!-- <mgwt:Carousel> -->
-	    	<mgwt:LayoutPanel ui:field="gameTabsPanel"/>
-	    <!-- </mgwt:Carousel> -->
-    </g:HorizontalPanel>
-  </g:FlowPanel>
+    </mgwt:LayoutPanel>
+ <!--  </mgwt:LayoutPanel> -->
  <!-- </b:Container> -->
 </mgwt:LayoutPanel>
 </ui:UiBinder> 

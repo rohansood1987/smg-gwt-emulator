@@ -4,16 +4,17 @@ import java.util.Map;
 
 import org.game_api.GameApi.GameApiJsonHelper;
 
-import com.google.gwt.event.dom.client.ClickEvent;
-import com.google.gwt.event.dom.client.ClickHandler;
-import com.google.gwt.user.client.ui.Button;
-import com.google.gwt.user.client.ui.DialogBox;
 import com.google.gwt.user.client.ui.HorizontalPanel;
 import com.google.gwt.user.client.ui.Label;
-import com.google.gwt.user.client.ui.TextArea;
-import com.google.gwt.user.client.ui.VerticalPanel;
+import com.googlecode.mgwt.dom.client.event.tap.TapEvent;
+import com.googlecode.mgwt.dom.client.event.tap.TapHandler;
+import com.googlecode.mgwt.ui.client.dialog.PopinDialog;
+import com.googlecode.mgwt.ui.client.widget.Button;
+import com.googlecode.mgwt.ui.client.widget.MTextArea;
+import com.googlecode.mgwt.ui.client.widget.ScrollPanel;
+import com.googlecode.mgwt.ui.client.widget.WidgetList;
 
-public class PopupEditState extends DialogBox {
+public class PopupEditState extends PopinDialog {
   
   public interface StateEntered {
     public void setUpdatedStateInfo(
@@ -21,16 +22,16 @@ public class PopupEditState extends DialogBox {
         Map<String, Integer> updatedTokensMap);
   }
   
-  final TextArea txtAreaState = new TextArea();
-  final TextArea txtAreaVisibility = new TextArea();
-  final TextArea txtAreaTokens = new TextArea();
+  final MTextArea txtAreaState = new MTextArea();
+  final MTextArea txtAreaVisibility = new MTextArea();
+  final MTextArea txtAreaTokens = new MTextArea();
   
   
   public PopupEditState(final String existingState, final String visibilityMap,
       final String tokensMap, final StateEntered stateEntered) {
     
     // init
-    setText("State Editor");
+    /*setText("State Editor");*/
     Button btnCancel = new Button("Cancel");
     Button btnReset = new Button("Reset");
     Button btnUpdate = new Button("Update");
@@ -41,25 +42,27 @@ public class PopupEditState extends DialogBox {
     
     
     // add listeners
-    btnCancel.addClickHandler(new ClickHandler() {
+    btnCancel.addTapHandler(new TapHandler() {
+      
       @Override
-      public void onClick(ClickEvent event) {
+      public void onTap(TapEvent event) {
         hide();
       }
     });
     
-    btnReset.addClickHandler(new ClickHandler() {
+    btnReset.addTapHandler(new TapHandler() {
       @Override
-      public void onClick(ClickEvent event) {
+      public void onTap(TapEvent event) {
         txtAreaState.setText(existingState);
         txtAreaVisibility.setText(visibilityMap);
         txtAreaTokens.setText(tokensMap);
       }
     });
     
-    btnUpdate.addClickHandler(new ClickHandler() {
+    btnUpdate.addTapHandler(new TapHandler() {
+      @SuppressWarnings("unchecked")
       @Override
-      public void onClick(ClickEvent event) {
+      public void onTap(TapEvent event) {
         Map<String, Object> updatedStateMap = null;
         Map<String, Object> visibilityMap = null;
         Map<String, Integer> tokensMap = null;
@@ -77,23 +80,25 @@ public class PopupEditState extends DialogBox {
     });
     
     // place widgets
-    VerticalPanel mainVertPanel = new VerticalPanel();
+    ScrollPanel scrollPanel = new ScrollPanel();
+    WidgetList mainVertPanel = new WidgetList();
+    scrollPanel.setWidget(mainVertPanel);
     mainVertPanel.add(lblStatus);
     mainVertPanel.add(new Label("State:"));
-    txtAreaState.setSize("400px", "120px");
+    //txtAreaState.setSize("400px", "120px");
     mainVertPanel.add(txtAreaState);
     mainVertPanel.add(new Label("Visibility Map:"));
-    txtAreaVisibility.setSize("400px", "120px");
+    //txtAreaVisibility.setSize("400px", "120px");
     mainVertPanel.add(txtAreaVisibility);
     mainVertPanel.add(new Label("Tokens Map:"));
-    txtAreaTokens.setSize("400px", "60px");
+    //txtAreaTokens.setSize("400px", "60px");
     mainVertPanel.add(txtAreaTokens);
     HorizontalPanel btnsPanel = new HorizontalPanel();
     btnsPanel.add(btnCancel);
     btnsPanel.add(btnReset);
     btnsPanel.add(btnUpdate);
     mainVertPanel.add(btnsPanel);
-    setWidget(mainVertPanel);
+    add(scrollPanel);
   }
   
   @Override

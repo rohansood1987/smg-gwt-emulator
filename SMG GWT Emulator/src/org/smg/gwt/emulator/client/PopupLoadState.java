@@ -1,32 +1,32 @@
 package org.smg.gwt.emulator.client;
 
-import com.google.gwt.event.dom.client.ClickEvent;
-import com.google.gwt.event.dom.client.ClickHandler;
-import com.google.gwt.user.client.ui.Button;
-import com.google.gwt.user.client.ui.DialogBox;
 import com.google.gwt.user.client.ui.FlexTable;
-import com.google.gwt.user.client.ui.VerticalPanel;
+import com.googlecode.mgwt.dom.client.event.tap.TapEvent;
+import com.googlecode.mgwt.dom.client.event.tap.TapHandler;
+import com.googlecode.mgwt.ui.client.dialog.PopinDialog;
+import com.googlecode.mgwt.ui.client.widget.Button;
+import com.googlecode.mgwt.ui.client.widget.WidgetList;
 
-public class PopupLoadState extends DialogBox {
+public class PopupLoadState extends PopinDialog {
     
   public PopupLoadState(final FlexTable table) {
     
     // init
-    setText("Load State");
+   /* setText("Load State");*/
     Button btnCancel = new Button("Cancel");
     
     // add listeners
-    btnCancel.addClickHandler(new ClickHandler() {
+    btnCancel.addTapHandler(new TapHandler() {
       @Override
-      public void onClick(ClickEvent event) {
+      public void onTap(TapEvent event) {
         hide();
       }
     });
       
     // place widgets
-    VerticalPanel mainVertPanel = new VerticalPanel();
+    WidgetList mainVertPanel = new WidgetList();
     mainVertPanel.add(table);
     mainVertPanel.add(btnCancel);
-    setWidget(mainVertPanel);
+    add(mainVertPanel);
   }
 }

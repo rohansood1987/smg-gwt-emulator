@@ -44,7 +44,6 @@ import com.google.gwt.user.client.Random;
 import com.google.gwt.user.client.Timer;
 import com.google.gwt.user.client.Window;
 import com.google.gwt.user.client.ui.AbsolutePanel;
-import com.google.gwt.user.client.ui.Button;
 import com.google.gwt.user.client.ui.Composite;
 import com.google.gwt.user.client.ui.DialogBox;
 import com.google.gwt.user.client.ui.FlexTable;
@@ -60,9 +59,13 @@ import com.google.gwt.user.client.ui.TabLayoutPanel;
 import com.google.gwt.user.client.ui.VerticalPanel;
 import com.google.gwt.user.client.ui.Widget;
 import com.googlecode.mgwt.dom.client.event.tap.TapEvent;
+import com.googlecode.mgwt.dom.client.event.tap.TapHandler;
 import com.googlecode.mgwt.ui.client.dialog.Dialogs;
+import com.googlecode.mgwt.ui.client.dialog.PopinDialog;
+import com.googlecode.mgwt.ui.client.widget.Button;
 import com.googlecode.mgwt.ui.client.widget.Carousel;
 import com.googlecode.mgwt.ui.client.widget.FormListEntry;
+import com.googlecode.mgwt.ui.client.widget.HeaderPanel;
 import com.googlecode.mgwt.ui.client.widget.LayoutPanel;
 import com.googlecode.mgwt.ui.client.widget.MCheckBox;
 import com.googlecode.mgwt.ui.client.widget.MListBox;
@@ -73,6 +76,7 @@ import com.googlecode.mgwt.ui.client.widget.ScrollPanel;
 import com.googlecode.mgwt.ui.client.widget.WidgetList;
 import com.googlecode.mgwt.ui.client.widget.buttonbar.ActionButton;
 import com.googlecode.mgwt.ui.client.widget.buttonbar.ButtonBar;
+import com.googlecode.mgwt.ui.client.widget.buttonbar.ButtonBarText;
 import com.googlecode.mgwt.ui.client.widget.buttonbar.CameraButton;
 import com.googlecode.mgwt.ui.client.widget.buttonbar.ComposeButton;
 import com.googlecode.mgwt.ui.client.widget.buttonbar.RefreshButton;
@@ -81,11 +85,11 @@ public class GwtEmulatorGraphics extends Composite {
   public interface GwtEmulatorGraphicsUiBinder extends UiBinder<Widget, GwtEmulatorGraphics> {
   }
   
-  @UiField
-  FlowPanel mainPanel;
+  /*@UiField
+  LayoutPanel mainPanel;*/
   
   @UiField
-  HorizontalPanel mainEmulatorPanel;
+  LayoutPanel mainEmulatorPanel;
   
   HorizontalPanel tokensInfoPanel;
   
@@ -99,11 +103,11 @@ public class GwtEmulatorGraphics extends Composite {
   @UiField
   MCheckBox computerPlayerCheck;
   
-  @UiField
-  com.googlecode.mgwt.ui.client.widget.Button btnStart;
+  /*@UiField
+  HeaderPanel turnTimerPanel;*/
   
   @UiField
-  Alert alertBar;
+  com.googlecode.mgwt.ui.client.widget.Button btnStart;
   
   @UiField
   ActionButton btnLoadState;
@@ -119,6 +123,9 @@ public class GwtEmulatorGraphics extends Composite {
   
   @UiField
   RoundPanel btnsPanel;
+  
+  @UiField
+  ButtonBarText btnConsole;
   
   /*@UiField
   WidgetList totalPlayersButtonGroup;*/
@@ -152,7 +159,7 @@ public class GwtEmulatorGraphics extends Composite {
   FormListEntry networkDelayEntry, urlEntry;//, otherOptionsEntry;
 
   @UiField
-  AbsolutePanel mainConfigPanel;
+  LayoutPanel mainConfigPanel;
 
   @UiField
   VerticalPanel consolePanel;
@@ -163,8 +170,8 @@ public class GwtEmulatorGraphics extends Composite {
   @UiField
   HTML turnLabel;
   
-  @UiField
-  HTML timeLeftBold;
+  /*@UiField
+  HTML timeLeftBold;*/
   
   @UiField
   HTML timerLabel;
@@ -190,7 +197,7 @@ public class GwtEmulatorGraphics extends Composite {
   private Frame viewerFrame;
   private String gameUrl;
   private EnhancedConsole enhancedConsole;
-  private final PopupReloadEmulator popupReloadEmulator = new PopupReloadEmulator();
+  //private final PopupReloadEmulator popupReloadEmulator = new PopupReloadEmulator();
   private static final int MIN_PLAYERS = 2;
   private static final int MAX_PLAYERS = 9;
   private static final String PLAYER_FRAME = "playerFrame";
@@ -204,18 +211,18 @@ public class GwtEmulatorGraphics extends Composite {
   private int randomDelayMillis;
   private int timePerTurn;
   private ScrollPanel scrollPanel;
-  private final static String TIME_LEFT_BOLD = "<b>Time Left : <b>";
+  private final static String TIME_LEFT_BOLD = "Time Left : ";
   private final static String TURN_BOLD = "<b>Turn : </b>";
   public EnhancedConsole getConsole() {
     return enhancedConsole;
   }
   
   public void showWaitCursor() {
-    mainPanel.getElement().getStyle().setProperty("cursor", "wait");
+    RootPanel.get().getElement().getStyle().setProperty("cursor", "wait");
   }
  
   public void showDefaultCursor() {
-    mainPanel.getElement().getStyle().setProperty("cursor", "default");
+    RootPanel.get().getElement().getStyle().setProperty("cursor", "default");
   }
   
   private Timer turnTimer = new Timer() {
@@ -224,17 +231,18 @@ public class GwtEmulatorGraphics extends Composite {
       try {
         String timeText = timerLabel.getText();
         if (timeText != null && timeText.length() != 0) {
+          int timeTextIndex = timeText.indexOf(TIME_LEFT_BOLD);
+          timeText = timeText.substring(timeTextIndex + TIME_LEFT_BOLD.length());
           int currentTime = Integer.parseInt(timeText);
-          timerLabel.setHTML(String.valueOf(currentTime - 1));
+          timerLabel.setHTML(TIME_LEFT_BOLD + String.valueOf(currentTime - 1));
           if (currentTime - 1 < 0) {
-            alertBar.setType(AlertType.DANGER);
-            turnLabel.setHTML("<b>Game Ended. Please Restart !</b>");
+            turnLabel.setHTML("Game Ended. Please Restart !");
             timerLabel.setHTML("");
-            timeLeftBold.setHTML("");
+            /*timeLeftBold.setHTML("");*/
             removeEventListener();
             this.cancel();
             clearFormValidation();
-            popupReloadEmulator.showConfigPanel();
+            showConfigPanel();
           }
         }
       } catch(Exception ex) {
@@ -263,7 +271,7 @@ public class GwtEmulatorGraphics extends Composite {
     heightEntry.setWidget("Height", txtGameHeight);
     
     txtDefaultTimePerTurn = new MTextBox();
-    txtDefaultTimePerTurn.setText("60");
+    txtDefaultTimePerTurn.setText("0");
     timeLimitEntry.setWidget("Time-limit Per Turn", txtDefaultTimePerTurn);
     
     txtRandomDelayMillis = new MTextBox();
@@ -298,12 +306,16 @@ public class GwtEmulatorGraphics extends Composite {
     initWidget(uiBinder.createAndBindUi(this));
     /*numPlayerRadioBtn = new MRadioButton[] {n2, n3, n4, n5, n6, n7, n8, n9};*/
     createFormListEntries();
+    /*turnTimerPanel.setVisible(false);*/
+    turnLabel.setVisible(false);
+    timerLabel.setVisible(false);
     txtGameUrl.getElement().setAttribute("size", "40");
     enhancedConsole = new EnhancedConsole();
-    popupReloadEmulator.hide();
+    /*popupReloadEmulator.hide();*/
     btnReloadEmulator.setVisible(false);
     btnSaveState.setVisible(false);
     btnEditState.setVisible(false);
+    btnConsole.setVisible(false);
     addSaveStateTable();
     changePlayerInfoPanel(2);
     listNumPlayers.addChangeHandler(new ChangeHandler() {
@@ -347,8 +359,9 @@ public class GwtEmulatorGraphics extends Composite {
   }
   
   private void setupEmulatorGraphics() {
-    mainPanel.remove(mainConfigPanel);
-    mainEmulatorPanel.setVisible(true);
+    //mainPanel.remove(mainConfigPanel);
+    mainConfigPanel.setVisible(false);
+    //mainEmulatorPanel.setVisible(true);
     scrollPanel = new ScrollPanel();
     scrollPanel.add(enhancedConsole);
     scrollPanel.setHeight(gameFrameHeight - 100 + "px");
@@ -361,6 +374,7 @@ public class GwtEmulatorGraphics extends Composite {
     btnReloadEmulator.setVisible(true);
     btnSaveState.setVisible(true);
     btnEditState.setVisible(true);
+    btnConsole.setVisible(true);
   }
   
   @UiHandler("btnStart")
@@ -373,12 +387,17 @@ public class GwtEmulatorGraphics extends Composite {
   @UiHandler("btnReloadEmulator")
   void onClickReloadEmulatorButton(TapEvent e) {
     resetConfigPanelFields();
-    popupReloadEmulator.showConfigPanel();
+    showConfigPanel();
+  }
+  
+  @UiHandler("btnConsole")
+  void onClickConsoleButton(TapEvent e) {
+    
   }
   
   @UiHandler("btnCancel")
   void onClickCancelButton(TapEvent e) {
-    popupReloadEmulator.hideConfigPanel();
+    hideConfigPanel();
   }
   
   @UiHandler("btnReset")
@@ -391,7 +410,7 @@ public class GwtEmulatorGraphics extends Composite {
     try {
       if (!initEmulator())
         return;
-      popupReloadEmulator.hideConfigPanel();
+      hideConfigPanel();
       scrollPanel.setHeight(gameFrameHeight - 100 + "px");
     }
     catch(Exception ex) {
@@ -417,7 +436,6 @@ public class GwtEmulatorGraphics extends Composite {
       sliderBar.setMax(0);
       removeEventListener();
       resetTimer();
-      alertBar.setType(AlertType.WARNING);
       clearFormValidation();
     }
   }
@@ -450,7 +468,11 @@ public class GwtEmulatorGraphics extends Composite {
   }
   
   private void initGameTabs() {
+    mainEmulatorPanel.removeFromParent();
     gameTabs = new Carousel();
+    /*turnTimerPanel.setVisible(true);*/
+    turnLabel.setVisible(true);
+    timerLabel.setVisible(true);
     gameTabsPanel.add(gameTabs);
     //gameTabs.setSize(gameFrameWidth + "px", (gameFrameHeight + 25) + "px");
     if (singleFrame) {
@@ -459,26 +481,21 @@ public class GwtEmulatorGraphics extends Composite {
       totalPlayerFrames = numberOfPlayers;
     }
     for (int i = 0; i < totalPlayerFrames; i++) {
+      ScrollPanel frameScroll = new ScrollPanel();
+      RoundPanel roundPanel = new RoundPanel();
+      roundPanel.getElement().setAttribute("style", roundPanel.getElement().getAttribute("style") + "-webkit-box-flex:1;");
+      if (i == totalPlayerFrames - 1 && !singleFrame && isComputerPlayerPresent) {
+        roundPanel.add(new HTML("AI Player"));
+      } else {
+        roundPanel.add(new HTML("Player " + serverEmulator.getPlayerIds().get(i)));
+      }
+      roundPanel.setHeight("100%");
       Frame frame = new Frame(gameUrl);
       frame.getElement().setId(PLAYER_FRAME + i);
-      frame.setSize("100%", "100%");
-      if (i == totalPlayerFrames - 1 && !singleFrame && isComputerPlayerPresent) {
-        ScrollPanel frameScroll = new ScrollPanel();
-        RoundPanel roundPanel = new RoundPanel();
-        roundPanel.add(new HTML("AI Player"));
-        roundPanel.add(frame);
-        frameScroll.setWidget(roundPanel);
-        gameTabs.add(frameScroll);
-        //gameTabs.add(frame, "AI Player");
-      } else {
-        ScrollPanel frameScroll = new ScrollPanel();
-        RoundPanel roundPanel = new RoundPanel();
-        roundPanel.add(new HTML("Player " + serverEmulator.getPlayerIds().get(i)));
-        roundPanel.add(frame);
-        frameScroll.setWidget(roundPanel);
-        gameTabs.add(frameScroll);
-        //gameTabs.add(frame, "Player " + serverEmulator.getPlayerIds().get(i));
-      }
+      frame.setSize("100%", "85%");
+      roundPanel.add(frame);
+      frameScroll.setWidget(roundPanel);
+      gameTabs.add(frameScroll);
       playerFrames.add(frame);
     }
     
@@ -486,10 +503,12 @@ public class GwtEmulatorGraphics extends Composite {
     if (isViewerPresent) {
       Frame frame = new Frame(gameUrl);
       frame.getElement().setId(VIEWER_FRAME);
-      frame.setSize("100%", "100%");
       ScrollPanel frameScroll = new ScrollPanel();
       RoundPanel roundPanel = new RoundPanel();
+      roundPanel.getElement().setAttribute("style", roundPanel.getElement().getAttribute("style") + "-webkit-box-flex:1;");
       roundPanel.add(new HTML("Viewer"));
+      roundPanel.setHeight("100%");
+      frame.setSize("100%", "85%");
       roundPanel.add(frame);
       frameScroll.setWidget(roundPanel);
       gameTabs.add(frameScroll);
@@ -681,7 +700,9 @@ public class GwtEmulatorGraphics extends Composite {
     for (int i = 0; i < stateStore.getLength(); i++){
       flexTable.setText(i + 1, 0, stateStore.key(i));
       Button load = new Button("Load");
+      load.setSmall(true);
       Button clear = new Button("Clear");
+      clear.setSmall(true);
       addLoadClearButtonHandlers(load, clear, i + 1);
       flexTable.setWidget(i + 1, 1, load);
       flexTable.setWidget(i + 1, 2, clear);
@@ -694,9 +715,10 @@ public class GwtEmulatorGraphics extends Composite {
     flexTable.setText(0, 0, "Saved State Name");
     flexTable.setText(0, 1, "Load Option");
     Button clearAll = new Button("Clear All");
-    clearAll.addClickHandler(new ClickHandler() {
+    clearAll.setSmall(true);
+    clearAll.addTapHandler(new TapHandler() {
       @Override
-      public void onClick(ClickEvent event) {
+      public void onTap(TapEvent event) {
         stateStore.clear();
         flexTable.removeAllRows();
         addHeaderToTable();
@@ -707,9 +729,9 @@ public class GwtEmulatorGraphics extends Composite {
   }
   
   private void addLoadClearButtonHandlers(Button load, Button clear, final int row) {
-    load.addClickHandler(new ClickHandler() {
+    load.addTapHandler(new TapHandler() {
       @Override
-      public void onClick(ClickEvent event) {
+      public void onTap(TapEvent event) {
         String key = flexTable.getText(row, 0);
         String content = stateStore.getItem(key);
         JSONObject emulatorState = JSONParser.parseStrict(content).isObject();
@@ -738,9 +760,9 @@ public class GwtEmulatorGraphics extends Composite {
       }
     });
     
-    clear.addClickHandler(new ClickHandler() {
+    clear.addTapHandler(new TapHandler() {
       @Override
-      public void onClick(ClickEvent event) {
+      public void onTap(TapEvent event) {
         String key = flexTable.getText(row, 0);
         stateStore.removeItem(key);
         flexTable.removeRow(row);
@@ -840,47 +862,59 @@ public class GwtEmulatorGraphics extends Composite {
     new PopupGameOver(endGameOpn).center();
   }
   
-  private class PopupReloadEmulator extends DialogBox {
+  /*private class PopupReloadEmulator extends DialogBox {
     PopupReloadEmulator() {
       setText("Reload Emulator");
       setWidget(emptyVerticalPanel);
-    }
+    }*/
     
     public void showConfigPanel() {
-      popupReloadEmulator.setWidget(mainConfigPanel);
+      /*popupReloadEmulator.setWidget(mainConfigPanel);
       popupReloadEmulator.setWidth("500px");
       popupReloadEmulator.setVisible(true);
-      popupReloadEmulator.center();
+      popupReloadEmulator.center();*/
+      mainConfigPanel.setVisible(true);
+      /*turnTimerPanel.setVisible(false);*/
+      turnLabel.setVisible(false);
+      timerLabel.setVisible(false);
+      gameTabsPanel.setVisible(false);
     }
     
     public void hideConfigPanel() {
-      popupReloadEmulator.hide();
-      popupReloadEmulator.setWidget(emptyVerticalPanel);
+      /*popupReloadEmulator.hide();
+      popupReloadEmulator.setWidget(emptyVerticalPanel);*/
+      mainConfigPanel.setVisible(false);
+      /*turnTimerPanel.setVisible(true);*/
+      turnLabel.setVisible(true);
+      timerLabel.setVisible(true);
+      gameTabsPanel.setVisible(true);
     }
-  }
+  //}
   
-  private class PopupGameOver extends DialogBox {
+  private class PopupGameOver extends PopinDialog {
     public PopupGameOver(EndGame endGame) {
       
       Map<String, Integer> scores = endGame.getPlayerIdToScore();
       List<String> playerIds = serverEmulator.getPlayerIds();
       
-      setText("Game Over");
+      /*setText("Game Over");*/
       
       Button btnRestartGame = new Button("Restart");
-      btnRestartGame.addClickHandler(new ClickHandler() {
+      btnRestartGame.setSmall(true);
+      btnRestartGame.addTapHandler(new TapHandler() {
         @Override
-        public void onClick(ClickEvent event) {
+        public void onTap(TapEvent event) {
           hide();
           resetConfigPanelFields();
-          popupReloadEmulator.showConfigPanel();
+          showConfigPanel();
         }
       });
       
       Button btnCancel = new Button("Cancel");
-      btnCancel.addClickHandler(new ClickHandler() {
+      btnCancel.setSmall(true);
+      btnCancel.addTapHandler(new TapHandler() {
         @Override
-        public void onClick(ClickEvent event) {
+        public void onTap(TapEvent event) {
           hide();
         }
       });
@@ -911,14 +945,14 @@ public class GwtEmulatorGraphics extends Composite {
         }
       }
       
-      VerticalPanel mainPanel = new VerticalPanel();
+      WidgetList mainPanel = new WidgetList();
       mainPanel.add(new Label("Final Scores:"));
       mainPanel.add(scoreTable);
       HorizontalPanel buttonsPanel = new HorizontalPanel();
       buttonsPanel.add(btnCancel);
       buttonsPanel.add(btnRestartGame);
       mainPanel.add(buttonsPanel);
-      setWidget(mainPanel);
+      add(mainPanel);
     }
   }
   
@@ -927,24 +961,24 @@ public class GwtEmulatorGraphics extends Composite {
     turnLabel.setHTML(TURN_BOLD + "Player " + playerTurnId);
     if (time == null || time.isEmpty()) {
       time = "";
-      timeLeftBold.setHTML("");
+      /*timeLeftBold.setHTML("");*/
       timerLabel.setHTML("");
     } else {
-      timeLeftBold.setHTML(TIME_LEFT_BOLD);
-      timerLabel.setHTML(time);
+      /*timeLeftBold.setHTML(TIME_LEFT_BOLD);*/
+      timerLabel.setHTML(TIME_LEFT_BOLD + time);
     }
     turnTimer.cancel();
     //Select the turn player tab(iframe)
     if (!singleFrame) {
       try {
         if (playerTurnId.equals(GameApi.AI_PLAYER_ID)) {
-          Window.alert(playerFrames.size() - 1 +  "");
+         /* Window.alert(playerFrames.size() - 1 +  "");*/
           gameTabs.setSelectedPage(playerFrames.size() - 1);
           //gameTabs.refresh();
           //gameTabs.selectTab(playerFrames.get(playerFrames.size() - 1));
         } else {
-          Window.alert(Integer.parseInt(playerTurnId) - 
-              Integer.parseInt(ServerEmulator.FIRST_PLAYER_ID) + "");
+         /* Window.alert(Integer.parseInt(playerTurnId) - 
+              Integer.parseInt(ServerEmulator.FIRST_PLAYER_ID) + "");*/
           gameTabs.setSelectedPage(Integer.parseInt(playerTurnId) - 
               Integer.parseInt(ServerEmulator.FIRST_PLAYER_ID));
           //gameTabs.refresh();
@@ -977,7 +1011,7 @@ public class GwtEmulatorGraphics extends Composite {
   
   public void resetTimer() {
     turnLabel.setHTML("");
-    timeLeftBold.setHTML("");
+    /*timeLeftBold.setHTML("");*/
     timerLabel.setHTML("");
     turnTimer.cancel();
   }
