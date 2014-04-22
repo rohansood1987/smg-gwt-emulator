@@ -1,0 +1,286 @@
+
+<html>
+  <head>
+      <style type='text/css'>
+        body {
+          font-family: 'Helvetica';
+        }
+
+        #board {
+          width:152px; 
+          height: 152px;
+          margin: 20px auto;
+        }
+        
+        #display-area {
+          text-align: center;
+        }
+        
+        #winner {
+        }
+        
+        table {
+          border-collapse: collapse;
+        }
+        
+        td {
+          width: 50px;
+          height: 50px;
+          font-family: "Helvetica";
+          font-size: 16pt;
+          text-align: center;
+          vertical-align: middle;
+          margin:0px;
+          padding: 0px;
+        }
+        
+        div.cell {
+          float: left;
+          width: 50px;
+          height: 50px;
+          border: none;
+          margin: 0px;
+          padding: 0px;
+        }
+        
+        div.mark {
+          position: absolute;
+          top: 15px;          
+        }
+        
+        div.l {
+          border-right: 1pt solid black;
+        }
+        
+        div.c {
+        }
+        
+        div.r {
+          border-left: 1pt solid black;
+        }
+        
+        div.t {
+          border-bottom: 1pt solid black;
+        }
+        
+        div.m {
+        }
+        
+        div.b {
+          border-top: 1pt solid black;
+        }
+      </style>
+  </head>
+  <body>
+  
+    <div id='display-area'>
+      <h2>Tic Tac Toe</h2>
+      <div id='your-move' style='display:none'>
+        Your move! Click a square to place your piece.
+      </div>
+      <div id='their-move' style='display:none'>
+        Waiting for other player to move...
+      </div>
+      <div id='you-won' style='display:none'>
+        You won this game!
+      </div>
+      <div id='you-lost' style='display:none'>
+        You lost this game.
+      </div>
+      <div id='board'>
+        <div class='t l cell'><table><tr><td id='0'></td></tr></td></table></div>
+        <div class='t c cell'><table><tr><td id='1'></td></tr></td></table></div>
+        <div class='t r cell'><table><tr><td id='2'></td></tr></td></table></div>
+        <div class='m l cell'><table><tr><td id='3'></td></tr></td></table></div>
+        <div class='m c cell'><table><tr><td id='4'></td></tr></td></table></div>
+        <div class='m r cell'><table><tr><td id='5'></td></tr></td></table></div>
+        <div class='b l cell'><table><tr><td id='6'></td></tr></td></table></div>
+        <div class='b c cell'><table><tr><td id='7'></td></tr></td></table></div>
+        <div class='b r cell'><table><tr><td id='8'></td></tr></td></table></div>
+      </div>
+    </div>
+    
+    <script type='text/javascript'>
+      var state = null;
+      var playerIds;
+      var yourPlayerIndex;
+      var opponentPlayerId;
+      var isAiMove = false;
+      
+      function setState(serverState) {
+        state = {};
+        state.board = [];
+        for (var i = 0; i < 9; i++) {
+          state.board[i] = serverState[i] == null ? ' ' : serverState[i];
+        }
+        state.winner = getWinner();
+        console.log(state);
+      }
+      
+      function getWinner() {
+        var stateStr = '';
+        for (var i = 0; i < 9; i++) {
+          stateStr += state.board[i];
+        }
+        var win_patterns = [
+                    'XXX......',
+                    '...XXX...',
+                    '......XXX',
+                    'X..X..X..',
+                    '.X..X..X.',
+                    '..X..X..X',
+                    'X...X...X',
+                    '..X.X.X..'];
+        for (var i = 0; i < win_patterns.length; i++) {
+          var win_pattern = win_patterns[i];
+          var x_regexp = new RegExp(win_pattern);
+          var o_regexp = new RegExp(win_pattern.replace(/X/g,'O'));
+          if (x_regexp.test(stateStr)) {
+            return 'X';
+          }
+          if (o_regexp.test(stateStr)) {
+            return 'O';
+          }
+        }
+        return ' ';
+      }
+      
+      function updateUI() {
+        for (var i = 0; i < 9; i++) {
+          var square = document.getElementById(i);
+          square.innerHTML = state.board[i];
+        }
+        var display = {
+          'your-move': 'none',
+          'their-move': 'none',
+          'you-won': 'none',
+          'you-lost': 'none',
+          'board': 'block',
+        }; 
+
+        if (state.winner != ' ') {
+          var winnerPlayerId = state.winner == 'X' ? 0 : 1;
+          display['you-won'] = yourPlayerIndex == winnerPlayerId ? 'block' : 'none';
+          display['you-lost'] = yourPlayerIndex == winnerPlayerId ? 'none' : 'block';
+        } else if (isAiMove) {
+          for (var i = 0; i < 9; i++) {
+            if (state.board[i] == ' ') {
+              moveInSquare(i);
+            }
+          }
+        } else if (isMyMove()) {
+          display['your-move'] = 'block';
+        } else {
+          display['their-move'] = 'block';
+        }
+        
+        for (var label in display) {
+          document.getElementById(label).style.display = display[label];
+        }
+      }
+      
+      
+      function isMyMove() {
+        if (state == null) {
+          return;
+        }
+        var numberOfMoves = 0;
+        for (i = 0; i < 9; i++) {
+          if (state.board[i] != ' ') {
+            numberOfMoves++;
+          }
+        }
+        return state.winner == ' ' && (numberOfMoves % 2 == yourPlayerIndex);
+      }
+
+      function sendMessage(id) {
+        var value = yourPlayerIndex == 0 ? 'X' : 'O';
+        state.board[id] = value;
+        state.winner = getWinner();
+        updateUI();
+        var operations = [];
+        operations.push(
+        		{"type": "Set", "key": id.toString(), "value": value, "visibleToPlayerIds": "ALL"});
+        operations.push(
+            {"type": "SetTurn", "playerId": opponentPlayerId, "numberOfSecondsForTurn": 0});
+        if (state.winner != ' ') {
+          var winnerPlayerIndex = state.winner == 'X' ? 0 : 1;
+          var playerScores = {};
+          for (var index = 0; index < 2; index++) {
+        	  playerScores[ playerIds[index] ] = winnerPlayerIndex == index ? 1 : 0;
+          }
+          operations.push({"type": "EndGame", "playerIdToScore": playerScores});
+          console.log("Sending game over!");
+        }
+        console.log(["operations",operations,"state.winner=", state.winner, state]);
+        send({"type" : "MakeMove", "operations" : operations});
+      };
+
+
+
+      function moveInSquare(id) {
+        if (isMyMove() && state.board[id] == ' ') {
+          sendMessage(id);
+        }
+      }
+
+      function highlightSquare(id) {
+        if (state == null) {
+          return;
+        }
+        if (state.winner != " ") {
+          return;
+        }
+        for (var i = 0; i < 9; i++) {
+          if (i == id  && isMyMove()) {
+            if (state.board[i] == ' ') {
+              color = 'lightBlue';
+            } else {
+              color = 'lightGrey';
+            }
+          } else {
+            color = 'white';
+          }
+
+          document.getElementById(i).style['background'] = color;
+        }
+      }
+      
+      function initialize() {
+        var i;
+        for (var i = 0; i < 9; i++) {
+          var square = document.getElementById(i);
+          square.onmouseover = new Function('highlightSquare(' + i + ')');
+          square.onclick = new Function('moveInSquare(' + i + ')');
+        }
+      }      
+      initialize();
+      
+      
+      function send(message) {
+        console.log(["yourPlayerIndex=", yourPlayerIndex, " sending: ", message]);
+        window.parent.postMessage(message, "*");
+      }      
+      function listener(event) {
+        var data = event.data;
+        console.log(["yourPlayerIndex=", yourPlayerIndex, " received: ", data]);
+        if (data.type == "UpdateUI") {
+          playerIds = [];
+          for (var i = 0; i < data.playersInfo.length; i++) {
+            playerIds.push(data.playersInfo[i].playerId);
+          }
+          yourPlayerIndex = playerIds.indexOf(data.yourPlayerId);
+          opponentPlayerId = playerIds[(yourPlayerIndex == 1 ? 0 : 1)];
+          isAiMove = (data.yourPlayerId == 0);
+          setState(data.state);
+          updateUI();
+        }
+        if (data.type == "VerifyMove") {
+          send({"type" : "VerifyMoveDone", "hackerPlayerId" : null, "message":null});
+        }
+      }
+      window.addEventListener("message", listener, false);
+      send({"type" : "GameReady"});
+    </script>
+  </body>
+</html>
