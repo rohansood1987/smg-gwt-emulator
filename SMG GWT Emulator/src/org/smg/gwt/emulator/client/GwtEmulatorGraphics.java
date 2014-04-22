@@ -34,6 +34,7 @@ import com.google.gwt.user.client.DOM;
 import com.google.gwt.user.client.Element;
 import com.google.gwt.user.client.Random;
 import com.google.gwt.user.client.Timer;
+import com.google.gwt.user.client.Window;
 import com.google.gwt.user.client.ui.Composite;
 import com.google.gwt.user.client.ui.FlexTable;
 import com.google.gwt.user.client.ui.FlowPanel;
@@ -174,7 +175,7 @@ public class GwtEmulatorGraphics extends Composite {
   private MCheckBox viewerCheck, singlePlayerCheck, computerPlayerCheck;
   private final static String TIME_LEFT_BOLD = "<b>Time Left : </b>";
   private final static String TURN_BOLD = "<b>Turn : </b>";
-  private final WidgetList widgetListToHide = new WidgetList();
+  private final List<Widget> widgetListToHide = new ArrayList<Widget>();
   
   public EnhancedConsole getConsole() {
     return enhancedConsole;
@@ -188,7 +189,7 @@ public class GwtEmulatorGraphics extends Composite {
     RootPanel.get().getElement().getStyle().setProperty("cursor", "default");
   }
   
-  public static void setVisible(HasWidgets widgets, boolean isVisibile) {
+  public static void setVisible(List<Widget> widgets, boolean isVisibile) {
     for (Widget widget : widgets) {
       widget.setVisible(isVisibile);
     }
@@ -773,6 +774,7 @@ public class GwtEmulatorGraphics extends Composite {
       turnLabel.setVisible(false);
       timerLabel.setVisible(false);
       setButtonsVisibility(false);
+      GwtEmulatorGraphics.setVisible(widgetListToHide, false);
     }
     
     public void hideConfigPanel() {
@@ -784,13 +786,14 @@ public class GwtEmulatorGraphics extends Composite {
       turnLabel.setVisible(true);
       timerLabel.setVisible(true);
       setButtonsVisibility(true);
+      GwtEmulatorGraphics.setVisible(widgetListToHide, true);
     }
 
     private class PopupGameOver extends PopinDialog {
     
-    private final HasWidgets widgetsToHide;
+    private final List<Widget> widgetsToHide;
     
-    public PopupGameOver(EndGame endGame, final HasWidgets widgetsToHide) {
+    public PopupGameOver(EndGame endGame, final List<Widget> widgetsToHide) {
       
       this.widgetsToHide = widgetsToHide;
       

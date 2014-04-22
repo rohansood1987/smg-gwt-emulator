@@ -1,11 +1,13 @@
 package org.smg.gwt.emulator.client;
 
+import java.util.List;
 import java.util.Set;
 
 import com.google.gwt.user.client.DOM;
 import com.google.gwt.user.client.ui.HasWidgets;
 import com.google.gwt.user.client.ui.HorizontalPanel;
 import com.google.gwt.user.client.ui.Label;
+import com.google.gwt.user.client.ui.Widget;
 import com.googlecode.mgwt.dom.client.event.tap.TapEvent;
 import com.googlecode.mgwt.dom.client.event.tap.TapHandler;
 import com.googlecode.mgwt.ui.client.dialog.ConfirmDialog.ConfirmCallback;
@@ -21,10 +23,10 @@ public class PopupSaveState extends PopinDialog {
     public void setName(String name);
   }
   final MTextBox stateName = new MTextBox();
-  final HasWidgets widgetsToHide;
+  final List<Widget> widgetsToHide;
   
   @SuppressWarnings("deprecation")
-  public PopupSaveState(final NameEntered name, final Set<String> keySet, final HasWidgets widgets) {
+  public PopupSaveState(final NameEntered name, final Set<String> keySet, final List<Widget> widgets) {
     
     this.widgetsToHide = widgets;
     this.setHideOnBackgroundClick(false);

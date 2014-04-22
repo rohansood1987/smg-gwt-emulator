@@ -1,5 +1,6 @@
 package org.smg.gwt.emulator.client;
 
+import java.util.List;
 import java.util.Map;
 
 import org.game_api.GameApi.GameApiJsonHelper;
@@ -7,6 +8,7 @@ import org.game_api.GameApi.GameApiJsonHelper;
 import com.google.gwt.user.client.ui.HasWidgets;
 import com.google.gwt.user.client.ui.HorizontalPanel;
 import com.google.gwt.user.client.ui.Label;
+import com.google.gwt.user.client.ui.Widget;
 import com.googlecode.mgwt.dom.client.event.tap.TapEvent;
 import com.googlecode.mgwt.dom.client.event.tap.TapHandler;
 import com.googlecode.mgwt.ui.client.dialog.PopinDialog;
@@ -27,12 +29,12 @@ public class PopupEditState extends PopinDialog {
   final MTextArea txtAreaVisibility = new MTextArea();
   final MTextArea txtAreaTokens = new MTextArea();
   
-  final HasWidgets widgetsToHide;
+  final List<Widget> widgetsToHide;
   
   public PopupEditState(final String existingState, final String visibilityMap,
-      final String tokensMap, final StateEntered stateEntered, final HasWidgets widgetsToHide) {
+      final String tokensMap, final StateEntered stateEntered, final List<Widget> widgetListToHide) {
     
-    this.widgetsToHide = widgetsToHide;
+    this.widgetsToHide = widgetListToHide;
     
     // init
     Button btnCancel = new Button("Cancel");
@@ -55,7 +57,7 @@ public class PopupEditState extends PopinDialog {
       @Override
       public void onTap(TapEvent event) {
         hide();
-        GwtEmulatorGraphics.setVisible(widgetsToHide, true);
+        GwtEmulatorGraphics.setVisible(widgetListToHide, true);
       }
     });
     
@@ -81,7 +83,7 @@ public class PopupEditState extends PopinDialog {
           tokensMap = (Map<String, Integer>)(Map<String, ? extends Object>)GameApiJsonHelper.getMapObject(txtAreaTokens.getText());
           hide();
           stateEntered.setUpdatedStateInfo(updatedStateMap, visibilityMap, tokensMap);
-          GwtEmulatorGraphics.setVisible(widgetsToHide, true);
+          GwtEmulatorGraphics.setVisible(widgetListToHide, true);
         }
         catch(Exception ex) {
           lblStatus.setText("Please enter valid information");
