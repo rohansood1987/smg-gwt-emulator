@@ -17,6 +17,7 @@ import com.google.gwt.core.shared.GWT;
 import com.google.gwt.dom.client.Style;
 import com.google.gwt.dom.client.Style.BorderStyle;
 import com.google.gwt.dom.client.Style.Display;
+import com.google.gwt.dom.client.Style.Overflow;
 import com.google.gwt.dom.client.Style.Unit;
 import com.google.gwt.event.dom.client.ChangeEvent;
 import com.google.gwt.event.dom.client.ChangeHandler;
@@ -244,6 +245,7 @@ public class GwtEmulatorGraphics extends Composite {
     txtGameUrl = new MTextArea();
     txtGameUrl.setText("http://2-dot-cheat-game.appspot.com/CheatGame.html");
     urlEntry.setWidget("URL", txtGameUrl);
+    txtGameUrl.getElement().getStyle().setOverflow(Overflow.HIDDEN);
     
     viewerCheck = new MCheckBox();
     viewerCheck.setValue(false);
