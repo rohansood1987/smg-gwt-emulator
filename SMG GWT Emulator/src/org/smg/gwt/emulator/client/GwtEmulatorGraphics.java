@@ -2,7 +2,6 @@ package org.smg.gwt.emulator.client;
 
 import java.util.ArrayList;
 import java.util.HashSet;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -787,7 +786,7 @@ public class GwtEmulatorGraphics extends Composite {
       turnLabel.setVisible(true);
       timerLabel.setVisible(true);
       setButtonsVisibility(true);
-      gameTabs.refresh();
+      refreshContainer();
     }
 
     private class PopupGameOver extends PopinDialog {

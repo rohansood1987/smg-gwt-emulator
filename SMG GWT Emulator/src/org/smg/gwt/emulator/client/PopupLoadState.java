@@ -26,10 +26,4 @@ public class PopupLoadState extends PopinDialog {
     containerPanel.showOkButton(false);
     add(containerPanel);
   }
-  
-  @Override
-  public void hide() {
-    super.hide();
-    GwtEmulatorGraphics.refreshContainer();
-  }
 }
