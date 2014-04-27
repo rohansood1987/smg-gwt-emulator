@@ -457,11 +457,13 @@ public class GwtEmulatorGraphics extends Composite {
       roundPanel.setHeight("100%");
       Frame frame = new Frame(gameUrl);
       frame.getElement().setId(PLAYER_FRAME + i);
-      frame.setSize("100%", "70%");
+      frame.setWidth("100%");
       roundPanel.add(frame);
       frameScroll.setWidget(roundPanel);
       frameScroll.refresh();
       gameTabs.add(frameScroll);
+      frame.setHeight(roundPanel.getElement().getClientHeight()
+          - roundPanel.getWidget(0).getElement().getClientHeight() + "px");
       playerFrames.add(frame);
     }
     
