@@ -1,21 +1,15 @@
 package org.smg.gwt.emulator.client;
 
-import java.util.List;
 import java.util.Set;
 
-import com.google.gwt.user.client.DOM;
-import com.google.gwt.user.client.ui.HasWidgets;
-import com.google.gwt.user.client.ui.HorizontalPanel;
 import com.google.gwt.user.client.ui.Label;
-import com.google.gwt.user.client.ui.Widget;
 import com.googlecode.mgwt.dom.client.event.tap.TapEvent;
 import com.googlecode.mgwt.dom.client.event.tap.TapHandler;
 import com.googlecode.mgwt.ui.client.dialog.ConfirmDialog.ConfirmCallback;
+import com.googlecode.mgwt.ui.client.dialog.DialogPanel;
 import com.googlecode.mgwt.ui.client.dialog.Dialogs;
 import com.googlecode.mgwt.ui.client.dialog.PopinDialog;
-import com.googlecode.mgwt.ui.client.widget.Button;
 import com.googlecode.mgwt.ui.client.widget.MTextBox;
-import com.googlecode.mgwt.ui.client.widget.WidgetList;
 
 public class PopupSaveState extends PopinDialog {
   
@@ -23,33 +17,24 @@ public class PopupSaveState extends PopinDialog {
     public void setName(String name);
   }
   final MTextBox stateName = new MTextBox();
-  final List<Widget> widgetsToHide;
   
-  @SuppressWarnings("deprecation")
-  public PopupSaveState(final NameEntered name, final Set<String> keySet, final List<Widget> widgets) {
+  public PopupSaveState(final NameEntered name, final Set<String> keySet) {
     
-    this.widgetsToHide = widgets;
-    this.setHideOnBackgroundClick(false);
-    this.setShadow(true);
     // init
-    Button btnCancel = new Button("Cancel");
-    Button btnSave = new Button("Save");
-    
-    btnCancel.setSmall(true);
-    btnSave.setSmall(true);
-
+    DialogPanel containerPanel = new DialogPanel();
+    containerPanel.setOkButtonText("Save");
+    containerPanel.getDialogTitle().setText("Save State");
     final Label lblStatus = new Label("Please enter name to save this state");
     
     // add listeners
-    btnCancel.addTapHandler(new TapHandler() {
+    containerPanel.getCancelButton().addTapHandler(new TapHandler() {
       @Override
       public void onTap(TapEvent event) {
         hide();
-        GwtEmulatorGraphics.setVisible(widgets, true);
       }
     });
     
-    btnSave.addTapHandler(new TapHandler() {
+    containerPanel.getOkButton().addTapHandler(new TapHandler() {
       @Override
       public void onTap(TapEvent event) {
         try {
@@ -62,7 +47,6 @@ public class PopupSaveState extends PopinDialog {
               public void onOk() {
                 name.setName(stateName.getValue());
                 hide();
-                GwtEmulatorGraphics.setVisible(widgets, true);
               }
               @Override
               public void onCancel() {
@@ -71,7 +55,6 @@ public class PopupSaveState extends PopinDialog {
           } else {
             name.setName(stateName.getValue());
             hide();
-            GwtEmulatorGraphics.setVisible(widgets, true);
           }
         }
         catch(Exception ex) {
@@ -81,22 +64,20 @@ public class PopupSaveState extends PopinDialog {
     });
     
     // place widgets
-    WidgetList mainVertPanel = new WidgetList();
-    mainVertPanel.add(lblStatus);
-    mainVertPanel.add(stateName);
-    HorizontalPanel btnsPanel = new HorizontalPanel();
-    btnsPanel.add(btnCancel);
-    btnsPanel.add(btnSave);
-    DOM.setStyleAttribute(btnsPanel.getElement(), "margin", "auto");
-    mainVertPanel.add(btnsPanel);
-    add(mainVertPanel);
+    containerPanel.getContent().add(lblStatus);
+    containerPanel.getContent().add(stateName);
+    add(containerPanel);
   }
   
   @Override
   public void center() {
     super.center();
     stateName.setFocus(true);
-    GwtEmulatorGraphics.setVisible(widgetsToHide, false);
   }
   
+  @Override
+  public void hide() {
+    super.hide();
+    GwtEmulatorGraphics.refreshContainer();
+  }
 }

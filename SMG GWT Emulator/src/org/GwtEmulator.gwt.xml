@@ -25,11 +25,11 @@
   <!-- Specify the app entry point class.                         -->
   <entry-point class='org.smg.gwt.emulator.client.GwtEmulatorEntryPoint'/>
 
-  <!--  <set-property name="mgwt.os" value="desktop" />   -->
+  <!-- <set-property name="mgwt.os" value="desktop" />  -->
   <!-- <set-property name="compiler.stackMode" value="emulated" />
   <set-configuration-property name="compiler.emulatedStack.recordLineNumbers" value="true" />
   <set-configuration-property name='xsiframe.failIfScriptTag' value='FALSE'/> -->
-  <set-property name="user.agent" value="safari" />
+  <!-- <set-property name="user.agent" value="safari" />  -->
 
   <!-- Specify the paths for translatable code                    -->
   <source path='game_api'/>

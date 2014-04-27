@@ -1,55 +1,57 @@
 package org.smg.gwt.emulator.client;
 
-import java.util.List;
 import java.util.Map;
 
 import org.game_api.GameApi.GameApiJsonHelper;
 
-import com.google.gwt.user.client.ui.HasWidgets;
-import com.google.gwt.user.client.ui.HorizontalPanel;
+import com.google.gwt.user.client.ui.FlowPanel;
 import com.google.gwt.user.client.ui.Label;
-import com.google.gwt.user.client.ui.Widget;
 import com.googlecode.mgwt.dom.client.event.tap.TapEvent;
 import com.googlecode.mgwt.dom.client.event.tap.TapHandler;
+import com.googlecode.mgwt.ui.client.MGWTStyle;
+import com.googlecode.mgwt.ui.client.dialog.DialogPanel;
 import com.googlecode.mgwt.ui.client.dialog.PopinDialog;
-import com.googlecode.mgwt.ui.client.widget.Button;
+import com.googlecode.mgwt.ui.client.theme.base.DialogCss;
 import com.googlecode.mgwt.ui.client.widget.MTextArea;
-import com.googlecode.mgwt.ui.client.widget.ScrollPanel;
-import com.googlecode.mgwt.ui.client.widget.WidgetList;
+import com.googlecode.mgwt.ui.client.widget.base.ButtonBase;
 
 public class PopupEditState extends PopinDialog {
   
+  private static class DialogButton extends ButtonBase {
+
+    public DialogButton(DialogCss css, String text, boolean isOkButton) {
+      super(css);
+      setText(text);
+      addStyleName(isOkButton ? css.okbutton() : css.cancelbutton());
+    }
+    
+    public DialogButton(String text, boolean isOkButton) {
+      this(MGWTStyle.getTheme().getMGWTClientBundle().getDialogCss(), text, isOkButton);
+    }
+  }
   public interface StateEntered {
     public void setUpdatedStateInfo(
         Map<String, Object> updatedState, Map<String, Object> updatedVisibilityMap,
         Map<String, Integer> updatedTokensMap);
   }
   
-  final MTextArea txtAreaState = new MTextArea();
-  final MTextArea txtAreaVisibility = new MTextArea();
-  final MTextArea txtAreaTokens = new MTextArea();
-  
-  final List<Widget> widgetsToHide;
+  private final MTextArea txtAreaState = new MTextArea();
+  private final MTextArea txtAreaVisibility = new MTextArea();
+  private final MTextArea txtAreaTokens = new MTextArea();
   
   public PopupEditState(final String existingState, final String visibilityMap,
-      final String tokensMap, final StateEntered stateEntered, final List<Widget> widgetListToHide) {
-    
-    this.widgetsToHide = widgetListToHide;
-    
+      final String tokensMap, final StateEntered stateEntered) {
     // init
-    Button btnCancel = new Button("Cancel");
-    Button btnReset = new Button("Reset");
-    Button btnUpdate = new Button("Update");
+    DialogPanel containerPanel = new DialogPanel();
+    DialogButton btnCancel = new DialogButton("Cancel", false);
+    DialogButton btnReset = new DialogButton("Reset", true);
+    DialogButton btnUpdate = new DialogButton("Update", true);
     
-    btnCancel.setSmall(true);
-    btnReset.setSmall(true);
-    btnUpdate.setSmall(true);
-    
+    containerPanel.getDialogTitle().setText("Edit State");
     final Label lblStatus = new Label("Please edit the state.");
     txtAreaState.setText(existingState);
     txtAreaVisibility.setText(visibilityMap);
     txtAreaTokens.setText(tokensMap);
-    
     
     // add listeners
     btnCancel.addTapHandler(new TapHandler() {
@@ -57,7 +59,6 @@ public class PopupEditState extends PopinDialog {
       @Override
       public void onTap(TapEvent event) {
         hide();
-        GwtEmulatorGraphics.setVisible(widgetListToHide, true);
       }
     });
     
@@ -83,7 +84,6 @@ public class PopupEditState extends PopinDialog {
           tokensMap = (Map<String, Integer>)(Map<String, ? extends Object>)GameApiJsonHelper.getMapObject(txtAreaTokens.getText());
           hide();
           stateEntered.setUpdatedStateInfo(updatedStateMap, visibilityMap, tokensMap);
-          GwtEmulatorGraphics.setVisible(widgetListToHide, true);
         }
         catch(Exception ex) {
           lblStatus.setText("Please enter valid information");
@@ -92,32 +92,35 @@ public class PopupEditState extends PopinDialog {
     });
     
     // place widgets
-    ScrollPanel scrollPanel = new ScrollPanel();
-    WidgetList mainVertPanel = new WidgetList();
-    scrollPanel.setWidget(mainVertPanel);
-    mainVertPanel.add(lblStatus);
-    mainVertPanel.add(new Label("State:"));
-    //txtAreaState.setSize("400px", "120px");
-    mainVertPanel.add(txtAreaState);
-    mainVertPanel.add(new Label("Visibility Map:"));
-    //txtAreaVisibility.setSize("400px", "120px");
-    mainVertPanel.add(txtAreaVisibility);
-    mainVertPanel.add(new Label("Tokens Map:"));
-    //txtAreaTokens.setSize("400px", "60px");
-    mainVertPanel.add(txtAreaTokens);
-    HorizontalPanel btnsPanel = new HorizontalPanel();
-    btnsPanel.add(btnCancel);
-    btnsPanel.add(btnReset);
-    btnsPanel.add(btnUpdate);
-    mainVertPanel.add(btnsPanel);
-    add(scrollPanel);
+    containerPanel.getContent().add(lblStatus);
+    containerPanel.getContent().add(new Label("State:"));
+    containerPanel.getContent().add(txtAreaState);
+    containerPanel.getContent().add(new Label("Visibility Map:"));
+    containerPanel.getContent().add(txtAreaVisibility);
+    containerPanel.getContent().add(new Label("Tokens Map:"));
+    containerPanel.getContent().add(txtAreaTokens);
+    
+    FlowPanel buttonContainer = new FlowPanel();
+    buttonContainer.addStyleName(MGWTStyle.getTheme().getMGWTClientBundle().getDialogCss().footer());
+    buttonContainer.add(btnCancel);
+    buttonContainer.add(btnReset);
+    buttonContainer.add(btnUpdate);
+    containerPanel.getContent().add(buttonContainer);
+    
+    containerPanel.showCancelButton(false);
+    containerPanel.showOkButton(false);
+    add(containerPanel);
   }
   
   @Override
   public void center() {
     super.center();
     txtAreaState.setFocus(true);
-    GwtEmulatorGraphics.setVisible(widgetsToHide, false);
   }
-
+  
+  @Override
+  public void hide() {
+    super.hide();
+    GwtEmulatorGraphics.refreshContainer();
+  }
 }

@@ -2,6 +2,7 @@ package org.smg.gwt.emulator.client;
 
 import java.util.ArrayList;
 import java.util.HashSet;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -35,13 +36,11 @@ import com.google.gwt.user.client.DOM;
 import com.google.gwt.user.client.Element;
 import com.google.gwt.user.client.Random;
 import com.google.gwt.user.client.Timer;
-import com.google.gwt.user.client.Window;
 import com.google.gwt.user.client.ui.Composite;
 import com.google.gwt.user.client.ui.FlexTable;
 import com.google.gwt.user.client.ui.FlowPanel;
 import com.google.gwt.user.client.ui.Frame;
 import com.google.gwt.user.client.ui.HTML;
-import com.google.gwt.user.client.ui.HasWidgets;
 import com.google.gwt.user.client.ui.HorizontalPanel;
 import com.google.gwt.user.client.ui.Label;
 import com.google.gwt.user.client.ui.RootPanel;
@@ -178,7 +177,7 @@ public class GwtEmulatorGraphics extends Composite {
   private MCheckBox viewerCheck, singlePlayerCheck, computerPlayerCheck;
   private final static String TIME_LEFT_BOLD = "<b>Time Left : </b>";
   private final static String TURN_BOLD = "<b>Turn : </b>";
-  private final List<Widget> widgetListToHide = new ArrayList<Widget>();
+  private static List<Widget> widgetsToRefresh = new ArrayList<Widget>();
   
   public EnhancedConsole getConsole() {
     return enhancedConsole;
@@ -190,12 +189,6 @@ public class GwtEmulatorGraphics extends Composite {
  
   public void showDefaultCursor() {
     RootPanel.get().getElement().getStyle().setProperty("cursor", "default");
-  }
-  
-  public static void setVisible(List<Widget> widgets, boolean isVisibile) {
-    for (Widget widget : widgets) {
-      widget.setVisible(isVisibile);
-    }
   }
   
   private Timer turnTimer = new Timer() {
@@ -272,9 +265,10 @@ public class GwtEmulatorGraphics extends Composite {
   public GwtEmulatorGraphics() {
     GwtEmulatorGraphicsUiBinder uiBinder = GWT.create(GwtEmulatorGraphicsUiBinder.class);
     initWidget(uiBinder.createAndBindUi(this));
+    widgetsToRefresh.add(main);
+    widgetsToRefresh.add(gameTabs);
+    widgetsToRefresh.add(footerPanel);
     createFormListEntries();
-    widgetListToHide.add(gameTabs);
-    widgetListToHide.add(footerPanel);
     turnLabel.setVisible(false);
     timerLabel.setVisible(false);
     txtGameUrl.getElement().setAttribute("size", "40");
@@ -435,9 +429,11 @@ public class GwtEmulatorGraphics extends Composite {
   }
   
   private void initGameTabs() {
-    widgetListToHide.remove(gameTabs);
     gameTabs = new Carousel();
-    widgetListToHide.add(gameTabs);
+    widgetsToRefresh.clear();
+    widgetsToRefresh.add(main);
+    widgetsToRefresh.add(gameTabs);
+    widgetsToRefresh.add(footerPanel);
     turnLabel.setVisible(true);
     timerLabel.setVisible(true);
     footerPanel.removeFromParent();
@@ -599,7 +595,7 @@ public class GwtEmulatorGraphics extends Composite {
               Map<String,Object> updatedVisibilityMap, Map<String,Integer> updatedTokensMap) {
             serverEmulator.updateStateManually(updatedState, updatedVisibilityMap, updatedTokensMap);
           }
-    }, widgetListToHide).center();
+    }).center();
   }
   
   private void addSaveStateTable() {
@@ -622,7 +618,7 @@ public class GwtEmulatorGraphics extends Composite {
       flexTable.setWidget(i + 1, 1, load);
       flexTable.setWidget(i + 1, 2, clear);
     }
-    displayLoadPopUp = new PopupLoadState(flexTable, widgetListToHide);
+    displayLoadPopUp = new PopupLoadState(flexTable);
     displayLoadPopUp.hide();
   }
   
@@ -668,7 +664,6 @@ public class GwtEmulatorGraphics extends Composite {
           setupEmulatorGraphics();
         }
         displayLoadPopUp.hide();
-        GwtEmulatorGraphics.setVisible(widgetListToHide, true);
       }
     });
     
@@ -711,7 +706,7 @@ public class GwtEmulatorGraphics extends Composite {
         Dialogs.alert("Success",
             "State saved successfully. Press Load button to load any saved states", null);
       }
-    }, keySet, widgetListToHide).center();
+    }, keySet).center();
   }
    
   @UiHandler("btnLoadState")
@@ -768,7 +763,7 @@ public class GwtEmulatorGraphics extends Composite {
   }
   
   public void handleGameOver(EndGame endGameOpn) {
-    new PopupGameOver(endGameOpn, widgetListToHide).center();
+    new PopupGameOver(endGameOpn).center();
   }
   
     public void showConfigPanel() {
@@ -780,7 +775,7 @@ public class GwtEmulatorGraphics extends Composite {
       turnLabel.setVisible(false);
       timerLabel.setVisible(false);
       setButtonsVisibility(false);
-      GwtEmulatorGraphics.setVisible(widgetListToHide, false);
+      mainConfigPanel.refresh();
     }
     
     public void hideConfigPanel() {
@@ -792,16 +787,12 @@ public class GwtEmulatorGraphics extends Composite {
       turnLabel.setVisible(true);
       timerLabel.setVisible(true);
       setButtonsVisibility(true);
-      GwtEmulatorGraphics.setVisible(widgetListToHide, true);
+      gameTabs.refresh();
     }
 
     private class PopupGameOver extends PopinDialog {
     
-    private final List<Widget> widgetsToHide;
-    
-    public PopupGameOver(EndGame endGame, final List<Widget> widgetsToHide) {
-      
-      this.widgetsToHide = widgetsToHide;
+    public PopupGameOver(EndGame endGame) {
       
       Map<String, Integer> scores = endGame.getPlayerIdToScore();
       List<String> playerIds = serverEmulator.getPlayerIds();
@@ -812,7 +803,6 @@ public class GwtEmulatorGraphics extends Composite {
         @Override
         public void onTap(TapEvent event) {
           hide();
-          GwtEmulatorGraphics.setVisible(widgetsToHide, true);
           resetConfigPanelFields();
           showConfigPanel();
         }
@@ -824,7 +814,6 @@ public class GwtEmulatorGraphics extends Composite {
         @Override
         public void onTap(TapEvent event) {
           hide();
-          GwtEmulatorGraphics.setVisible(widgetsToHide, true);
         }
       });
       
@@ -865,9 +854,9 @@ public class GwtEmulatorGraphics extends Composite {
     }
     
     @Override
-    public void center() {
-      super.center();
-      GwtEmulatorGraphics.setVisible(widgetsToHide, false);
+    public void hide() {
+      super.hide();
+      GwtEmulatorGraphics.refreshContainer();
     }
   }
   
@@ -927,5 +916,12 @@ public class GwtEmulatorGraphics extends Composite {
     json.put("singlePlayerCheck", JSONBoolean.getInstance(singlePlayerCheck.getValue()));
     json.put("computerPlayerCheck", JSONBoolean.getInstance(computerPlayerCheck.getValue()));
     return json;
+  }
+
+  public static void refreshContainer() {
+    widgetsToRefresh.get(1).removeFromParent();
+    widgetsToRefresh.get(2).removeFromParent();
+    ((LayoutPanel)widgetsToRefresh.get(0)).add(widgetsToRefresh.get(1));
+    ((LayoutPanel)widgetsToRefresh.get(0)).add(widgetsToRefresh.get(2));
   }
 }

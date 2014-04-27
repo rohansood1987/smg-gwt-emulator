@@ -1,47 +1,35 @@
 package org.smg.gwt.emulator.client;
 
-import java.util.List;
-
 import com.google.gwt.user.client.ui.FlexTable;
-import com.google.gwt.user.client.ui.HasWidgets;
-import com.google.gwt.user.client.ui.Widget;
 import com.googlecode.mgwt.dom.client.event.tap.TapEvent;
 import com.googlecode.mgwt.dom.client.event.tap.TapHandler;
+import com.googlecode.mgwt.ui.client.dialog.DialogPanel;
 import com.googlecode.mgwt.ui.client.dialog.PopinDialog;
-import com.googlecode.mgwt.ui.client.widget.Button;
-import com.googlecode.mgwt.ui.client.widget.WidgetList;
 
 public class PopupLoadState extends PopinDialog {
-    
-  final List<Widget> widgetsToHide;
   
-  public PopupLoadState(final FlexTable table, final List<Widget> widgets) {
+  public PopupLoadState(final FlexTable table) {
     
-    this.widgetsToHide = widgets;
     // init
-    Button btnCancel = new Button("Cancel");
-   
-    btnCancel.setSmall(true);
-
+    DialogPanel containerPanel = new DialogPanel();
+    containerPanel.getDialogTitle().setText("Load State");
     // add listeners
-    btnCancel.addTapHandler(new TapHandler() {
+    containerPanel.getCancelButton().addTapHandler(new TapHandler() {
       @Override
       public void onTap(TapEvent event) {
         hide();
-        GwtEmulatorGraphics.setVisible(widgetsToHide, true);
       }
     });
       
     // place widgets
-    WidgetList mainVertPanel = new WidgetList();
-    mainVertPanel.add(table);
-    mainVertPanel.add(btnCancel);
-    add(mainVertPanel);
+    containerPanel.getContent().add(table);
+    containerPanel.showOkButton(false);
+    add(containerPanel);
   }
   
   @Override
-  public void center() {
-    super.center();
-    GwtEmulatorGraphics.setVisible(widgetsToHide, false);
+  public void hide() {
+    super.hide();
+    GwtEmulatorGraphics.refreshContainer();
   }
 }
