@@ -5,7 +5,8 @@
   ui:generateFormat='com.google.gwt.i18n.rebind.format.PropertiesFormat'
   ui:generateKeys="com.google.gwt.i18n.rebind.keygen.MD5KeyGenerator"
   ui:generateLocales="default">
- 
+  
+ <ui:with field='emulatorConstants' type='org.smg.gwt.emulator.i18n.EmulatorConstants'/>
  <mgwt:LayoutPanel ui:field="main">
       <mgwt:HeaderPanel ui:field="headerPanel">
         <mgwt:left>
@@ -22,7 +23,9 @@
               </g:HTML>
         </mgwt:center>
         <mgwt:right>
-          <mgwt:buttonbar.ButtonBarText ui:field="btnOptions" HTML="Options" />
+          <mgwt:buttonbar.ButtonBarText ui:field="btnOptions">
+              <ui:text from = "{emulatorConstants.options}"/>
+          </mgwt:buttonbar.ButtonBarText>
         </mgwt:right>
       </mgwt:HeaderPanel>
       
@@ -41,9 +44,15 @@
             </mgwt:Button>
             <mgwt:RoundPanel ui:field="btnsPanel" visible="false">
               <g:HorizontalPanel horizontalAlignment="ALIGN_CENTER" width="100%">
-                 <mgwt:Button text="Cancel" ui:field="btnCancel" small="true" />
-                 <mgwt:Button text="Reset" ui:field="btnReset" small="true" />
-                 <mgwt:Button text="Reload" ui:field="btnReload" small="true"/>
+                 <mgwt:Button ui:field="btnCancel" small="true">
+                     <ui:text from = "{emulatorConstants.cancel}"/>
+                 </mgwt:Button>
+                 <mgwt:Button ui:field="btnReset" small="true">
+                     <ui:text from = "{emulatorConstants.reset}"/>
+                 </mgwt:Button>
+                 <mgwt:Button ui:field="btnReload" small="true">
+                     <ui:text from = "{emulatorConstants.reload}"/>
+                 </mgwt:Button>
                </g:HorizontalPanel>
             </mgwt:RoundPanel>
         </mgwt:WidgetList>
@@ -54,7 +63,9 @@
           <mgwt:buttonbar.ButtonBarSpacer />
           <mgwt:buttonbar.ComposeButton ui:field="btnEditState" />
           <mgwt:buttonbar.ButtonBarSpacer />
-          <mgwt:buttonbar.ButtonBarText ui:field="btnConsole" HTML="Console" />
+          <mgwt:buttonbar.ButtonBarText ui:field="btnConsole">
+              <ui:text from = "{emulatorConstants.console}"/>
+          </mgwt:buttonbar.ButtonBarText>
           <mgwt:buttonbar.ButtonBarSpacer />
           <mgwt:buttonbar.CameraButton ui:field="btnSaveState" />
           <mgwt:buttonbar.ButtonBarSpacer />

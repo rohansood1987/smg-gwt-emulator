@@ -1,5 +1,7 @@
 package org.smg.gwt.emulator.client;
 
+import org.smg.gwt.emulator.i18n.EmulatorConstants;
+
 import com.google.gwt.user.client.ui.FlexTable;
 import com.googlecode.mgwt.dom.client.event.tap.TapEvent;
 import com.googlecode.mgwt.dom.client.event.tap.TapHandler;
@@ -8,11 +10,11 @@ import com.googlecode.mgwt.ui.client.dialog.PopinDialog;
 
 public class PopupLoadState extends PopinDialog {
   
-  public PopupLoadState(final FlexTable table) {
+  public PopupLoadState(final FlexTable table, EmulatorConstants emulatorConstants) {
     
     // init
     DialogPanel containerPanel = new DialogPanel();
-    containerPanel.getDialogTitle().setText("Load State");
+    containerPanel.getDialogTitle().setText(emulatorConstants.loadState());
     // add listeners
     containerPanel.getCancelButton().addTapHandler(new TapHandler() {
       @Override

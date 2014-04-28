@@ -3,6 +3,7 @@ package org.smg.gwt.emulator.client;
 import java.util.Map;
 
 import org.game_api.GameApi.GameApiJsonHelper;
+import org.smg.gwt.emulator.i18n.EmulatorConstants;
 
 import com.google.gwt.user.client.ui.FlowPanel;
 import com.google.gwt.user.client.ui.Label;
@@ -40,15 +41,16 @@ public class PopupEditState extends PopinDialog {
   private final MTextArea txtAreaTokens = new MTextArea();
   
   public PopupEditState(final String existingState, final String visibilityMap,
-      final String tokensMap, final StateEntered stateEntered) {
+      final String tokensMap, final StateEntered stateEntered, 
+      final EmulatorConstants emulatorConstants) {
     // init
     DialogPanel containerPanel = new DialogPanel();
-    DialogButton btnCancel = new DialogButton("Cancel", false);
-    DialogButton btnReset = new DialogButton("Reset", true);
-    DialogButton btnUpdate = new DialogButton("Update", true);
+    DialogButton btnCancel = new DialogButton(emulatorConstants.cancel(), false);
+    DialogButton btnReset = new DialogButton(emulatorConstants.reset(), true);
+    DialogButton btnUpdate = new DialogButton(emulatorConstants.update(), true);
     
-    containerPanel.getDialogTitle().setText("Edit State");
-    final Label lblStatus = new Label("Please edit the state.");
+    containerPanel.getDialogTitle().setText(emulatorConstants.editState());
+    final Label lblStatus = new Label(emulatorConstants.editStateMessage());
     txtAreaState.setText(existingState);
     txtAreaVisibility.setText(visibilityMap);
     txtAreaTokens.setText(tokensMap);
@@ -93,11 +95,11 @@ public class PopupEditState extends PopinDialog {
     
     // place widgets
     containerPanel.getContent().add(lblStatus);
-    containerPanel.getContent().add(new Label("State:"));
+    containerPanel.getContent().add(new Label(emulatorConstants.state()));
     containerPanel.getContent().add(txtAreaState);
-    containerPanel.getContent().add(new Label("Visibility Map:"));
+    containerPanel.getContent().add(new Label(emulatorConstants.visibilityMap()));
     containerPanel.getContent().add(txtAreaVisibility);
-    containerPanel.getContent().add(new Label("Tokens Map:"));
+    containerPanel.getContent().add(new Label(emulatorConstants.visibilityMap()));
     containerPanel.getContent().add(txtAreaTokens);
     
     FlowPanel buttonContainer = new FlowPanel();

@@ -2,6 +2,8 @@ package org.smg.gwt.emulator.client;
 
 import java.util.Set;
 
+import org.smg.gwt.emulator.i18n.EmulatorConstants;
+
 import com.google.gwt.user.client.ui.Label;
 import com.googlecode.mgwt.dom.client.event.tap.TapEvent;
 import com.googlecode.mgwt.dom.client.event.tap.TapHandler;
@@ -18,12 +20,13 @@ public class PopupSaveState extends PopinDialog {
   }
   final MTextBox stateName = new MTextBox();
   
-  public PopupSaveState(final NameEntered name, final Set<String> keySet) {
+  public PopupSaveState(final NameEntered name, final Set<String> keySet, 
+      final EmulatorConstants emulatorConstants) {
     
     // init
     DialogPanel containerPanel = new DialogPanel();
-    containerPanel.setOkButtonText("Save");
-    containerPanel.getDialogTitle().setText("Save State");
+    containerPanel.setOkButtonText(emulatorConstants.save());
+    containerPanel.getDialogTitle().setText(emulatorConstants.saveState());
     final Label lblStatus = new Label("Please enter name to save this state");
     
     // add listeners
