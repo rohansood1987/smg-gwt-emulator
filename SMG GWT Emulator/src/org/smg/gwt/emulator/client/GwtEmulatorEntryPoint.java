@@ -26,7 +26,7 @@ public class GwtEmulatorEntryPoint implements EntryPoint {
     RootPanel.get().add(animationHelper);
 
     GwtEmulatorGraphics graphicsLayout = new GwtEmulatorGraphics();
-    
+
     // animate
     animationHelper.goTo(graphicsLayout, Animation.SLIDE);
   }

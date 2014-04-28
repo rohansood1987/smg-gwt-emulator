@@ -4,19 +4,18 @@
   xmlns:mgwt="urn:import:com.googlecode.mgwt.ui.client.widget">
  
  <mgwt:LayoutPanel ui:field="main">
-      <mgwt:HeaderPanel>
+      <mgwt:HeaderPanel ui:field="headerPanel">
         <mgwt:left>
-          <g:HorizontalPanel ui:field ="headerPanelLabel">
+          <g:VerticalPanel ui:field ="headerPanelLeft">
             <g:HTML ui:field = "turnLabel" />
-            <g:HTML>&nbsp; &nbsp; &nbsp;</g:HTML>
             <g:HTML ui:field = "timerLabel" />
-          </g:HorizontalPanel>
+          </g:VerticalPanel>
         </mgwt:left>
         <mgwt:center>
               <g:HTML ui:field = "configLabel"><b>Game Configuration</b></g:HTML>
         </mgwt:center>
         <mgwt:right>
-          <mgwt:buttonbar.ButtonBarText ui:field="btnConsole" HTML="Console" />
+          <mgwt:buttonbar.ButtonBarText ui:field="btnOptions" HTML="Options" />
         </mgwt:right>
       </mgwt:HeaderPanel>
       
@@ -41,14 +40,12 @@
         </mgwt:WidgetList>
       </mgwt:ScrollPanel>
 
-      <mgwt:buttonbar.ButtonBar ui:field="footerPanel">
+      <mgwt:buttonbar.ButtonBar ui:field="footerPanel" visible="false">
           <mgwt:buttonbar.RefreshButton ui:field="btnReloadEmulator" />
           <mgwt:buttonbar.ButtonBarSpacer />
           <mgwt:buttonbar.ComposeButton ui:field="btnEditState" />
           <mgwt:buttonbar.ButtonBarSpacer />
-          <mgwt:buttonbar.ArrowLeftButton ui:field="btnPrevious" />
-          <mgwt:buttonbar.ButtonBarSpacer />
-          <mgwt:buttonbar.ArrowRightButton ui:field="btnNext" />
+          <mgwt:buttonbar.ButtonBarText ui:field="btnConsole" HTML="Console" />
           <mgwt:buttonbar.ButtonBarSpacer />
           <mgwt:buttonbar.CameraButton ui:field="btnSaveState" />
           <mgwt:buttonbar.ButtonBarSpacer />
