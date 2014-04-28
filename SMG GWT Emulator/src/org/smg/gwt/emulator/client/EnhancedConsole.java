@@ -12,49 +12,63 @@ import com.google.gwt.event.dom.client.ChangeEvent;
 import com.google.gwt.event.dom.client.ChangeHandler;
 import com.google.gwt.event.dom.client.ClickEvent;
 import com.google.gwt.event.dom.client.ClickHandler;
-import com.google.gwt.user.client.ui.Button;
-import com.google.gwt.user.client.ui.DialogBox;
 import com.google.gwt.user.client.ui.HTML;
 import com.google.gwt.user.client.ui.HorizontalPanel;
 import com.google.gwt.user.client.ui.Label;
 import com.google.gwt.user.client.ui.ListBox;
-import com.google.gwt.user.client.ui.ScrollPanel;
 import com.google.gwt.user.client.ui.VerticalPanel;
+import com.googlecode.mgwt.dom.client.event.tap.TapEvent;
+import com.googlecode.mgwt.dom.client.event.tap.TapHandler;
+import com.googlecode.mgwt.ui.client.dialog.DialogPanel;
+import com.googlecode.mgwt.ui.client.dialog.PopinDialog;
+import com.googlecode.mgwt.ui.client.widget.ScrollPanel;
 
 public class EnhancedConsole extends VerticalPanel {
   
   private List<ConsoleMessage> messages;
+  private static PopupConsole popupDialog;
   
-  private static class MessagePopup extends DialogBox {
+  private static void showPopupDialog() {
+    popupDialog.show();
+  }
+  
+  private static class MessagePopup extends PopinDialog {
     private static final String ALL = "-- ALL --";
     private final HTML dataHtml = new HTML();
     private final HorizontalPanel listBoxPanel = new HorizontalPanel(); 
     
     public MessagePopup(GameApiMessage message) {
       Map<String, Object> messageMap = message.message.toMessage();
-      setText(message.message.getMessageName());
+      DialogPanel dialogPanel = new DialogPanel();
+      dialogPanel.getDialogTitle().setText(message.message.getMessageName());
       VerticalPanel panel = new VerticalPanel();
       Label lblFrom = new Label(message.type == ConsoleMessageType.OUTGOING ? "To: " : "From: " 
       + "Player " + message.playerId);
       lblFrom.getElement().getStyle().setFontWeight(FontWeight.BOLD);
       panel.add(lblFrom);
       setupListBox(messageMap);
-      panel.add(listBoxPanel);
+      ScrollPanel listBoxScrollPanel = new ScrollPanel();
+      listBoxScrollPanel.add(listBoxPanel);
+      listBoxScrollPanel.setScrollingEnabledX(true);
+      panel.add(listBoxScrollPanel);
       ScrollPanel scrollPanel = new ScrollPanel();
-      scrollPanel.setSize("350px", "175px");
+      //scrollPanel.setSize("350px", "175px");
       //scrollPanel.add(new Label(message.message.toString()));
       dataHtml.setHTML(messageMap.toString());
-      scrollPanel.add(dataHtml);
+      scrollPanel.setWidget(dataHtml);
+      scrollPanel.refresh();
       panel.add(scrollPanel);
-      Button btnOk = new Button("OK");
-      btnOk.addClickHandler(new ClickHandler() {
+      dialogPanel.showCancelButton(false);
+      dialogPanel.setOkButtonText("OK");
+      dialogPanel.getOkButton().addTapHandler(new TapHandler() {
         @Override
-        public void onClick(ClickEvent event) {
+        public void onTap(TapEvent event) {
           hide();
+          showPopupDialog();
         }
       });
-      panel.add(btnOk);
-      setWidget(panel);
+      dialogPanel.getContent().add(panel);
+      add(dialogPanel);
     }
     
     private void setupListBox(final Map<String, Object> map) {
@@ -138,23 +152,25 @@ public class EnhancedConsole extends VerticalPanel {
     }
   }
   
-  private static class InfoPopup extends DialogBox {
+  private static class InfoPopup extends PopinDialog {
     public InfoPopup(InfoMessage message) {
-      VerticalPanel panel = new VerticalPanel();
-      setText("Info Message");
+      DialogPanel dialogPanel = new DialogPanel();
+      dialogPanel.getDialogTitle().setText("Info Message");
       ScrollPanel scrollPanel = new ScrollPanel();
       scrollPanel.setSize("350px", "175px");
-      scrollPanel.add(new Label(message.message));
-      panel.add(scrollPanel);
-      Button btnOk = new Button("OK");
-      btnOk.addClickHandler(new ClickHandler() {
+      scrollPanel.setWidget(new Label(message.message));
+      scrollPanel.refresh();
+      dialogPanel.getContent().add(scrollPanel);
+      dialogPanel.showCancelButton(false);
+      dialogPanel.setOkButtonText("OK");
+      dialogPanel.getOkButton().addTapHandler(new TapHandler() {
         @Override
-        public void onClick(ClickEvent event) {
+        public void onTap(TapEvent event) {
           hide();
+          showPopupDialog();
         }
       });
-      panel.add(btnOk);
-      setWidget(panel);
+      add(dialogPanel);
     }
   }
   
@@ -162,6 +178,7 @@ public class EnhancedConsole extends VerticalPanel {
     @Override
     public void onClick(ClickEvent event) {
       GameApiMessage message = (GameApiMessage)event.getSource();
+      popupDialog.temporaryHide();
       new MessagePopup(message).center();
     }
   };
@@ -170,10 +187,11 @@ public class EnhancedConsole extends VerticalPanel {
     @Override
     public void onClick(ClickEvent event) {
       InfoMessage message = (InfoMessage)event.getSource();
+      popupDialog.temporaryHide();
       new InfoPopup(message).center();
     }
   };
-  
+
   public EnhancedConsole() {
     messages = new ArrayList<ConsoleMessage>();
   }
@@ -240,5 +258,9 @@ public class EnhancedConsole extends VerticalPanel {
       this.getElement().getStyle().setCursor(Cursor.POINTER);
       this.getElement().getStyle().setColor("GREEN");
     }
+  }
+
+  public void setPopupReference(PopupConsole popupDialog) {
+    this.popupDialog = popupDialog;
   }
 }

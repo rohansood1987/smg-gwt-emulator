@@ -4,21 +4,31 @@ import com.googlecode.mgwt.dom.client.event.tap.TapEvent;
 import com.googlecode.mgwt.dom.client.event.tap.TapHandler;
 import com.googlecode.mgwt.ui.client.dialog.DialogPanel;
 import com.googlecode.mgwt.ui.client.dialog.PopinDialog;
+import com.googlecode.mgwt.ui.client.widget.ScrollPanel;
 
 public class PopupConsole extends PopinDialog {
   
   public PopupConsole(EnhancedConsole console) {
-    DialogPanel containerPanel = new DialogPanel();
-    containerPanel.getDialogTitle().setText("Console");
-    containerPanel.setCancelButtonText("Close");
-    containerPanel.getCancelButton().addTapHandler(new TapHandler() {
+    console.setPopupReference(this);
+    DialogPanel dialogPanel = new DialogPanel();
+    dialogPanel.getDialogTitle().setText("Console");
+    dialogPanel.showCancelButton(false);
+    dialogPanel.setOkButtonText("Close");
+    dialogPanel.getOkButton().addTapHandler(new TapHandler() {
       @Override
       public void onTap(TapEvent event) {
         hide();
       }
     });
-    containerPanel.getContent().add(console);
-    add(containerPanel);
+    ScrollPanel scrollPanel = new ScrollPanel();
+    scrollPanel.setWidget(console);
+    dialogPanel.getContent().add(scrollPanel);
+    add(dialogPanel);
+    scrollPanel.refresh();
+  }
+  
+  public void temporaryHide() {
+    super.hide();
   }
   
   @Override
