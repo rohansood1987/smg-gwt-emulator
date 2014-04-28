@@ -312,7 +312,7 @@ public class GwtEmulatorGraphics extends Composite {
     if (visibility) {
       headerPanel.setCenterWidget(nextPrevBtnPanel);
       headerPanel.setRightWidget(btnOptions);
-      footerPanel.add(btnSaveState);
+      footerPanel.add(btnLoadState);
       if (footerPanel.isVisible()) {
         onClickOptionsButton(new TapEvent(btnOptions, btnOptions.getElement(), 0, 0));
       } else {
@@ -320,7 +320,7 @@ public class GwtEmulatorGraphics extends Composite {
       }
     } else {
       headerPanel.setCenterWidget(configLabel);
-      headerPanel.setRightWidget(btnSaveState);
+      headerPanel.setRightWidget(btnLoadState);
     }
   }
   
