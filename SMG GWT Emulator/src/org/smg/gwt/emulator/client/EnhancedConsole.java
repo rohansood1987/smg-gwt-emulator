@@ -40,22 +40,25 @@ public class EnhancedConsole extends VerticalPanel {
     public MessagePopup(GameApiMessage message) {
       Map<String, Object> messageMap = message.message.toMessage();
       DialogPanel dialogPanel = new DialogPanel();
-      dialogPanel.getDialogTitle().setText(message.message.getMessageName());
+      String msgDetails = (message.type == ConsoleMessageType.OUTGOING ? "To: " : "From: ")
+          + message.playerId;
+      dialogPanel.getDialogTitle().setText(message.message.getMessageName() + " (" + msgDetails + ")");
       VerticalPanel panel = new VerticalPanel();
-      Label lblFrom = new Label(message.type == ConsoleMessageType.OUTGOING ? "To: " : "From: " 
-      + "Player " + message.playerId);
-      lblFrom.getElement().getStyle().setFontWeight(FontWeight.BOLD);
-      panel.add(lblFrom);
       setupListBox(messageMap);
       ScrollPanel listBoxScrollPanel = new ScrollPanel();
-      listBoxScrollPanel.add(listBoxPanel);
+      listBoxScrollPanel.setWidget(listBoxPanel);
       listBoxScrollPanel.setScrollingEnabledX(true);
+      listBoxScrollPanel.setShowScrollBarX(true);
       panel.add(listBoxScrollPanel);
+      listBoxScrollPanel.refresh();
       ScrollPanel scrollPanel = new ScrollPanel();
       //scrollPanel.setSize("350px", "175px");
       //scrollPanel.add(new Label(message.message.toString()));
       dataHtml.setHTML(messageMap.toString());
       scrollPanel.setWidget(dataHtml);
+      scrollPanel.setHeight("150px");
+      scrollPanel.setWidth("100%");
+      scrollPanel.setShowScrollBarY(true);
       scrollPanel.refresh();
       panel.add(scrollPanel);
       dialogPanel.showCancelButton(false);
@@ -157,8 +160,9 @@ public class EnhancedConsole extends VerticalPanel {
       DialogPanel dialogPanel = new DialogPanel();
       dialogPanel.getDialogTitle().setText("Info Message");
       ScrollPanel scrollPanel = new ScrollPanel();
-      scrollPanel.setSize("350px", "175px");
       scrollPanel.setWidget(new Label(message.message));
+      scrollPanel.setHeight("160px");
+      scrollPanel.setShowScrollBarY(true);
       scrollPanel.refresh();
       dialogPanel.getContent().add(scrollPanel);
       dialogPanel.showCancelButton(false);

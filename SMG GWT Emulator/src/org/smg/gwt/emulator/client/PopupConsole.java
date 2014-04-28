@@ -22,6 +22,8 @@ public class PopupConsole extends PopinDialog {
     });
     ScrollPanel scrollPanel = new ScrollPanel();
     scrollPanel.setWidget(console);
+    scrollPanel.setShowScrollBarY(true);
+    scrollPanel.setHeight("160px");
     dialogPanel.getContent().add(scrollPanel);
     add(dialogPanel);
     scrollPanel.refresh();
