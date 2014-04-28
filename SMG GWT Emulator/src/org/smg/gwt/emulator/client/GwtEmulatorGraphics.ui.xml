@@ -1,7 +1,10 @@
 <!DOCTYPE ui:UiBinder SYSTEM "http://dl.google.com/gwt/DTD/xhtml.ent">
 <ui:UiBinder xmlns:ui="urn:ui:com.google.gwt.uibinder"
   xmlns:g="urn:import:com.google.gwt.user.client.ui"
-  xmlns:mgwt="urn:import:com.googlecode.mgwt.ui.client.widget">
+  xmlns:mgwt="urn:import:com.googlecode.mgwt.ui.client.widget"
+  ui:generateFormat='com.google.gwt.i18n.rebind.format.PropertiesFormat'
+  ui:generateKeys="com.google.gwt.i18n.rebind.keygen.MD5KeyGenerator"
+  ui:generateLocales="default">
  
  <mgwt:LayoutPanel ui:field="main">
       <mgwt:HeaderPanel ui:field="headerPanel">
@@ -12,7 +15,11 @@
           </g:VerticalPanel>
         </mgwt:left>
         <mgwt:center>
-              <g:HTML ui:field = "configLabel"><b>Game Configuration</b></g:HTML>
+              <g:HTML ui:field = "configLabel">
+                  <b>
+                      <ui:msg key="gameConfiguration">Game Config</ui:msg>
+                  </b>
+              </g:HTML>
         </mgwt:center>
         <mgwt:right>
           <mgwt:buttonbar.ButtonBarText ui:field="btnOptions" HTML="Options" />
@@ -29,7 +36,9 @@
             <mgwt:FormListEntry ui:field="viewerEntry" />
             <mgwt:FormListEntry ui:field="singlePlayerEntry" />
             <mgwt:FormListEntry ui:field="aiEntry" />
-            <mgwt:Button text="Start Game" ui:field="btnStart"/>
+            <mgwt:Button ui:field="btnStart">
+                <ui:msg key="startGame">Start Game</ui:msg>
+            </mgwt:Button>
             <mgwt:RoundPanel ui:field="btnsPanel" visible="false">
               <g:HorizontalPanel horizontalAlignment="ALIGN_CENTER" width="100%">
                  <mgwt:Button text="Cancel" ui:field="btnCancel" small="true" />

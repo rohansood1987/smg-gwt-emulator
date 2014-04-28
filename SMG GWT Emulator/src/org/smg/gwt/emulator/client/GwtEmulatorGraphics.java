@@ -13,6 +13,7 @@ import org.game_api.GameApi.GameApiJsonHelper;
 import org.game_api.GameApi.Message;
 import org.smg.gwt.emulator.backend.ServerEmulator;
 import org.smg.gwt.emulator.client.EnhancedConsole.ConsoleMessageType;
+import org.smg.gwt.emulator.i18n.EmulatorConstants;
 
 import com.google.gwt.core.shared.GWT;
 import com.google.gwt.dom.client.Style;
@@ -163,6 +164,8 @@ public class GwtEmulatorGraphics extends Composite {
   private final static String TURN_BOLD = "<b>Turn : </b>";
   private static List<Widget> widgetsToRefresh = new ArrayList<Widget>();
   
+  private EmulatorConstants emulatorConstants;
+  
   public EnhancedConsole getConsole() {
     return enhancedConsole;
   }
@@ -206,36 +209,36 @@ public class GwtEmulatorGraphics extends Composite {
     for (int i = MIN_PLAYERS; i <= MAX_PLAYERS; ++i) {
       listNumPlayers.addItem(i + " Players");
     }
-    numOfPlayersEntry.setWidget("Number of Players", listNumPlayers);
+    numOfPlayersEntry.setWidget(emulatorConstants.numberOfPlayers(), listNumPlayers);
     tokensInfoPanel = new FlowPanel();
-    tokensInfoPanelEntry.setWidget("Player Tokens", tokensInfoPanel);
+    tokensInfoPanelEntry.setWidget(emulatorConstants.playerTokens(), tokensInfoPanel);
     leftHorizontalPanel(tokensInfoPanel.getElement());
     
     txtDefaultTimePerTurn = new MTextBox();
     txtDefaultTimePerTurn.setText("0");
-    timeLimitEntry.setWidget("Time-limit Per Turn", txtDefaultTimePerTurn);
+    timeLimitEntry.setWidget(emulatorConstants.timeLimit(), txtDefaultTimePerTurn);
     
     txtRandomDelayMillis = new MTextBox();
     txtRandomDelayMillis.setText("0");
-    networkDelayEntry.setWidget("Network Delay", txtRandomDelayMillis);
+    networkDelayEntry.setWidget(emulatorConstants.networkDelay(), txtRandomDelayMillis);
     
     txtGameUrl = new MTextArea();
     txtGameUrl.setText("http://2-dot-cheat-game.appspot.com/CheatGame.html");
-    urlEntry.setWidget("URL", txtGameUrl);
+    urlEntry.setWidget(emulatorConstants.url(), txtGameUrl);
     txtGameUrl.getElement().getStyle().setOverflow(Overflow.HIDDEN);
     
     viewerCheck = new MCheckBox();
     viewerCheck.setValue(false);
-    viewerEntry.setWidget("Add Viewer", viewerCheck);
+    viewerEntry.setWidget(emulatorConstants.addViewer(), viewerCheck);
     leftHorizontalPanel(viewerCheck.getElement());
     
     singlePlayerCheck = new MCheckBox();
-    singlePlayerEntry.setWidget("Single Player", singlePlayerCheck);
+    singlePlayerEntry.setWidget(emulatorConstants.singlePlayer(), singlePlayerCheck);
     leftHorizontalPanel(singlePlayerCheck.getElement());
     
     computerPlayerCheck = new MCheckBox();
     computerPlayerCheck.setValue(false);
-    aiEntry.setWidget("AI Present", computerPlayerCheck);
+    aiEntry.setWidget(emulatorConstants.aiPresent(), computerPlayerCheck);
     leftHorizontalPanel(computerPlayerCheck.getElement());
   }
   
@@ -247,6 +250,7 @@ public class GwtEmulatorGraphics extends Composite {
   }
   
   public GwtEmulatorGraphics() {
+    emulatorConstants = (EmulatorConstants) GWT.create(EmulatorConstants.class);
     GwtEmulatorGraphicsUiBinder uiBinder = GWT.create(GwtEmulatorGraphicsUiBinder.class);
     initWidget(uiBinder.createAndBindUi(this));
     widgetsToRefresh.add(main);
