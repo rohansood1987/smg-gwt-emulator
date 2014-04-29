@@ -126,4 +126,28 @@ public interface EmulatorConstants extends Constants {
   
   @DefaultStringValue("Please enter valid information")
   String enterValidInfo();
+  
+  @DefaultStringValue("Error")
+  String error();
+  
+  @DefaultStringValue("Invalid Number of Players")
+  String invalidPlayers();
+  
+  @DefaultStringValue("Invalid Tokens")
+  String invalidToken();
+  
+  @DefaultStringValue("Invalid Time")
+  String invalidTime();
+  
+  @DefaultStringValue("Invalid Network Delay")
+  String invalidDelay();
+  
+  @DefaultStringValue("Invalid URL")
+  String invalidURL();
+  
+  @DefaultStringValue("State saved successfully. Press Load button to load any saved states")
+  String stateSaveSuccess();
+  
+  @DefaultStringValue("Success")
+  String success();
 }

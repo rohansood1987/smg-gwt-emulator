@@ -18,6 +18,8 @@ import com.googlecode.mgwt.ui.client.widget.base.ButtonBase;
 
 public class PopupEditState extends PopinDialog {
   
+  private EmulatorConstants emulatorConstants;
+  
   private static class DialogButton extends ButtonBase {
 
     public DialogButton(DialogCss css, String text, boolean isOkButton) {
@@ -44,6 +46,7 @@ public class PopupEditState extends PopinDialog {
       final String tokensMap, final StateEntered stateEntered, 
       final EmulatorConstants emulatorConstants) {
     // init
+    this.emulatorConstants = emulatorConstants;
     DialogPanel containerPanel = new DialogPanel();
     DialogButton btnCancel = new DialogButton(emulatorConstants.cancel(), false);
     DialogButton btnReset = new DialogButton(emulatorConstants.reset(), true);
@@ -88,7 +91,7 @@ public class PopupEditState extends PopinDialog {
           stateEntered.setUpdatedStateInfo(updatedStateMap, visibilityMap, tokensMap);
         }
         catch(Exception ex) {
-          lblStatus.setText("Please enter valid information");
+          lblStatus.setText(emulatorConstants.enterValidInfo());
         }
       }
     });

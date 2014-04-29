@@ -567,7 +567,8 @@ public class GwtEmulatorGraphics extends Composite {
     try {
       numberOfPlayers = getNumOfPlayers();
     } catch (Exception ex) {
-      Dialogs.alert("Error", "Invalid Number of Players", null);
+      CustomDialogPanel.alert(emulatorConstants.error(), emulatorConstants.invalidPlayers(), null,
+          emulatorConstants.ok());
       validation = false;
     }
     try {
@@ -576,7 +577,8 @@ public class GwtEmulatorGraphics extends Composite {
         playerTokens.add(Integer.parseInt(((MTextBox)tokensInfoPanel.getWidget(i)).getText()));
       }
     } catch (Exception ex) {
-      Dialogs.alert("Error", "Invalid Token", null);
+      CustomDialogPanel.alert(emulatorConstants.error(), emulatorConstants.invalidToken(), null,
+          emulatorConstants.ok());
       validation = false;
     }
     
@@ -587,7 +589,8 @@ public class GwtEmulatorGraphics extends Composite {
       }
       timePerTurn = time;
     } catch (NumberFormatException ex) {
-      Dialogs.alert("Error", "Invalid Time", null);
+      CustomDialogPanel.alert(emulatorConstants.error(), emulatorConstants.invalidTime(), null,
+          emulatorConstants.ok());
       validation = false;
     }
     try {
@@ -597,7 +600,8 @@ public class GwtEmulatorGraphics extends Composite {
       }
       randomDelayMillis = time;
     } catch (NumberFormatException ex) {
-      Dialogs.alert("Error", "Invalid network delay", null);
+      CustomDialogPanel.alert(emulatorConstants.error(), emulatorConstants.invalidDelay(), null,
+          emulatorConstants.ok());
       validation = false;
     }
     try {
@@ -614,7 +618,8 @@ public class GwtEmulatorGraphics extends Composite {
       }
       gameUrl = urlWithoutParams + "?" + insertParam(parameterUrl, newParam, newValue);
     } catch (Exception ex) {
-      Dialogs.alert("Error", "Invalid URL", null);
+      CustomDialogPanel.alert(emulatorConstants.error(), emulatorConstants.invalidURL(), null,
+          emulatorConstants.ok());
       validation = false;
     }
     isViewerPresent = viewerCheck.getValue();
@@ -779,8 +784,8 @@ public class GwtEmulatorGraphics extends Composite {
         addLoadClearButtonHandlers(load, clear, row + 1);
         flexTable.setWidget(row + 1, 1, load);
         flexTable.setWidget(row + 1, 2, clear);
-        Dialogs.alert("Success",
-            "State saved successfully. Press Load button to load any saved states", null);
+        CustomDialogPanel.alert(emulatorConstants.success(), emulatorConstants.stateSaveSuccess(), 
+            null, emulatorConstants.ok());
       }
     }, keySet, emulatorConstants).center();
   }
