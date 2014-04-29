@@ -893,7 +893,7 @@ public class GwtEmulatorGraphics extends Composite {
       Map<String, Integer> scores = endGame.getPlayerIdToScore();
       List<String> playerIds = serverEmulator.getPlayerIds();
       
-      Button btnRestartGame = new Button("Restart");
+      Button btnRestartGame = new Button(emulatorConstants.restart());
       btnRestartGame.setSmall(true);
       btnRestartGame.addTapHandler(new TapHandler() {
         @Override
@@ -923,15 +923,15 @@ public class GwtEmulatorGraphics extends Composite {
       FlexTable scoreTable = new FlexTable();
       scoreTable.setStyleName("scoreTable");
       scoreTable.setBorderWidth(1);
-      scoreTable.setText(0, 0, "Player");
-      scoreTable.setText(0, 1, "Score");
+      scoreTable.setText(0, 0, emulatorConstants.player());
+      scoreTable.setText(0, 1, emulatorConstants.score());
       scoreTable.getFlexCellFormatter().setStyleName(0, 0, "headerRow");
       scoreTable.getFlexCellFormatter().setStyleName(0, 1, "headerRow");
       
       for (int i = 0; i < playerIds.size(); i++) {
         String playerId = playerIds.get(i);
         int score = scores.get(playerId);
-        scoreTable.setText(i + 1, 0, "Player " + playerId);
+        scoreTable.setText(i + 1, 0, statusMessages.player(playerId));
         scoreTable.setText(i + 1, 1, "" + score);
         if (score == maxScore) {
             scoreTable.getFlexCellFormatter().setStyleName(i + 1, 0, "winnerRow");
@@ -940,7 +940,7 @@ public class GwtEmulatorGraphics extends Composite {
       }
       
       WidgetList mainPanel = new WidgetList();
-      mainPanel.add(new Label("Final Scores:"));
+      mainPanel.add(new Label(emulatorConstants.finalScores()));
       mainPanel.add(scoreTable);
       HorizontalPanel buttonsPanel = new HorizontalPanel();
       buttonsPanel.add(btnCancel);

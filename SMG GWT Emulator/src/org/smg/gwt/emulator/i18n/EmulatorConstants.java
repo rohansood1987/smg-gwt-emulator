@@ -150,4 +150,16 @@ public interface EmulatorConstants extends Constants {
   
   @DefaultStringValue("Success")
   String success();
+  
+  @DefaultStringValue("Restart")
+  String restart();
+  
+  @DefaultStringValue("Final Scores")
+  String finalScores();
+  
+  @DefaultStringValue("Player")
+  String player();
+  
+  @DefaultStringValue("Score")
+  String score();
 }
