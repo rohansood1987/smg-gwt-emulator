@@ -64,9 +64,6 @@ public interface EmulatorConstants extends Constants {
   @DefaultStringValue("Reload")
   String reload();
   
-  @DefaultStringValue("Update")
-  String update();
-  
   @DefaultStringValue("AI Player")
   String aiPlayer();
   

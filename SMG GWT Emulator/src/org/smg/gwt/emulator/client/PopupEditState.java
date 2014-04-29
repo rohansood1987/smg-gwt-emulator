@@ -46,7 +46,7 @@ public class PopupEditState extends PopinDialog {
     DialogPanel containerPanel = new DialogPanel();
     DialogButton btnCancel = new DialogButton(emulatorConstants.cancel(), false);
     DialogButton btnReset = new DialogButton(emulatorConstants.reset(), true);
-    DialogButton btnUpdate = new DialogButton(emulatorConstants.update(), true);
+    DialogButton btnUpdate = new DialogButton(emulatorConstants.ok(), true);
     
     containerPanel.getDialogTitle().setText(emulatorConstants.editState());
     final Label lblStatus = new Label(emulatorConstants.editStateMessage());
