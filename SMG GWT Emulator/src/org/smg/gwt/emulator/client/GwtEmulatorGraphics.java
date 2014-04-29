@@ -400,6 +400,7 @@ public class GwtEmulatorGraphics extends Composite {
   @UiHandler("btnCancel")
   void onClickCancelButton(TapEvent e) {
     hideConfigPanel();
+    onClickOptionsButton(new TapEvent(btnOptions, btnOptions.getElement(), 0, 0));
   }
   
   @UiHandler("btnReset")
