@@ -53,8 +53,10 @@ public class ServerEmulator {
   
   private static final JSONNull JSON_NULL = JSONNull.getInstance();
   public static final String PLAYER_ID = "playerId";
+  private static final String TOKENS = "tokens";
   public int defaultTurnTimeInSecs;
   public static final String FIRST_PLAYER_ID = "42";
+  
   
   private boolean moveInProgress;
   private boolean singlePlayerMode;
@@ -121,8 +123,11 @@ public class ServerEmulator {
     playerIds = Lists.newArrayList();
     playersInfo = Lists.newArrayList();
     playerIds.addAll(getPlayerIds(numberOfPlayers));
-    for(String playerId : playerIds) {
+    for(int i = 0; i < numberOfPlayers; i++) {
+      String playerId = playerIds.get(i);
+      Integer tokens = playerTokens.get(i);
       playersInfo.add(ImmutableMap.<String, Object>of(PLAYER_ID, playerId));
+      playersInfo.add(ImmutableMap.<String, Object>of(TOKENS, tokens));
     }
     //playersInfo.add(ImmutableMap.<String, Object>of(PLAYER_ID, GameApi.VIEWER_ID));
     graphics.getConsole().addInfoMessage(consoleMessages.setupDone(numberOfPlayers));
