@@ -13,14 +13,8 @@
   <inherits name='com.google.common.collect.Collect'/>
   <inherits name="com.google.gwt.i18n.I18N"/>
   
-   <!-- French language, independent of country -->
+   <!-- Spanish language, independent of country -->
   <extend-property name="locale" values="es"/>
-  
-  <!-- English language, independent of country -->
-  <extend-property name="locale" values="en"/>
-  
-  <!-- Default language (English) -->
-  <set-property-fallback name="locale" value="en"/>
   
   <!-- Inherit the default GWT style sheet.  You can change       -->
   <!-- the theme of your GWT application by uncommenting          -->
@@ -35,7 +29,7 @@
   <!-- Specify the app entry point class.                         -->
   <entry-point class='org.smg.gwt.emulator.client.GwtEmulatorEntryPoint'/>
 
- <!--  <set-property name="mgwt.os" value="android" />  -->
+  <!-- <set-property name="mgwt.os" value="android" />  -->
   <!-- <set-property name="compiler.stackMode" value="emulated" />
   <set-configuration-property name="compiler.emulatedStack.recordLineNumbers" value="true" />
   <set-configuration-property name='xsiframe.failIfScriptTag' value='FALSE'/> -->
