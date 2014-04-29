@@ -126,8 +126,7 @@ public class ServerEmulator {
     for(int i = 0; i < numberOfPlayers; i++) {
       String playerId = playerIds.get(i);
       Integer tokens = playerTokens.get(i);
-      playersInfo.add(ImmutableMap.<String, Object>of(PLAYER_ID, playerId));
-      playersInfo.add(ImmutableMap.<String, Object>of(TOKENS, tokens));
+      playersInfo.add(ImmutableMap.<String, Object>of(PLAYER_ID, playerId, TOKENS, tokens));
     }
     //playersInfo.add(ImmutableMap.<String, Object>of(PLAYER_ID, GameApi.VIEWER_ID));
     graphics.getConsole().addInfoMessage(consoleMessages.setupDone(numberOfPlayers));
