@@ -63,9 +63,13 @@
           <mgwt:buttonbar.ButtonBarSpacer />
           <mgwt:buttonbar.ComposeButton ui:field="btnEditState" />
           <mgwt:buttonbar.ButtonBarSpacer />
+          <mgwt:buttonbar.PreviousSlideButton ui:field="btnPrevState"/>
+          <mgwt:buttonbar.ButtonBarSpacer />
           <mgwt:buttonbar.ButtonBarText ui:field="btnConsole">
               <ui:text from = "{emulatorConstants.console}"/>
           </mgwt:buttonbar.ButtonBarText>
+          <mgwt:buttonbar.ButtonBarSpacer />
+          <mgwt:buttonbar.NextSlideButton ui:field="btnNextState"/>
           <mgwt:buttonbar.ButtonBarSpacer />
           <mgwt:buttonbar.CameraButton ui:field="btnSaveState" />
           <mgwt:buttonbar.ButtonBarSpacer />

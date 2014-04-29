@@ -9,7 +9,6 @@ import com.googlecode.mgwt.dom.client.event.tap.TapEvent;
 import com.googlecode.mgwt.dom.client.event.tap.TapHandler;
 import com.googlecode.mgwt.ui.client.dialog.ConfirmDialog.ConfirmCallback;
 import com.googlecode.mgwt.ui.client.dialog.DialogPanel;
-import com.googlecode.mgwt.ui.client.dialog.Dialogs;
 import com.googlecode.mgwt.ui.client.dialog.PopinDialog;
 import com.googlecode.mgwt.ui.client.widget.MTextBox;
 
@@ -78,11 +77,5 @@ public class PopupSaveState extends PopinDialog {
   public void center() {
     super.center();
     stateName.setFocus(true);
-  }
-  
-  @Override
-  public void hide() {
-    super.hide();
-    GwtEmulatorGraphics.refreshContainer();
   }
 }

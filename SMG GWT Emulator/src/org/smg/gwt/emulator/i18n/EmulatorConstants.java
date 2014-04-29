@@ -31,7 +31,7 @@ public interface EmulatorConstants extends Constants {
   @DefaultStringValue("Options")
   String options();
   
-  @DefaultStringValue("hide")
+  @DefaultStringValue("Hide")
   String hide();
   
   @DefaultStringValue("Console")

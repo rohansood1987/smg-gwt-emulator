@@ -18,8 +18,6 @@ import com.googlecode.mgwt.ui.client.widget.base.ButtonBase;
 
 public class PopupEditState extends PopinDialog {
   
-  private EmulatorConstants emulatorConstants;
-  
   private static class DialogButton extends ButtonBase {
 
     public DialogButton(DialogCss css, String text, boolean isOkButton) {
@@ -45,8 +43,6 @@ public class PopupEditState extends PopinDialog {
   public PopupEditState(final String existingState, final String visibilityMap,
       final String tokensMap, final StateEntered stateEntered, 
       final EmulatorConstants emulatorConstants) {
-    // init
-    this.emulatorConstants = emulatorConstants;
     DialogPanel containerPanel = new DialogPanel();
     DialogButton btnCancel = new DialogButton(emulatorConstants.cancel(), false);
     DialogButton btnReset = new DialogButton(emulatorConstants.reset(), true);
@@ -121,11 +117,5 @@ public class PopupEditState extends PopinDialog {
   public void center() {
     super.center();
     txtAreaState.setFocus(true);
-  }
-  
-  @Override
-  public void hide() {
-    super.hide();
-    GwtEmulatorGraphics.refreshContainer();
   }
 }

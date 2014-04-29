@@ -9,7 +9,6 @@ import org.smg.gwt.emulator.i18n.ConsoleMessages;
 import org.smg.gwt.emulator.i18n.EmulatorConstants;
 
 import com.google.gwt.dom.client.Style.Cursor;
-import com.google.gwt.dom.client.Style.FontWeight;
 import com.google.gwt.event.dom.client.ChangeEvent;
 import com.google.gwt.event.dom.client.ChangeHandler;
 import com.google.gwt.event.dom.client.ClickEvent;
@@ -194,7 +193,7 @@ public class EnhancedConsole extends VerticalPanel {
     @Override
     public void onClick(ClickEvent event) {
       GameApiMessage message = (GameApiMessage)event.getSource();
-      popupDialog.temporaryHide();
+      popupDialog.hide();
       new MessagePopup(message, consoleMessages, emulatorConstants).center();
     }
   };
@@ -203,7 +202,7 @@ public class EnhancedConsole extends VerticalPanel {
     @Override
     public void onClick(ClickEvent event) {
       InfoMessage message = (InfoMessage)event.getSource();
-      popupDialog.temporaryHide();
+      popupDialog.hide();
       new InfoPopup(message, emulatorConstants, consoleMessages).center();
     }
   };

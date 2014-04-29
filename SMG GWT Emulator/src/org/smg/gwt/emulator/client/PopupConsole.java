@@ -30,14 +30,4 @@ public class PopupConsole extends PopinDialog {
     add(dialogPanel);
     scrollPanel.refresh();
   }
-  
-  public void temporaryHide() {
-    super.hide();
-  }
-  
-  @Override
-  public void hide() {
-    super.hide();
-    GwtEmulatorGraphics.refreshContainer();
-  }
 }
