@@ -15,6 +15,7 @@ public class PopupLoadState extends PopinDialog {
     // init
     DialogPanel containerPanel = new DialogPanel();
     containerPanel.getDialogTitle().setText(emulatorConstants.loadState());
+    containerPanel.setCancelButtonText(emulatorConstants.cancel());
     // add listeners
     containerPanel.getCancelButton().addTapHandler(new TapHandler() {
       @Override

@@ -27,8 +27,8 @@ public class PopupSaveState extends PopinDialog {
     DialogPanel containerPanel = new DialogPanel();
     containerPanel.setOkButtonText(emulatorConstants.save());
     containerPanel.getDialogTitle().setText(emulatorConstants.saveState());
-    final Label lblStatus = new Label("Please enter name to save this state");
-    
+    final Label lblStatus = new Label(emulatorConstants.saveStateMessage());
+    containerPanel.setCancelButtonText(emulatorConstants.cancel());
     // add listeners
     containerPanel.getCancelButton().addTapHandler(new TapHandler() {
       @Override
@@ -43,9 +43,11 @@ public class PopupSaveState extends PopinDialog {
         try {
           String nameValue = stateName.getValue();
           if (nameValue.isEmpty()) {
-            Dialogs.alert("Alert", "Please enter valid name", null);
+            CustomDialogPanel.alert(emulatorConstants.alert(), emulatorConstants.enterValidName(),
+                null, emulatorConstants.ok());
           } else if (keySet.contains(nameValue)) {
-            Dialogs.confirm("Confirm", "Name already exists. Do you want to overwrite?", new ConfirmCallback() {
+            CustomDialogPanel.confirm(emulatorConstants.confirm(), 
+                emulatorConstants.confirmOverwrite(), new ConfirmCallback() {
               @Override
               public void onOk() {
                 name.setName(stateName.getValue());
@@ -54,14 +56,14 @@ public class PopupSaveState extends PopinDialog {
               @Override
               public void onCancel() {
               }
-            });
+            }, emulatorConstants.ok(), emulatorConstants.cancel());
           } else {
             name.setName(stateName.getValue());
             hide();
           }
         }
         catch(Exception ex) {
-          lblStatus.setText("Please enter valid name");
+          lblStatus.setText(emulatorConstants.enterValidName());
         }
       }
     });

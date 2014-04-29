@@ -108,4 +108,22 @@ public interface EmulatorConstants extends Constants {
 
   @DefaultStringValue("Please Restart !")
   String pleaseRestart();
+  
+  @DefaultStringValue("Please enter name to save this state")
+  String saveStateMessage();
+  
+  @DefaultStringValue("Alert")
+  String alert();
+  
+  @DefaultStringValue("Please enter a valid name")
+  String enterValidName();
+  
+  @DefaultStringValue("Confirm")
+  String confirm();
+  
+  @DefaultStringValue("Name already exists. Do you want to overwrite?")
+  String confirmOverwrite();
+  
+  @DefaultStringValue("Please enter valid information")
+  String enterValidInfo();
 }
