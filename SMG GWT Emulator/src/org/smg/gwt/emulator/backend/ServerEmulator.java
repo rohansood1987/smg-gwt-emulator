@@ -19,6 +19,7 @@ import org.game_api.GameApi.VerifyMove;
 import org.game_api.GameApi.VerifyMoveDone;
 import org.smg.gwt.emulator.client.GwtEmulatorGraphics;
 import org.smg.gwt.emulator.client.EnhancedConsole.ConsoleMessageType;
+import org.smg.gwt.emulator.i18n.ConsoleMessages;
 
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
@@ -59,6 +60,8 @@ public class ServerEmulator {
   private boolean singlePlayerMode;
   private int randomDelayMillis;
   
+  private ConsoleMessages consoleMessages;
+  
   //players who have verified the current MakeMove
   private Set<String> verifiers = new HashSet<String>();
   
@@ -79,8 +82,10 @@ public class ServerEmulator {
   //private int countGameReady = 0;
   public ServerEmulator(int numberOfPlayers, GwtEmulatorGraphics graphics, 
       List<Integer> playerTokens, int defaultTurnTimeInSecs, int randomDelayMillis,
-      boolean singlePlayerMode, boolean isViewerPresent, boolean isAIPlayerPresent) {
+      boolean singlePlayerMode, boolean isViewerPresent, boolean isAIPlayerPresent,
+      ConsoleMessages consoleMessages) {
     gameState = new GameState(this);
+    this.consoleMessages = consoleMessages;
     this.numberOfPlayers = numberOfPlayers;
     this.graphics = graphics;
     this.playerTokens = playerTokens;
@@ -95,8 +100,9 @@ public class ServerEmulator {
   public ServerEmulator(int numberOfPlayers, GwtEmulatorGraphics graphics, 
       List<Integer> playerTokens, int defaultTurnTimeInSecs, int randomDelayMillis,
       boolean singlePlayerMode, boolean isViewerPresent, boolean isAIPlayerPresent,
-      JSONObject gameStateJSON) {
+      JSONObject gameStateJSON, ConsoleMessages consoleMessages) {
     gameState = new GameState(this);
+    this.consoleMessages = consoleMessages;
     this.numberOfPlayers = numberOfPlayers;
     this.graphics = graphics;
     this.playerTokens = playerTokens;
@@ -119,9 +125,9 @@ public class ServerEmulator {
       playersInfo.add(ImmutableMap.<String, Object>of(PLAYER_ID, playerId));
     }
     //playersInfo.add(ImmutableMap.<String, Object>of(PLAYER_ID, GameApi.VIEWER_ID));
-    graphics.getConsole().addInfoMessage("Setup done for " + numberOfPlayers + " players.");
+    graphics.getConsole().addInfoMessage(consoleMessages.setupDone(numberOfPlayers));
     if (isAIPlayerPresent) {
-      graphics.getConsole().addInfoMessage("Added AI Player with ID: " + GameApi.AI_PLAYER_ID);
+      graphics.getConsole().addInfoMessage(consoleMessages.aiPlayerAdded(GameApi.AI_PLAYER_ID));
     }
     verifiers.clear();
     gameReadyPlayers.clear();
@@ -168,14 +174,15 @@ public class ServerEmulator {
     }
     else if (messageObj instanceof VerifyMoveDone) {
       if (singlePlayerMode) {
-        graphics.getConsole().addGameApiMessage(messageObj, "UNKNOWN", ConsoleMessageType.INCOMING);
+        graphics.getConsole().addGameApiMessage(messageObj, consoleMessages.unknown(), 
+            ConsoleMessageType.INCOMING);
       } else {
         graphics.getConsole().addGameApiMessage(messageObj, playerId, ConsoleMessageType.INCOMING);
       }
       handleVerifyMoveDone((VerifyMoveDone)messageObj, playerId);
     }
     else {
-      graphics.getConsole().addInfoMessage("<err> no instance found");
+      graphics.getConsole().addInfoMessage(consoleMessages.errorInstance());
     }
   }
   
@@ -185,7 +192,7 @@ public class ServerEmulator {
       messageObj = GameApiJsonHelper.getMessageObject(message);
     }
     catch(Exception ex) {
-      graphics.getConsole().addInfoMessage("<err> cant parse json. " + ex.getMessage());
+      graphics.getConsole().addInfoMessage(consoleMessages.errorParsingJson(ex.getMessage()));
     }
     if (messageObj != null) {
       final Message messageObject = messageObj;
@@ -199,8 +206,9 @@ public class ServerEmulator {
       };
       int delay = Random.nextInt(randomDelayMillis);
       if (delay != 0) {
-        graphics.getConsole().addInfoMessage("Message Received: " + messageObj.getMessageName());
-        graphics.getConsole().addInfoMessage("Simulating network delay of " + delay + " ms.");
+        graphics.getConsole().addInfoMessage(consoleMessages.messageReceived(
+            messageObj.getMessageName()));
+        graphics.getConsole().addInfoMessage(consoleMessages.simulatingNetworkDelay(delay));
       }
       delayTimer.schedule(delay);
       graphics.showWaitCursor();
@@ -210,7 +218,7 @@ public class ServerEmulator {
   
   private void handleGameReady(GameReady gameReady, String sendingPlayerId) {
     // Send initial UpdateUI message
-    graphics.getConsole().addInfoMessage("Handling game ready from player id " + sendingPlayerId);
+    graphics.getConsole().addInfoMessage(consoleMessages.handlingGameReady(sendingPlayerId));
     //TODO: map PlayerId's here since some game can send GameReady twice
     //countGameReady++;
     gameReadyPlayers.add(sendingPlayerId);
@@ -231,7 +239,7 @@ public class ServerEmulator {
   }
   
   private void handleMakeMove(MakeMove makeMove, String playerId) {
-    graphics.getConsole().addInfoMessage("Handling make move");
+    graphics.getConsole().addInfoMessage(consoleMessages.handlingMakeMove());
     if (moveInProgress) {
       //TODO:Handle the case where previous move was in progress and a new move was sent.
       throw new IllegalStateException("Previous move in progress!");
@@ -263,7 +271,7 @@ public class ServerEmulator {
   }
   
   private void handleVerifyMoveDone(VerifyMoveDone verifyMoveDone, String verifyingPlayerId) {
-    graphics.getConsole().addInfoMessage("Handling verify move done");
+    graphics.getConsole().addInfoMessage(consoleMessages.handlingVerifyMoveDone());
     if(verifyMoveDone.getHackerPlayerId() == null) {
       verifiers.add(verifyingPlayerId);
       verifiersSize++;
@@ -291,7 +299,7 @@ public class ServerEmulator {
     }
     else {
       //TODO: Handle hacker!
-      graphics.getConsole().addInfoMessage("Hacker detected! -- " + lastMovePlayerId);
+      graphics.getConsole().addInfoMessage(consoleMessages.hackerDetected(lastMovePlayerId));
     }
   }
   
@@ -369,7 +377,7 @@ public class ServerEmulator {
   
   public void updateStateManually(Map<String, Object> state, Map<String, Object> visibilityMap,
       Map<String, Integer> tokensMap) {
-    graphics.getConsole().addInfoMessage("Updating state manually: " + state.toString());
+    graphics.getConsole().addInfoMessage(consoleMessages.updatingStateManually(state.toString()));
     //lastGameState = gameState.copy();
     //lastMove = Lists.newArrayList((Operation)new SetTurn(getTurnPlayer(lastMove)));
     gameState.setManualState(state, visibilityMap, tokensMap);
@@ -378,7 +386,7 @@ public class ServerEmulator {
 
   @SuppressWarnings("unchecked")
   public JSONObject getGameStateAsJSON() {
-    graphics.getConsole().addInfoMessage("Saving Game State");
+    graphics.getConsole().addInfoMessage(consoleMessages.savingGameState());
     JSONObject json = new JSONObject();
     json.put("playerIdToNumberOfTokensInPot", GameApiJsonHelper.getJsonObject(
         (Map<String, Object>)(Map<String, ? extends Object>)gameState.getPlayerIdToNumberOfTokensInPot()));
@@ -415,7 +423,7 @@ public class ServerEmulator {
   
   @SuppressWarnings("unchecked")
   public void loadGameStateFromJSON(JSONObject json) {
-    graphics.getConsole().addInfoMessage("Loading Game State");
+    graphics.getConsole().addInfoMessage(consoleMessages.loadingGameState());
     JSONValue jsonPlayerIdToNumberOfTokensInPot = json.get("playerIdToNumberOfTokensInPot");
     JSONValue jsonLastState = json.get("lastState");
     JSONValue jsonLastVisibilityInfo = json.get("lastVisibilityInfo");

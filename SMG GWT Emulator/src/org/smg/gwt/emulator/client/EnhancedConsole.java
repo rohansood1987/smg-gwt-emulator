@@ -5,6 +5,8 @@ import java.util.List;
 import java.util.Map;
 
 import org.game_api.GameApi.Message;
+import org.smg.gwt.emulator.i18n.ConsoleMessages;
+import org.smg.gwt.emulator.i18n.EmulatorConstants;
 
 import com.google.gwt.dom.client.Style.Cursor;
 import com.google.gwt.dom.client.Style.FontWeight;
@@ -26,6 +28,8 @@ import com.googlecode.mgwt.ui.client.widget.ScrollPanel;
 public class EnhancedConsole extends VerticalPanel {
   
   private List<ConsoleMessage> messages;
+  private ConsoleMessages consoleMessages;
+  private EmulatorConstants emulatorConstants;
   private static PopupConsole popupDialog;
   
   private static void showPopupDialog() {
@@ -33,16 +37,23 @@ public class EnhancedConsole extends VerticalPanel {
   }
   
   private static class MessagePopup extends PopinDialog {
-    private static final String ALL = "-- ALL --";
+    private static String ALL;
     private final HTML dataHtml = new HTML();
     private final HorizontalPanel listBoxPanel = new HorizontalPanel(); 
     
-    public MessagePopup(GameApiMessage message) {
+    public MessagePopup(GameApiMessage message, ConsoleMessages consoleMessages, 
+        EmulatorConstants emulatorConstants) {
+      ALL = "---" + emulatorConstants.all() + "---";
       Map<String, Object> messageMap = message.message.toMessage();
       DialogPanel dialogPanel = new DialogPanel();
-      String msgDetails = (message.type == ConsoleMessageType.OUTGOING ? "To: " : "From: ")
-          + message.playerId;
-      dialogPanel.getDialogTitle().setText(message.message.getMessageName() + " (" + msgDetails + ")");
+      String msgDetails = null;
+      if (message.type == ConsoleMessageType.OUTGOING) {
+        msgDetails = consoleMessages.outgoingMessageDetails(message.playerId);
+      } else {
+        msgDetails = consoleMessages.incomingMessageDetails(message.playerId);
+      }
+      dialogPanel.getDialogTitle().setText(consoleMessages.messageNameAndDetails(
+          message.message.getMessageName(), msgDetails));
       VerticalPanel panel = new VerticalPanel();
       setupListBox(messageMap);
       ScrollPanel listBoxScrollPanel = new ScrollPanel();
@@ -62,7 +73,7 @@ public class EnhancedConsole extends VerticalPanel {
       scrollPanel.refresh();
       panel.add(scrollPanel);
       dialogPanel.showCancelButton(false);
-      dialogPanel.setOkButtonText("OK");
+      dialogPanel.setOkButtonText(emulatorConstants.ok());
       dialogPanel.getOkButton().addTapHandler(new TapHandler() {
         @Override
         public void onTap(TapEvent event) {
@@ -156,9 +167,10 @@ public class EnhancedConsole extends VerticalPanel {
   }
   
   private static class InfoPopup extends PopinDialog {
-    public InfoPopup(InfoMessage message) {
+    public InfoPopup(InfoMessage message, EmulatorConstants emulatorConstants, 
+        ConsoleMessages consoleMessages) {
       DialogPanel dialogPanel = new DialogPanel();
-      dialogPanel.getDialogTitle().setText("Info Message");
+      dialogPanel.getDialogTitle().setText(consoleMessages.infoMessageConstant());
       ScrollPanel scrollPanel = new ScrollPanel();
       scrollPanel.setWidget(new Label(message.message));
       scrollPanel.setHeight("160px");
@@ -166,7 +178,7 @@ public class EnhancedConsole extends VerticalPanel {
       scrollPanel.refresh();
       dialogPanel.getContent().add(scrollPanel);
       dialogPanel.showCancelButton(false);
-      dialogPanel.setOkButtonText("OK");
+      dialogPanel.setOkButtonText(emulatorConstants.ok());
       dialogPanel.getOkButton().addTapHandler(new TapHandler() {
         @Override
         public void onTap(TapEvent event) {
@@ -183,7 +195,7 @@ public class EnhancedConsole extends VerticalPanel {
     public void onClick(ClickEvent event) {
       GameApiMessage message = (GameApiMessage)event.getSource();
       popupDialog.temporaryHide();
-      new MessagePopup(message).center();
+      new MessagePopup(message, consoleMessages, emulatorConstants).center();
     }
   };
   
@@ -192,12 +204,14 @@ public class EnhancedConsole extends VerticalPanel {
     public void onClick(ClickEvent event) {
       InfoMessage message = (InfoMessage)event.getSource();
       popupDialog.temporaryHide();
-      new InfoPopup(message).center();
+      new InfoPopup(message, emulatorConstants, consoleMessages).center();
     }
   };
 
-  public EnhancedConsole() {
+  public EnhancedConsole(ConsoleMessages consoleMessages, EmulatorConstants emulatorConstants) {
     messages = new ArrayList<ConsoleMessage>();
+    this.consoleMessages = consoleMessages;
+    this.emulatorConstants = emulatorConstants;
   }
   
   public void reset() {
@@ -206,14 +220,14 @@ public class EnhancedConsole extends VerticalPanel {
   }
   
   public void addGameApiMessage(Message message, String playerId, ConsoleMessageType type) {
-    GameApiMessage consoleMessage = new GameApiMessage(message, playerId, type);
+    GameApiMessage consoleMessage = new GameApiMessage(message, playerId, type, consoleMessages);
     consoleMessage.addClickHandler(gameApiMessageClickHandler);
     messages.add(consoleMessage);
     this.insert(consoleMessage, 0);
   }
   
   public void addInfoMessage(String message) {
-    InfoMessage infoMessage = new InfoMessage(message);
+    InfoMessage infoMessage = new InfoMessage(message, consoleMessages);
     infoMessage.addClickHandler(infoMessageClickHandler);
     messages.add(infoMessage);
     this.insert(infoMessage, 0);
@@ -233,12 +247,16 @@ public class EnhancedConsole extends VerticalPanel {
     private String playerId;
     private ConsoleMessageType type;
     
-    public GameApiMessage(Message message, String playerId, ConsoleMessageType type) {
+    public GameApiMessage(Message message, String playerId, ConsoleMessageType type,
+        ConsoleMessages consoleMessages) {
       this.message = message;
       this.playerId = playerId;
       this.type = type;
-      this.setText((type == ConsoleMessageType.OUTGOING ? "To: " : "From: ") + 
-            playerId + ", Type: " + message.getMessageName());
+      if (type == ConsoleMessageType.OUTGOING) {
+        this.setText(consoleMessages.outgoingGameApiMessage(playerId, message.getMessageName()));
+      } else {
+        this.setText(consoleMessages.incomingGameApiMessage(playerId, message.getMessageName()));
+      }
       this.getElement().getStyle().setCursor(Cursor.POINTER);
     }
 
@@ -256,9 +274,10 @@ public class EnhancedConsole extends VerticalPanel {
       return ConsoleMessageType.INFO;
     }
     
-    public InfoMessage(String message) {
+    public InfoMessage(String message, ConsoleMessages consoleMessages) {
       this.message = message;
-      this.setText("Info: " + (message.length() > 40 ? message.substring(0, 40) : message));
+      this.setText(consoleMessages.infoMessage(
+          message.length() > 40 ? message.substring(0, 40) : message));
       this.getElement().getStyle().setCursor(Cursor.POINTER);
       this.getElement().getStyle().setColor("GREEN");
     }

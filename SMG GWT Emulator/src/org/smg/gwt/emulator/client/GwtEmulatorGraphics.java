@@ -13,6 +13,7 @@ import org.game_api.GameApi.GameApiJsonHelper;
 import org.game_api.GameApi.Message;
 import org.smg.gwt.emulator.backend.ServerEmulator;
 import org.smg.gwt.emulator.client.EnhancedConsole.ConsoleMessageType;
+import org.smg.gwt.emulator.i18n.ConsoleMessages;
 import org.smg.gwt.emulator.i18n.EmulatorConstants;
 import org.smg.gwt.emulator.i18n.StatusMessages;
 
@@ -167,6 +168,7 @@ public class GwtEmulatorGraphics extends Composite {
   
   private EmulatorConstants emulatorConstants;
   private StatusMessages statusMessages;
+  private ConsoleMessages consoleMessages;
   
   public EnhancedConsole getConsole() {
     return enhancedConsole;
@@ -254,6 +256,7 @@ public class GwtEmulatorGraphics extends Composite {
   public GwtEmulatorGraphics() {
     emulatorConstants = (EmulatorConstants) GWT.create(EmulatorConstants.class);
     statusMessages = (StatusMessages) GWT.create(StatusMessages.class);
+    consoleMessages = (ConsoleMessages) GWT.create(ConsoleMessages.class);
     GwtEmulatorGraphicsUiBinder uiBinder = GWT.create(GwtEmulatorGraphicsUiBinder.class);
     initWidget(uiBinder.createAndBindUi(this));
     widgetsToRefresh.add(main);
@@ -262,7 +265,7 @@ public class GwtEmulatorGraphics extends Composite {
     createFormListEntries();
     createNextPrevBtnHandlers();
     txtGameUrl.getElement().setAttribute("size", "40");
-    enhancedConsole = new EnhancedConsole();
+    enhancedConsole = new EnhancedConsole(consoleMessages, emulatorConstants);
     setButtonsVisibility(false);
     addSaveStateTable();
     changePlayerInfoPanel(2);
@@ -424,7 +427,8 @@ public class GwtEmulatorGraphics extends Composite {
     clearEmulator();
     //initialize ServerEmulator
     serverEmulator = new ServerEmulator(numberOfPlayers, this, playerTokens, timePerTurn,
-        randomDelayMillis, singleFrame, isViewerPresent, isComputerPlayerPresent, gameStateJSON);
+        randomDelayMillis, singleFrame, isViewerPresent, isComputerPlayerPresent, gameStateJSON,
+        consoleMessages);
     initGameTabs();
     return true;
   }
@@ -436,7 +440,7 @@ public class GwtEmulatorGraphics extends Composite {
     clearEmulator();
     //initialize ServerEmulator
     serverEmulator = new ServerEmulator(numberOfPlayers, this, playerTokens, timePerTurn,
-        randomDelayMillis, singleFrame, isViewerPresent, isComputerPlayerPresent);
+        randomDelayMillis, singleFrame, isViewerPresent, isComputerPlayerPresent, consoleMessages);
     initGameTabs();
     return true;
   }
