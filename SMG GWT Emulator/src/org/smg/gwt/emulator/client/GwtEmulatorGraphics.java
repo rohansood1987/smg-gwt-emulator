@@ -32,6 +32,7 @@ import com.google.gwt.json.client.JSONNumber;
 import com.google.gwt.json.client.JSONObject;
 import com.google.gwt.json.client.JSONParser;
 import com.google.gwt.json.client.JSONString;
+import com.google.gwt.safehtml.shared.SafeHtml;
 import com.google.gwt.safehtml.shared.SafeHtmlBuilder;
 import com.google.gwt.storage.client.Storage;
 import com.google.gwt.uibinder.client.UiBinder;
@@ -163,7 +164,6 @@ public class GwtEmulatorGraphics extends Composite {
   private MTextArea txtGameUrl;
   private MTextBox txtRandomDelayMillis, txtDefaultTimePerTurn;
   private MCheckBox viewerCheck, singlePlayerCheck, computerPlayerCheck;
-  private final static String TIME_LEFT_BOLD = "<b>Time Left : </b>";
   private static List<Widget> widgetsToRefresh = new ArrayList<Widget>();
   
   private EmulatorConstants emulatorConstants;
@@ -188,13 +188,24 @@ public class GwtEmulatorGraphics extends Composite {
       try {
         String timeText = timerLabel.getHTML();
         if (timeText != null && timeText.length() != 0) {
-          int timeTextIndex = timeText.indexOf(TIME_LEFT_BOLD);
-          timeText = timeText.substring(timeTextIndex + TIME_LEFT_BOLD.length()).trim();
+          int timeTextIndex = timeText.indexOf(statusMessages.timeLeftBold());
+          String orderFinder[] = statusMessages.timeLeftOrder("1", "2").split(" ");
+          if (orderFinder[0] == "1") {
+            timeText = timeText.substring(timeTextIndex + statusMessages.timeLeftBold().length())
+                .trim();
+          } else {
+            timeText = timeText.substring(0, timeTextIndex).trim();
+          }
           int currentTime = Integer.parseInt(timeText);
-          timerLabel.setHTML(TIME_LEFT_BOLD + String.valueOf(currentTime - 1));
+          String timeHTML = statusMessages.timeLeftOrder(statusMessages.timeLeftBold(), 
+              String.valueOf(currentTime - 1));
+          SafeHtml timeSafeHTML = new SafeHtmlBuilder().appendHtmlConstant(timeHTML).toSafeHtml();
+          timerLabel.setHTML(timeSafeHTML);
           if (currentTime - 1 < 0) {
-            turnLabel.setHTML("Game Ended");
-            timerLabel.setHTML("Please Restart !");
+            turnLabel.setHTML(new SafeHtmlBuilder().appendEscaped(emulatorConstants.gameEnded())
+                .toSafeHtml());
+            timerLabel.setHTML(new SafeHtmlBuilder().appendEscaped(
+                emulatorConstants.pleaseRestart()).toSafeHtml());
             removeEventListener();
             this.cancel();
             clearFormValidation();
@@ -950,7 +961,9 @@ public class GwtEmulatorGraphics extends Composite {
       headerPanelLeft.getElement().getStyle().setTop(10, Unit.PX);
       headerPanelLeft.getElement().getStyle().setFontSize(12, Unit.PT);
     } else {
-      timerLabel.setHTML(TIME_LEFT_BOLD + time);
+      String timeHTML = statusMessages.timeLeftOrder(statusMessages.timeLeftBold(), time);
+      SafeHtml timeSafeHTML = new SafeHtmlBuilder().appendHtmlConstant(timeHTML).toSafeHtml();
+      timerLabel.setHTML(timeSafeHTML);
       headerPanelLeft.getElement().getStyle().setTop(5, Unit.PX);
       headerPanelLeft.getElement().getStyle().setFontSize(10, Unit.PT);
     }

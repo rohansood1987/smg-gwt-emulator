@@ -1,7 +1,6 @@
 package org.smg.gwt.emulator.i18n;
 
 import com.google.gwt.i18n.client.Constants;
-import com.google.gwt.i18n.client.Messages.DefaultMessage;
 
 public interface EmulatorConstants extends Constants {
   
@@ -103,4 +102,10 @@ public interface EmulatorConstants extends Constants {
   
   @DefaultStringValue("OK")
   String ok();
+ 
+  @DefaultStringValue("Game Ended")
+  String gameEnded();
+
+  @DefaultStringValue("Please Restart !")
+  String pleaseRestart();
 }
