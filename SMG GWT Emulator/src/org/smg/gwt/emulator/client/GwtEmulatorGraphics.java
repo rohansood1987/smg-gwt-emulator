@@ -946,7 +946,11 @@ public class GwtEmulatorGraphics extends Composite {
     if (!singleFrame) {
       try {
         if (playerTurnId.equals(GameApi.AI_PLAYER_ID)) {
-          gameTabs.setSelectedPage(playerFrames.size() - 1);
+          if (isViewerPresent) {
+            gameTabs.setSelectedPage(playerFrames.size() - 2);
+          } else {
+            gameTabs.setSelectedPage(playerFrames.size() - 1);
+          }
         } else {
           gameTabs.setSelectedPage(Integer.parseInt(playerTurnId) - 
               Integer.parseInt(ServerEmulator.FIRST_PLAYER_ID));

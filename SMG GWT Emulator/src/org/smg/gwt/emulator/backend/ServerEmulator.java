@@ -410,7 +410,11 @@ public class ServerEmulator {
     else {
       json.put("lastMove", GameApiJsonHelper.getJsonObject(new MakeMove(lastMove).toMessage()));
     }
-    json.put("lastMovePlayerId", new JSONString(lastMovePlayerId));
+    if (lastMovePlayerId == null) {
+      json.put("lastMovePlayerId", JSONNull.getInstance());
+    } else {
+      json.put("lastMovePlayerId", new JSONString(lastMovePlayerId));
+    }
     return json;
   }
   
@@ -449,7 +453,11 @@ public class ServerEmulator {
           (Map<String, Integer>)(Map<String, ? extends Object>)
               GameApiJsonHelper.getMapFromJsonObject(jsonPlayerIdToNumberOfTokensInPot.isObject()));
     } 
-    lastMovePlayerId = ((JSONString)jsonLastMovePlayerId).stringValue();
+    if (jsonLastMovePlayerId instanceof JSONNull) {
+      lastMovePlayerId = null;
+    } else {
+      lastMovePlayerId = ((JSONString)jsonLastMovePlayerId).stringValue();
+    }
     //lastMove = Lists.newArrayList((Operation)new SetTurn(currentMovePlayerId));
     if (jsonLastMove instanceof JSONNull) {
       lastMove = null;
