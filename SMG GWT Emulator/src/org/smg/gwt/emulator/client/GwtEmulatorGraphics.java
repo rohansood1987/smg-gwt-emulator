@@ -121,7 +121,7 @@ public class GwtEmulatorGraphics extends Composite {
   RoundPanel btnsPanel;
   
   @UiField
-  ButtonBarText btnConsole, btnOptions;
+  ButtonBarText btnConsole;
   
   @UiField
   Button btnStart, btnCancel, btnReset, btnReload;
@@ -341,13 +341,9 @@ public class GwtEmulatorGraphics extends Composite {
     footerPanel.setVisible(visibility);
     if (visibility) {
       headerPanel.setCenterWidget(playerTabInfoPanel);
-      headerPanel.setRightWidget(btnOptions);
+      headerPanel.setRightWidget(btnConsole);
       footerPanel.add(btnLoadState);
-      if (footerPanel.isVisible()) {
-        onClickOptionsButton(new TapEvent(btnOptions, btnOptions.getElement(), 0, 0));
-      } else {
-        resizeContainer();
-      }
+      resizeContainer();
     } else {
       headerPanel.setCenterWidget(configLabel);
       headerPanel.setRightWidget(btnLoadState);
@@ -400,7 +396,6 @@ public class GwtEmulatorGraphics extends Composite {
   @UiHandler("btnCancel")
   void onClickCancelButton(TapEvent e) {
     hideConfigPanel();
-    onClickOptionsButton(new TapEvent(btnOptions, btnOptions.getElement(), 0, 0));
   }
   
   @UiHandler("btnReset")
@@ -779,13 +774,6 @@ public class GwtEmulatorGraphics extends Composite {
     displayLoadPopUp.center();
   }
   
-  @UiHandler("btnOptions")
-  void onClickOptionsButton(TapEvent e) {
-    footerPanel.setVisible(!footerPanel.isVisible());
-    btnOptions.setHTML(footerPanel.isVisible() ? emulatorConstants.hide() : 
-      emulatorConstants.options());
-    resizeContainer();
-  }
   
   private void resizeContainer() {
     Iterator<Widget> iterator = gameTabs.iterator();
