@@ -22,12 +22,6 @@ public interface EmulatorConstants extends Constants {
   @DefaultStringValue("Add Viewer")
   String addViewer();
   
-  @DefaultStringValue("Single Player")
-  String singlePlayer();
-  
-  @DefaultStringValue("AI Present")
-  String aiPresent();
-  
   @DefaultStringValue("Options")
   String options();
   
@@ -159,4 +153,17 @@ public interface EmulatorConstants extends Constants {
   
   @DefaultStringValue("Score")
   String score();
+
+  @DefaultStringValue("Game Mode")
+  String gameMode();
+  
+  @DefaultStringValue("Multiplayer")
+  String multiplayer();
+  
+  @DefaultStringValue("Pass & Play")
+  String passAndPlay();
+  
+  @DefaultStringValue("Play against Computer")
+  String playAgainstComputer();
+
 }

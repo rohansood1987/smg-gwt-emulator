@@ -37,8 +37,8 @@
             <mgwt:FormListEntry ui:field="networkDelayEntry"/>
             <mgwt:FormListEntry ui:field="urlEntry"/>
             <mgwt:FormListEntry ui:field="viewerEntry" />
-            <mgwt:FormListEntry ui:field="singlePlayerEntry" />
-            <mgwt:FormListEntry ui:field="aiEntry" />
+            <mgwt:FormListEntry ui:field="gameModeEntry" />
+            <!--mgwt:FormListEntry ui:field="aiEntry" /-->
             <mgwt:Button ui:field="btnStart">
                 <ui:msg key="startGame">Start Game</ui:msg>
             </mgwt:Button>

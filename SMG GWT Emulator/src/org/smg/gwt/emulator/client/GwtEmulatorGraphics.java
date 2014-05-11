@@ -67,6 +67,7 @@ import com.googlecode.mgwt.ui.client.widget.HeaderPanel;
 import com.googlecode.mgwt.ui.client.widget.LayoutPanel;
 import com.googlecode.mgwt.ui.client.widget.MCheckBox;
 import com.googlecode.mgwt.ui.client.widget.MListBox;
+import com.googlecode.mgwt.ui.client.widget.MRadioButton;
 import com.googlecode.mgwt.ui.client.widget.MTextArea;
 import com.googlecode.mgwt.ui.client.widget.MTextBox;
 import com.googlecode.mgwt.ui.client.widget.RoundPanel;
@@ -130,7 +131,7 @@ public class GwtEmulatorGraphics extends Composite {
   FormListEntry numOfPlayersEntry, tokensInfoPanelEntry, timeLimitEntry, networkDelayEntry, urlEntry;
   
   @UiField
-  FormListEntry viewerEntry, aiEntry, singlePlayerEntry;
+  FormListEntry viewerEntry, gameModeEntry;//aiEntry, singlePlayerEntry;
 
   @UiField
   HTML turnLabel, configLabel, timerLabel;
@@ -170,7 +171,8 @@ public class GwtEmulatorGraphics extends Composite {
   private FlowPanel tokensInfoPanel;
   private MTextArea txtGameUrl;
   private MTextBox txtRandomDelayMillis, txtDefaultTimePerTurn;
-  private MCheckBox viewerCheck, singlePlayerCheck, computerPlayerCheck;
+  private MRadioButton multiplayerRadio, passAndPlayRadio, aiRadio;
+  private MCheckBox viewerCheck;
   private String currentTurn = null;
   
   private EmulatorConstants emulatorConstants;
@@ -254,14 +256,22 @@ public class GwtEmulatorGraphics extends Composite {
     viewerEntry.setWidget(emulatorConstants.addViewer(), viewerCheck);
     leftHorizontalPanel(viewerCheck.getElement());
     
-    singlePlayerCheck = new MCheckBox();
-    singlePlayerEntry.setWidget(emulatorConstants.singlePlayer(), singlePlayerCheck);
-    leftHorizontalPanel(singlePlayerCheck.getElement());
+    multiplayerRadio = new MRadioButton("gameModes");
+    multiplayerRadio.setText(emulatorConstants.multiplayer());
+    passAndPlayRadio = new MRadioButton("gameModes");
+    passAndPlayRadio.setText(emulatorConstants.passAndPlay());
+    aiRadio = new MRadioButton("gameModes");
+    aiRadio.setText(emulatorConstants.playAgainstComputer());
     
-    computerPlayerCheck = new MCheckBox();
-    computerPlayerCheck.setValue(false);
-    aiEntry.setWidget(emulatorConstants.aiPresent(), computerPlayerCheck);
-    leftHorizontalPanel(computerPlayerCheck.getElement());
+    multiplayerRadio.setValue(true);
+    
+    VerticalPanel panel = new VerticalPanel();
+    panel.add(multiplayerRadio);
+    panel.add(passAndPlayRadio);
+    panel.add(aiRadio);
+    
+    gameModeEntry.setWidget(emulatorConstants.gameMode(), panel);
+    leftHorizontalPanel(panel.getElement());
   }
   
   private void leftHorizontalPanel(Element element) {
@@ -607,8 +617,9 @@ public class GwtEmulatorGraphics extends Composite {
       validation = false;
     }
     isViewerPresent = viewerCheck.getValue();
-    singleFrame = singlePlayerCheck.getValue();
-    isComputerPlayerPresent = computerPlayerCheck.getValue();
+    isComputerPlayerPresent = aiRadio.getValue();
+    singleFrame = passAndPlayRadio.getValue() || isComputerPlayerPresent;
+    
     return validation;
   }
 
@@ -719,8 +730,11 @@ public class GwtEmulatorGraphics extends Composite {
         changePlayerInfoPanel(getNumOfPlayers());
         txtGameUrl.setText(config.get("txtGameUrl").isString().stringValue());
         viewerCheck.setValue(config.get("viewerCheck").isBoolean().booleanValue());
-        singlePlayerCheck.setValue(config.get("singlePlayerCheck").isBoolean().booleanValue());
-        computerPlayerCheck.setValue(config.get("computerPlayerCheck").isBoolean().booleanValue());
+        boolean isSinglePlayer = config.get("singlePlayerCheck").isBoolean().booleanValue();
+        boolean isAI = config.get("computerPlayerCheck").isBoolean().booleanValue(); 
+        multiplayerRadio.setValue(!isSinglePlayer && !isAI);
+        passAndPlayRadio.setValue(isSinglePlayer && !isAI);
+        aiRadio.setValue(isAI);
         initEmulator(gameStateJSON);
         setupEmulatorGraphics();
         displayLoadPopUp.hide();
@@ -827,8 +841,10 @@ public class GwtEmulatorGraphics extends Composite {
     setNumOfPlayers(numberOfPlayers);
     txtGameUrl.setText(gameUrl);
     viewerCheck.setValue(isViewerPresent);
-    singlePlayerCheck.setValue(singleFrame);
-    computerPlayerCheck.setValue(isComputerPlayerPresent);
+    multiplayerRadio.setValue(!singleFrame && !isComputerPlayerPresent);
+    passAndPlayRadio.setValue(singleFrame && !isComputerPlayerPresent);
+    aiRadio.setValue(isComputerPlayerPresent);
+    
     changePlayerInfoPanel(numberOfPlayers);
     clearFormValidation();
   }
@@ -971,8 +987,8 @@ public class GwtEmulatorGraphics extends Composite {
     json.put("listNumPlayers", new JSONNumber(numberOfPlayers));
     json.put("txtGameUrl", new JSONString(txtGameUrl.getText()));
     json.put("viewerCheck", JSONBoolean.getInstance(viewerCheck.getValue()));
-    json.put("singlePlayerCheck", JSONBoolean.getInstance(singlePlayerCheck.getValue()));
-    json.put("computerPlayerCheck", JSONBoolean.getInstance(computerPlayerCheck.getValue()));
+    json.put("singlePlayerCheck", JSONBoolean.getInstance(passAndPlayRadio.getValue()));
+    json.put("computerPlayerCheck", JSONBoolean.getInstance(aiRadio.getValue()));
     return json;
   }
 }
