@@ -98,7 +98,7 @@ public class PopupEditState extends PopinDialog {
     containerPanel.getContent().add(txtAreaState);
     containerPanel.getContent().add(new Label(emulatorConstants.visibilityMap()));
     containerPanel.getContent().add(txtAreaVisibility);
-    containerPanel.getContent().add(new Label(emulatorConstants.visibilityMap()));
+    containerPanel.getContent().add(new Label(emulatorConstants.tokensMap()));
     containerPanel.getContent().add(txtAreaTokens);
     
     FlowPanel buttonContainer = new FlowPanel();
